@@ -1,0 +1,9 @@
+.vscode/
+
+*.dSYM/
+
+docs/
+
+test/
+
+.DS_Store
