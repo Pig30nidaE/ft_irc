@@ -14,14 +14,10 @@ OBJS		= $(SRCS:.c=.o)
 
 all			: $(NAME)
 
-%.o			: %.c
-			$(CC) $(CFLAGS) -c $< -o $@
-
 $(NAME)		: $(OBJS)
 			$(CC) ./main.cpp $(CFLAGS) $^ -o $(NAME)
 
 clean		:
-			rm -f $(OBJS)
 
 fclean		: clean
 			rm -f $(IRC)
