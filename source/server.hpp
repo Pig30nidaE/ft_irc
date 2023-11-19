@@ -36,7 +36,7 @@ class Server {
 	std::vector<struct kevent> change_list;
 	struct kevent event_list[8];
 	std::map<int, std::string> clients;
-	int server_socket;
+	uintptr_t server_socket;
 	int kq;
 
 };

@@ -1,0 +1,33 @@
+CC			= c++
+
+CFLAGS		= -Wall -Wextra -Werror
+
+SOURCE	= ./source/
+
+IRC		= ircserver
+
+NAME		= $(IRC)
+
+SRCS        =	$(SOURCE)server.cpp\
+
+OBJS		= $(SRCS:.c=.o)
+
+all			: $(NAME)
+
+%.o			: %.c
+			$(CC) $(CFLAGS) -c $< -o $@
+
+$(NAME)		: $(OBJS)
+			$(CC) ./main.cpp $(CFLAGS) $^ -o $(NAME)
+
+clean		:
+			rm -f $(OBJS)
+
+fclean		: clean
+			rm -f $(IRC)
+
+re			:  
+			make fclean
+			make all
+
+.PHONY		: clean, re, fclean, all, mini
