@@ -144,6 +144,16 @@ Server::~Server() {
 	std::cout << "server destroyed!!\n";
 }
 
+Server &Server::operator=(const Server &other)
+{
+    // 생각좀 해보자
+}
+
+Server::Server(const Server &other)
+{
+    *this = other;
+}
+
 void Server::disconnectClient(int client_fd, std::map<int, std::string>& clients)
 {
     std::cout << "client disconnected: " << client_fd << std::endl;
