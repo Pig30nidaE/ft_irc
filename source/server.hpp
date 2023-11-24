@@ -17,8 +17,13 @@
 
 #define MAXVISITE 10000
 #define PORT 8080
+#define MAX_MSG 512
 
-class Clients;
+struct UserDto {
+	uintptr_t id;
+	int status;
+	std::string msg;
+};
 
 class Server {
 	public:
@@ -28,17 +33,21 @@ class Server {
 	Server(const Server &other);
 
 	void serverStart(void);
-	void changeEvents(std::vector<struct kevent>& change_list, uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+	void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
 	void exitWithPerror(const std::string& msg);
-	void disconnectClient(int client_fd, std::map<int, std::string>& clients);
+	void disconnectClient(uintptr_t clientFd);
+
+	void readEventHandler(uintptr_t fd);
+	void errorEventHandler(uintptr_t fd);
 	
 	private:
-	std::vector<struct kevent> change_list;
-	struct kevent event_list[8];
-	std::map<int, std::string> clients;
-	uintptr_t server_socket;
+	std::vector<struct kevent> changeList;
+	struct kevent eventList[8];
+	// 소멸자 생성시 close()하기 위해서 clients 관리용 변수가 필요함
+	std::map<uintptr_t, UserDto> clients;
+	uintptr_t serverSocket;
 	int kq;
-
+	struct sockaddr_in server_addr;
 };
 
 
