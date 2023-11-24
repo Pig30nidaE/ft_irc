@@ -8,7 +8,7 @@ IRC		= ircserver
 
 NAME		= $(IRC)
 
-SRCS        =	$(SOURCE)server.cpp\
+SRCS        =	$(SOURCE)Server.cpp\
 
 OBJS		= $(SRCS:.c=.o)
 

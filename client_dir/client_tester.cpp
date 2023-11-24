@@ -38,8 +38,9 @@ int main(int argc, char const *argv[]) {
 	{
         send(sock, &say, say.length() + 1, 0);
         std::cout << "to server: " << say << std::endl;
-        valread = read(sock, buffer, 1024);
-        std::cout << "read msg: " << buffer << std::endl;
+        say = "";
+        // valread = read(sock, buffer, 1024);
+        // std::cout << "read msg: " << buffer << std::endl;
 		std::cin >> say;
 	}
 
