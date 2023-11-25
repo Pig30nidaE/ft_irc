@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-
+#include "../dong_func/User.hpp"
 
 //----------------------
 #include <string.h>
@@ -33,24 +33,27 @@ class Server {
 	Server(const Server &other);
 
 	void serverStart(void);
-	void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
-	void exitWithPerror(const std::string& msg);
-	void disconnectClient(uintptr_t clientFd);
 
 	void readEventHandler(uintptr_t fd);
+	void newUser(int serverSock);
+	void recvMsg(uintptr_t fd);
+
 	void errorEventHandler(uintptr_t fd);
 	
+	void disconnectClient(User *user);
+
+	// --------utils-------
+	void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+	void exitWithPerror(const std::string& msg);
+
 	private:
 	std::vector<struct kevent> changeList;
 	struct kevent eventList[8];
 	// 소멸자 생성시 close()하기 위해서 clients 관리용 변수가 필요함
-	std::map<uintptr_t, UserDto> clients;
-	uintptr_t serverSocket;
+	std::map<uintptr_t, User*> clients;
+	int serverSocket;
 	int kq;
-	struct sockaddr_in server_addr;
+	struct sockaddr_in serverAddr;
 };
-
-
-
 
 #endif

@@ -5,13 +5,14 @@ Server::Server(void) {
     if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) == -1)
         exitWithPerror("socket() error\n" + std::string(strerror(errno)));
 
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(8080);
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddr.sin_port = htons(8080);
 
+    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     // 서버 소켓 바인드
-    if (bind(serverSocket, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1)
+    if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
         exitWithPerror("bind() error\n" + std::string(strerror(errno)));
 
     // 서버 소켓 listen 설정
@@ -29,7 +30,6 @@ Server::Server(void) {
 }
 
 void Server::serverStart(void) {
-
     int newEvents;
     struct kevent* currEvent;
     
@@ -55,52 +55,62 @@ void Server::serverStart(void) {
 
 // READ event!!
 void Server::readEventHandler(uintptr_t fd) {
-    char buf[MAX_MSG];
-    
-    if (fd == serverSocket)
-    {
-        struct UserDto user;
-        int clientSocket;
-        if ((clientSocket = accept(serverSocket, NULL, NULL)) == -1)
-            exitWithPerror("accept() error\n" + std::string(strerror(errno)));
-        std::cout << "accept new client: " << clientSocket << std::endl; // test
-        fcntl(clientSocket, F_SETFL, O_NONBLOCK);
-        changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-        user.id = clientSocket;
-        user.msg = "";
-        user.status = 0;
-        clients[clientSocket] = user;
-    }
-    else {
-        ssize_t n = recv(fd, buf, MAX_MSG, 0);
-        if (n <= 0)
-        {
-            std::cerr << "client read error!" << std::endl;
-            disconnectClient(fd);
-        }
-        else
-        {
-            buf[n] = '\0';
-            clients[fd].msg = buf;
-            std::cout << "recv: " << buf << "\n";
-            // go channelContainer
-    
-        }
+    if (fd == static_cast<uintptr_t> (serverSocket))
+        newUser(static_cast<int>(fd));
+    else if (clients.find(fd) != clients.end()) {
+        recvMsg(fd);
     }
 }
 
+void Server::newUser(int serverSock) {
+    int clientSocket;
+    User *user;
+    struct sockaddr_in clientAddr; // test
+    socklen_t clientLen; // test
+
+    if ((clientSocket = accept(serverSocket,(struct sockaddr*)&clientAddr, &clientLen)) == -1)
+        exitWithPerror("accept() error\n" + std::string(strerror(errno)));
+    std::cout << "accept new client: " << clientSocket << std::endl; // test
+    fcntl(clientSocket, F_SETFL, O_NONBLOCK);
+    changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    
+    user = new User();
+    user->setUserSock(clientSocket);
+    user->setUserState(0);
+    clients[clientSocket] = user;
+}
+
+void Server::recvMsg(uintptr_t fd) {
+    char buf[MAX_MSG];
+    ssize_t n = recv(static_cast<int>(fd), buf, MAX_MSG, 0);
+
+    if (n <= 0)
+    {
+        std::cerr << "client read error!" << std::endl;
+        disconnectClient(clients[fd]);
+    }
+    else
+    {
+        buf[n] = '\0';
+        clients[fd]->setUserMsg(buf);
+        std::cout << "recv: " << buf << "\n";
+        // go channelContainer
+    }
+}
+
+
 void Server::errorEventHandler(uintptr_t fd) {
-    if (fd == serverSocket)
+    if (fd == static_cast<uintptr_t>(serverSocket))
         exitWithPerror("server socket error");
     else
     {
         std::cerr << "client socket error" << std::endl;
-        disconnectClient(fd);
+        disconnectClient(clients[fd]);
     }
 }
 
 Server::~Server() {
-    for (std::map<uintptr_t, UserDto>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
+    for (std::map<uintptr_t, User*>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
         if (close(iter->first) == -1)
             std::cout << "client socket close ERROR\n";
     }
@@ -122,11 +132,15 @@ Server::Server(const Server &other)
     *this = other;
 }
 
-void Server::disconnectClient(uintptr_t clientFd)
+void Server::disconnectClient(User *user)
 {
-    std::cout << "client disconnected: " << clientFd << std::endl;
-    close(clientFd);
-    clients.erase(clientFd);
+    int fd;
+
+    fd = user->getUserSock();
+    std::cout << "client disconnected: " << fd << std::endl;
+    close(fd);
+    // clients.erase(fd);
+    delete clients[fd]; // User delete
 }
 
 
