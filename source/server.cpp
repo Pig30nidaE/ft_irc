@@ -36,7 +36,7 @@ void Server::serverStart(void) {
     changeEvents(static_cast<uintptr_t>(serverSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
     while (1)
     {
-        sleep(1);
+        // sleep(1);
         newEvents = kevent(kq, &changeList[0], changeList.size(), eventList, 8, NULL);
         if (newEvents == -1)
             exitWithPerror("kevent() error\n" + std::string(strerror(errno)));
@@ -68,7 +68,7 @@ void Server::newUser(int serverSock) {
     struct sockaddr_in clientAddr; // test
     socklen_t clientLen; // test
 
-    if ((clientSocket = accept(serverSocket,(struct sockaddr*)&clientAddr, &clientLen)) == -1)
+    if ((clientSocket = accept(serverSock,(struct sockaddr*)&clientAddr, &clientLen)) == -1)
         exitWithPerror("accept() error\n" + std::string(strerror(errno)));
     std::cout << "accept new client: " << clientSocket << std::endl; // test
     fcntl(clientSocket, F_SETFL, O_NONBLOCK);
@@ -92,9 +92,16 @@ void Server::recvMsg(uintptr_t fd) {
     else
     {
         buf[n] = '\0';
+        std::string test = buf;
         clients[fd]->setUserMsg(buf);
-        std::cout << "recv: " << buf << "\n";
+        std::cout << "recv: " << test << "\n";
+        for (int i = 0; test[i] != '\0'; i++) {
+            std::cout << i << ": " << test[i] << "\n";
+        }
         // go channelContainer
+        std::string req = "irc.local NOTICE * :*** Raw I/O logging is enabled on this server. All messages, passwords, and commands are being recorded. :irc.local NOTICE * :*** Looking up your hostname...";
+        std::cout << "send: " << req << "\n";
+        send(static_cast<int>(fd), &req, req.length(), 0);
     }
 }
 

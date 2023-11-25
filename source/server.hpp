@@ -29,11 +29,9 @@ class Server {
 	public:
 	Server(void);
 	~Server();
-	Server &operator=(const Server &other);
-	Server(const Server &other);
-
 	void serverStart(void);
 
+	private:
 	void readEventHandler(uintptr_t fd);
 	void newUser(int serverSock);
 	void recvMsg(uintptr_t fd);
@@ -45,12 +43,12 @@ class Server {
 	// --------utils-------
 	void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
 	void exitWithPerror(const std::string& msg);
+	Server &operator=(const Server &other);
+	Server(const Server &other);
 
-	private:
 	std::vector<struct kevent> changeList;
 	struct kevent eventList[8];
-	// 소멸자 생성시 close()하기 위해서 clients 관리용 변수가 필요함
-	std::map<uintptr_t, User*> clients;
+	std::map<uintptr_t, User*> clients; // User 목록
 	int serverSocket;
 	int kq;
 	struct sockaddr_in serverAddr;

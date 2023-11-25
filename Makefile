@@ -2,13 +2,14 @@ CC			= c++
 
 CFLAGS		= -Wall -Wextra -Werror
 
-SOURCE	= ./source/
+SOURCE	=	./source/
 
 IRC		= ircserver
 
 NAME		= $(IRC)
 
 SRCS        =	$(SOURCE)Server.cpp\
+				./dong_func/User.cpp\
 
 OBJS		= $(SRCS:.c=.o)
 
