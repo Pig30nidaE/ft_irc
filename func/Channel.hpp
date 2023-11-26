@@ -1,17 +1,17 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include <iostream>
 #include <vector>
-
 #include "User.hpp"
+
+class User;
 
 class Topic {
 	private:
 		std::string channelTopic;
 	public:
-		Topic(std::string toSetTopic);
-		~Topic();
+		Topic(std::string toSetTopic):channelTopic(toSetTopic) {};
+		~Topic() {};
 		std::string	getTopic(void) const {
 			return channelTopic;
 		};
@@ -24,6 +24,8 @@ class Mode {
 	private:
 		int	type;
 	public:
+		Mode(int type):type(type) {};
+		~Mode() {};
 		int	getType(void) const {
 			return type;
 		};
@@ -36,19 +38,22 @@ class Channel {
 	private:
 		int					index;
 		std::string 		channelName;
-		std::vector<User&>	userList;
+		std::vector<User*>	userList;
 		Topic				topic;
 		Mode				mode;
 	public:
-		Channel(std::string name);
+		Channel(std::string name, std::string topic_contents, int type);
 		~Channel();
 
-		void	userAdd(const User& user);
-		void	userDel(const User& user);
+		void	userAdd(User& user);
+		void	userDel(User& user);
 
-		std::string			getChannelName(void) const;
-		void				setChannelName(std::string const channelname);
-		std::vector<User&> 	getUserList(void) const;
+		std::string				getChannelName(void) const;
+		void					setChannelName(std::string const channelname);
+		std::vector<User*>	 	&getUserList(void) const;
+		Topic					&getTopicRef(void) const;
+		Mode					&getModeRef(void) const;
+
 
 };
 

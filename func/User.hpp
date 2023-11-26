@@ -1,13 +1,14 @@
 #ifndef USER_HPP
 #define USER_HPP
 
-#include <iostream>
-#include <ctime>
 #include <vector>
+#include <iostream>
 #include <iterator>
-
 #include "Channel.hpp"
 #include "ChannelContainer.hpp"
+
+class Channel;
+class ChannelContainer;
 
 class User {
 	private:
@@ -30,6 +31,7 @@ class User {
 		void	exitChannel(ChannelContainer& channel_container);
 		void	kickUser(User& toKickUser, ChannelContainer& channel_container);
 		void	inviteUser(User& toInviteUser, ChannelContainer& channel_container);
+		void	changeMode(int type, ChannelContainer& ChannelContainer);
 
 		std::string getUserName(void) const;
 		void		setUserName(std::string const username);

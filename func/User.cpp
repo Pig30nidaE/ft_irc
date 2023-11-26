@@ -35,20 +35,26 @@ void User::userInfoErase(User& user) {
 
 void User::joinChannel(std::string toJoinChannel, ChannelContainer& channel_contaier) {
 	int	index = 0;
-	std::vector<Channel&>::iterator channel_iter \
-		= channel_contaier.getChannelList().begin();
+	if (!channel_contaier.getChannelList().empty()) {
+		std::vector<Channel*>::iterator channel_iter \
+			= channel_contaier.getChannelList().begin();
 
-	for (channel_iter = channel_contaier.getChannelList().begin();\
-		channel_iter != channel_contaier.getChannelList().end();channel_iter++) {
-		if ((*channel_iter).getChannelName() == toJoinChannel) {
-			setUserIndex((*channel_iter).size());
-			(*channel_iter).userAdd(*this);
-			setJoinedChannelIndex(index);
-			return ;
+		for (channel_iter = channel_contaier.getChannelList().begin();\
+			channel_iter != channel_contaier.getChannelList().end();channel_iter++) {
+			if ((*channel_iter)->getChannelName() == toJoinChannel) {
+				setUserIndex(channel_contaier.getChannelList().size());
+				(*channel_iter)->userAdd(*this);
+				setJoinedChannelIndex(index);
+				return ;
+			}
+			index++;
 		}
-		index++;
 	}
-	Channel toJoin(toJoinChannel);
+	std::cout << "no such channel. new channel generate." << std::endl;
+	std::string topic;
+	std::cout << "channel topic: ";
+	std::cin >> topic;
+	Channel toJoin(toJoinChannel, topic, 1);
 	toJoin.userAdd(*this);
 	channel_contaier.createChannel(toJoin);
 	setIsChannelJoined(true);
@@ -57,10 +63,14 @@ void User::joinChannel(std::string toJoinChannel, ChannelContainer& channel_cont
 }
 
 void User::exitChannel(ChannelContainer& channel_container) {
-	std::vector<Channel&>::iterator channel_iter \
+	if (getJoinedChannelIndex() < 0) {
+		std::cerr << "no joined channel." << std::endl;
+		return ;
+	}
+	std::vector<Channel*>::iterator channel_iter \
 		= channel_container.getChannelList().begin() + joinedChannelIndex;
-	(*channel_iter).userDel(*this);
-	if ((*channel_iter).empty())
+	(*channel_iter)->userDel(*this);
+	if (channel_container.getChannelList().empty())
 		channel_container.getChannelList().erase\
 			(channel_container.getChannelList().begin() + joinedChannelIndex);
 	userInfoErase(*this);
@@ -72,6 +82,7 @@ void User::kickUser(User& toKickUser, ChannelContainer& channel_container) {
 		return ;
 	}
 	toKickUser.exitChannel(channel_container);
+	std::cout << toKickUser.getNickName() << "is kicked from this channel." << std::endl;
 }
 
 void User::inviteUser(User& toInviteUser, ChannelContainer& channel_container) {
@@ -79,7 +90,17 @@ void User::inviteUser(User& toInviteUser, ChannelContainer& channel_container) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
-	toInviteUser.joinChannel(getJoinedChannel(channel_container).getChannelName(), channel_container);
+	toInviteUser.joinChannel((getJoinedChannel(channel_container)).getChannelName(), channel_container);
+	std::cout << toInviteUser.getNickName() << "is now added this channel." << std::endl;
+}
+
+void User::changeMode(int type, ChannelContainer& channel_container) {
+	if (!isOperator) {
+		std::cerr << "Not permitted." << std::endl;
+		return ;
+	}
+	getJoinedChannel(channel_container).getModeRef().setType(type);
+	std::cout << "now channel mode is " << type << std::endl;
 }
 
 void User::changeUserName(std::string toChange) {
@@ -132,9 +153,9 @@ void User::setJoinedChannelIndex(int const joined_channel_index) {
 }
 
 Channel& User::getJoinedChannel(ChannelContainer& channer_container) const {
-	std::vector<Channel&>::iterator channel_iter = \
-	channer_container.getChannelList().begin() + joinedChannelIndex;
-	return *channel_iter;
+	if (getJoinedChannelIndex() < 0)
+		return nullptr;
+	return *(channer_container.getChannelList().at(getJoinedChannelIndex()));
 }
 
 int	User::getUserIndex(void) const {
