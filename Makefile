@@ -9,6 +9,7 @@ IRC		= ircserver
 NAME		= $(IRC)
 
 SRCS        =	$(SOURCE)Server.cpp\
+				$(SOURCE)Command.cpp\
 				./dong_func/User.cpp\
 
 OBJS		= $(SRCS:.c=.o)

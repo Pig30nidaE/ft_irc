@@ -1,4 +1,6 @@
 #include "./Server.hpp"
+#include "../dong_func/User.hpp"
+// #include "Command.hpp"
 
 
 Server::Server(void) {
@@ -95,13 +97,7 @@ void Server::recvMsg(uintptr_t fd) {
         std::string test = buf;
         clients[fd]->setUserMsg(buf);
         std::cout << "recv: " << test << "\n";
-        for (int i = 0; test[i] != '\0'; i++) {
-            std::cout << i << ": " << test[i] << "\n";
-        }
-        // go channelContainer
-        std::string req = "irc.local NOTICE * :*** Raw I/O logging is enabled on this server. All messages, passwords, and commands are being recorded. :irc.local NOTICE * :*** Looking up your hostname...";
-        std::cout << "send: " << req << "\n";
-        send(static_cast<int>(fd), &req, req.length(), 0);
+        command.parser(test);
     }
 }
 

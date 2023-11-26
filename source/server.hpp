@@ -6,7 +6,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#include "../dong_func/User.hpp"
+// #include "../dong_func/User.hpp"
+#include "./Command.hpp"
 
 //----------------------
 #include <string.h>
@@ -19,11 +20,8 @@
 #define PORT 8080
 #define MAX_MSG 512
 
-struct UserDto {
-	uintptr_t id;
-	int status;
-	std::string msg;
-};
+class User;
+// class Command;
 
 class Server {
 	public:
@@ -46,6 +44,7 @@ class Server {
 	Server &operator=(const Server &other);
 	Server(const Server &other);
 
+	Command command;
 	std::vector<struct kevent> changeList;
 	struct kevent eventList[8];
 	std::map<uintptr_t, User*> clients; // User 목록
