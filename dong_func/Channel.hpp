@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-#include "User.hpp"
+#include "./User.hpp"
 
 class Topic {
 	private:
@@ -31,6 +31,8 @@ class Mode {
 			type = toChangeType;
 		};
 };
+
+class User;
 
 class Channel {
 	private:
