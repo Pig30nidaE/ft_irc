@@ -43,7 +43,7 @@ class User {
 		void		setIsChannelJoined(bool flag);
 		int			getJoinedChannelIndex(void) const;
 		void		setJoinedChannelIndex(int const joined_channel_index);
-		Channel*	getJoinedChannel(ChannelContainer& channer_container) const;
+		Channel&	getJoinedChannel(ChannelContainer& channer_container) const;
 		int			getUserIndex(void) const;
 		void		setUserIndex(int const user_index);
 };

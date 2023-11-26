@@ -90,7 +90,7 @@ void User::inviteUser(User& toInviteUser, ChannelContainer& channel_container) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
-	toInviteUser.joinChannel((*getJoinedChannel(channel_container)).getChannelName(), channel_container);
+	toInviteUser.joinChannel((getJoinedChannel(channel_container)).getChannelName(), channel_container);
 	std::cout << toInviteUser.getNickName() << "is now added this channel." << std::endl;
 }
 
@@ -99,7 +99,7 @@ void User::changeMode(int type, ChannelContainer& channel_container) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
-	(*getJoinedChannel(channel_container)).getModeRef().setType(type);
+	getJoinedChannel(channel_container).getModeRef().setType(type);
 	std::cout << "now channel mode is " << type << std::endl;
 }
 
@@ -152,13 +152,10 @@ void User::setJoinedChannelIndex(int const joined_channel_index) {
 	joinedChannelIndex = joined_channel_index;
 }
 
-Channel* User::getJoinedChannel(ChannelContainer& channer_container) const {
-	std::vector<Channel*>::iterator channel_iter;
-	if (joinedChannelIndex >= 0)
-		channel_iter = channer_container.getChannelList().begin() + joinedChannelIndex;
-	else
-		return NULL;
-	return *channel_iter;
+Channel& User::getJoinedChannel(ChannelContainer& channer_container) const {
+	if (getJoinedChannelIndex() < 0)
+		return nullptr;
+	return *(channer_container.getChannelList().at(getJoinedChannelIndex()));
 }
 
 int	User::getUserIndex(void) const {

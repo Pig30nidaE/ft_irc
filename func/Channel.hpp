@@ -48,11 +48,11 @@ class Channel {
 		void	userAdd(User& user);
 		void	userDel(User& user);
 
-		std::string			getChannelName(void) const;
-		void				setChannelName(std::string const channelname);
-		std::vector<User*> 	getUserList(void) const;
-		Topic				getTopicRef(void) const;
-		Mode				getModeRef(void) const;
+		std::string				getChannelName(void) const;
+		void					setChannelName(std::string const channelname);
+		std::vector<User*>	 	&getUserList(void) const;
+		Topic					&getTopicRef(void) const;
+		Mode					&getModeRef(void) const;
 
 
 };

@@ -22,7 +22,7 @@ void Channel::userDel(User& user) {
 		return ;
 	}
 	int to_del_idx = *to_del_usr - *(getUserList().begin());
-	getUserList().erase(getUserList().begin() + to_del_idx);
+	userList.erase(getUserList().begin() + to_del_idx);
 }
 
 void Channel::setChannelName(std::string const channelname) {
@@ -30,7 +30,7 @@ void Channel::setChannelName(std::string const channelname) {
 }
 
 std::vector<User*> Channel::getUserList(void) const {
-	return userList;
+	return userList;	
 }
 
 Topic Channel::getTopicRef(void) const {
