@@ -3,33 +3,60 @@
 //ToDo: 유저에 대한 operator 권한을 어떻게 할 것인지 정해야함.
 
 
-User::User(void):
+User::User(ChannelContainer &channel_container):
 isOperator(false),userIndex(-1) {
-	userRegister();
+	userRegister(channel_container);
 	// connectionTime = std::time(nullptr);
 }
 
 User::~User() {}
 
-void User::userRegister(void) {
-	std::string username;
-	std::string nickname;
+void User::userRegister(ChannelContainer &channel_container) {
+	std::string enteredUserName;
+	typedef std::vector<User*>::iterator UserIterator;
+	UserIterator user_iter;
+	std::vector<User*> user_list = channel_container.getUserList();
 
-	std::cout << "Enter Username: ";
 	while (true) {
-		std::getline(std::cin, username);
-
+		bool flag = true;
+		std::cout << "Enter username: ";
+		std::getline(std::cin, enteredUserName);
+		for (user_iter = user_list.begin();user_iter != user_list.end();user_iter++) {
+			if ((*user_iter)->getUserName() == enteredUserName) {
+				std::cout << "Already exist. Please enter another user name." << std::endl;
+				flag = false;
+				break ;
+			}
+		}
+		if (flag)
+			break ;
 	}
-	std::cout << "Enter Nickname: ";
-	std::getline(std::cin, nickname);
+	setUserName(enteredUserName);
+}
 
-	setUserName(username);
-	setNickName(nickname);
+void User::nickRegister(Channel& channel, ChannelContainer& channel_container) {
+	typedef std::vector<User*>::iterator UserIterator;
+	std::vector<User*> user_list = channel.getUserList();
+	std::string to_set_nick;
+	while (true) {
+		bool flag = true;
+		std::cout << "Enter nickname: ";
+		std::getline(std::cin, to_set_nick);
+		for (UserIterator user_iter = user_list.begin();user_iter != user_list.end();user_iter++) {
+			if ((*user_iter)->getSpcfNickName(channel.getChannelName()) == to_set_nick) {
+				std::cout << "Already exist." << std::endl;
+				flag = false;
+				break ;
+			}
+		}
+		if (flag)
+			break ;
+	}
+	setNickName(channel.getChannelName(), to_set_nick);
 }
 
 void User::userInfoErase(User& user) {
 	user.setUserName("");
-	user.setNickName("");
 	//user.setIsChannelJoined(false);
 	user.setIsOperator(false);
 	user.setUserIndex(-1);
@@ -46,7 +73,9 @@ void User::joinChannel(std::string toJoinChannel, ChannelContainer& channel_cont
 			channel_iter != channel_contaier.getChannelList().end();channel_iter++) {
 			if ((*channel_iter)->getChannelName() == toJoinChannel) {
 				setUserIndex(channel_contaier.getChannelList().size());
+				nickRegister(*(*channel_iter), channel_contaier);
 				(*channel_iter)->userAdd(*this);
+				getJoinedChannelList(channel_contaier).push_back(*channel_iter);
 				//setJoinedChannelIndex(index);
 				return ;
 			}
@@ -58,9 +87,10 @@ void User::joinChannel(std::string toJoinChannel, ChannelContainer& channel_cont
 	std::cout << "channel topic: ";
 	std::getline(std::cin, topic);
 	Channel *toJoin = new Channel(toJoinChannel, topic, 1);
+	nickRegister(*toJoin, channel_contaier);
 	toJoin->userAdd(*this);
 	channel_contaier.createChannel(*toJoin);
-	this->joinedChannelList.push_back(toJoin);
+	getJoinedChannelList(channel_contaier).push_back(toJoin);
 	//setIsChannelJoined(true);
 	//setJoinedChannelIndex(index);
 	setUserIndex(0);
@@ -76,6 +106,8 @@ void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_cont
     if (iter != JoinedChannels.end()) {
         JoinedChannels.erase(iter);
     }
+	if (exitCh->getUserList().empty())
+		channel_container.deleteChannel(*exitCh);
 }
 
 
@@ -88,11 +120,19 @@ void User::kickUser(User& toKickUser, Channel& fromChannel, ChannelContainer& ch
 		std::cerr << "Can't kick yourself." << std::endl;
 		return ;
 	}
-	toKickUser.exitChannel(fromChannel.getChannelName(), channel_container);
-	std::cout << toKickUser.getNickName() << "is kicked from this channel." << std::endl;
+	typedef std::vector<User*>::iterator UserIterator;
+	std::vector <User*> toChUsrList = fromChannel.getUserList();
+	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
+		if ((*user_iter)->getUserName() == toKickUser.getUserName()) {
+			toKickUser.exitChannel(fromChannel.getChannelName(), channel_container);
+			std::cout << toKickUser.getSpcfNickName(fromChannel.getChannelName()) << " is kicked from this channel." << std::endl;
+			return ;
+		}
+	}
+	std::cerr << "No such user in the channel." << std::endl;
 }
 
-void User::inviteUser(User& toInviteUser, ChannelContainer& channel_container) {
+void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container) {
 	if (!isOperator) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
@@ -101,8 +141,16 @@ void User::inviteUser(User& toInviteUser, ChannelContainer& channel_container) {
 		std::cerr << "Can't invite yourself." << std::endl;
 		return ;
 	}
-	//toInviteUser.joinChannel((getJoinedChannel(channel_container)).getChannelName(), channel_container);
-	std::cout << toInviteUser.getNickName() << "is now added this channel." << std::endl;
+	typedef std::vector<User*>::iterator UserIterator;
+	std::vector <User*> toChUsrList = toChannel.getUserList();
+	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
+		if ((*user_iter)->getUserName() == toInviteUser.getUserName()) {
+			std::cerr << "Already exist in the channel." << std::endl;
+			return ;
+		}
+	}
+	toInviteUser.joinChannel(toChannel.getChannelName(), channel_container);
+	std::cout << "done." << std::endl;
 }
 
 void User::changeMode(int type, ChannelContainer& channel_container) {
@@ -118,9 +166,9 @@ void User::changeUserName(std::string toChange) {
 	setUserName(toChange);
 }
 
-void User::changeNickName(std::string toChange) {
-	setNickName(toChange);
-}
+//void User::changeNickName(std::string toChangeCh, std::string toChangeNick) {
+//	setNickName(toChangeCh, toChangeNick);
+//}
 
 
 std::string User::getUserName(void) const {
@@ -131,13 +179,28 @@ void User::setUserName(std::string const username) {
 	userName = username;
 }
 
-//std::string User::getNickName(void) const {
-//	return nickName;
-//}
+std::string User::getSpcfNickName(std::string chName) {
+	typedef std::map<std::string, std::string>::iterator NickIterator;
+	for (NickIterator nick_iter = nickName.begin();nick_iter != nickName.end();nick_iter++) {
+		if ((*nick_iter).first == chName)
+			return (*nick_iter).second;
+	}
+	return "";
+}
 
-//void User::setNickName(std::string const nickname) {
-//	nickName = nickname;
-//}
+std::map<std::string, std::string> User::getNickName(void) {
+	return nickName;
+}
+
+void User::setNickName(std::string chName, std::string toChangeNick) {
+	std::map<std::string, std::string>::iterator nick_iter;
+	nick_iter = nickName.find(chName);
+	if (nick_iter != nickName.end()) {
+		nick_iter->second = toChangeNick;
+	}
+	else
+		nickName.insert(std::make_pair(chName, toChangeNick));
+}
 
 bool User::getIsOperator(void) const {
 	return isOperator;

@@ -25,6 +25,10 @@ std::vector<Channel*> &ChannelContainer::getChannelList(void) {
 	return channelList;
 }
 
+std::vector<User*> &ChannelContainer::getUserList(void) {
+	return userList;
+}
+
 int	ChannelContainer::getCurrentChIdx(void) {
 	return channelIndex;
 }

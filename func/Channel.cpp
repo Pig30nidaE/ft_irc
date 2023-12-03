@@ -29,6 +29,7 @@ void Channel::userDel(User& user) {
 	}
 	//int to_del_idx = *to_del_usr - *(getUserList().begin());
 	userList.erase(getUserList().begin() + (*to_del_usr)->getUserIndex());
+	user.getNickName().erase(getChannelName());
 }
 
 void Channel::setChannelName(std::string const channelname) {
