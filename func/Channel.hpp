@@ -39,8 +39,8 @@ class Channel {
 		int					index;
 		std::string 		channelName;
 		std::vector<User*>	userList;
-		Topic				topic;
-		Mode				mode;
+		Topic				*topic;
+		Mode				*mode;
 	public:
 		Channel(std::string name, std::string topic_contents, int type);
 		~Channel();
@@ -50,9 +50,11 @@ class Channel {
 
 		std::string				getChannelName(void) const;
 		void					setChannelName(std::string const channelname);
-		std::vector<User*>	 	&getUserList(void) const;
-		Topic					&getTopicRef(void) const;
-		Mode					&getModeRef(void) const;
+		std::vector<User*>	 	&getUserList(void);
+		Topic					&getTopicRef(void);
+		Mode					&getModeRef(void);
+		int						getIndex(void);
+		void					setIndex(int idx);
 
 
 };

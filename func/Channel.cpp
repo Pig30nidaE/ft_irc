@@ -2,13 +2,19 @@
 
 
 Channel::Channel(std::string name, std::string topic_contents, int type):
-topic(topic_contents), mode(type), channelName(name) {}
+channelName(name) {
+	topic = new Topic(topic_contents);
+	mode = new Mode(type);
+}
 
-Channel::~Channel() {}
+Channel::~Channel() {
+	delete topic;
+	delete mode;
+}
 
 std::string Channel::getChannelName(void) const {
 	return channelName;
-};
+}
 
 void Channel::userAdd(User& user) {
 	userList.push_back(&user);
@@ -21,22 +27,31 @@ void Channel::userDel(User& user) {
 		std::cerr << "no such user." << std::endl;
 		return ;
 	}
-	int to_del_idx = *to_del_usr - *(getUserList().begin());
-	userList.erase(getUserList().begin() + to_del_idx);
+	//int to_del_idx = *to_del_usr - *(getUserList().begin());
+	userList.erase(getUserList().begin() + (*to_del_usr)->getUserIndex());
 }
 
 void Channel::setChannelName(std::string const channelname) {
 	channelName = channelname;
 }
 
-std::vector<User*> Channel::getUserList(void) const {
-	return userList;	
+std::vector<User*>& Channel::getUserList(void) {
+    return userList;
 }
 
-Topic Channel::getTopicRef(void) const {
-	return topic;
+
+Topic& Channel::getTopicRef(void) {
+	return *topic;
 }
 
-Mode Channel::getModeRef(void) const {
-	return mode;
+Mode& Channel::getModeRef(void) {
+	return *mode;
+}
+
+int Channel::getIndex(void) {
+	return index;
+}
+
+void Channel::setIndex(int idx) {
+	index = idx;
 }
