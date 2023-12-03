@@ -1,14 +1,16 @@
 #ifndef CHANNELCONTAINER_HPP
 #define CHANNELCONTAINER_HPP
 
-#include <iostream>
 #include <vector>
-
 #include "Channel.hpp"
 
+class Channel;
+class User;
 class ChannelContainer {
 	private:
-		std::vector<Channel&> channelList;
+		std::vector<Channel*> 	channelList;
+		std::vector<User*>		userList;
+		int						channelIndex;
 	public:
 		ChannelContainer(void);
 		~ChannelContainer();
@@ -16,7 +18,10 @@ class ChannelContainer {
 		void	createChannel(Channel& toCreateChannel);
 		void	deleteChannel(Channel& toDeleteChannel);
 
-		std::vector<Channel&> getChannelList(void) const;
+		std::vector<Channel*> 	&getChannelList(void);
+		std::vector<User*>		&getUserList(void);
+		int						getCurrentChIdx(void);
+		void					setCurrentChIdx(int idx);
 };
 
 #endif
