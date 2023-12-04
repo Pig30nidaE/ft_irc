@@ -3,8 +3,7 @@
 int main() {
 	ChannelContainer Server;
 	User test(Server);
-	test.joinChannel("test", Server);
-	test.setIsOperator(true);
+	test.joinChannel("test", Server, false);
 	User guest(Server);
 	typedef std::vector<Channel*>::iterator ChannelIterator;
 	std::vector<Channel*>& joinedChannels = test.getJoinedChannelList(Server);
@@ -14,6 +13,9 @@ int main() {
 		std::cout << "topic: " << (*ch_iter)->getTopicRef().getTopic() << std::endl;
 	}
 
+	test.changeMode(Server, "test", MODE_INVITE_ONLY);
+	test.changeMode(Server, "test", MODE_CHANNEL_KEY, "sanghyol");
+	guest.joinChannel("test", Server, false);
 	test.inviteUser(guest, *test.getSpecificChannelJoined("test", Server), Server);
 
 	typedef std::vector<User*>::iterator UserIterator;

@@ -5,6 +5,7 @@
 #include <map>
 #include <iostream>
 #include <iterator>
+#include <cstdarg>
 #include "Channel.hpp"
 #include "ChannelContainer.hpp"
 
@@ -29,11 +30,12 @@ class User {
 		void	userInfoErase(User& user); // do I need?
 		void	changeUserName(std::string toChange);
 		//void	changeNickName(std::string toChange);
-		void	joinChannel(std::string toJoinChannel, ChannelContainer& channel_container);
+		void	joinChannel(std::string toJoinChannel, ChannelContainer& channel_container, bool isInvited);
 		void	exitChannel(std::string toExitChannel, ChannelContainer& channel_container);
 		void	kickUser(User& toKickUser, Channel& fromChannel, ChannelContainer& channel_container);
 		void	inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container);
-		void	changeMode(int type, ChannelContainer& ChannelContainer);
+		void	changeMode(ChannelContainer& channel_container, std::string channel, int type, ...);
+		void	topicCommand(ChannelContainer& channel_container, std::string channel, ...);
 
 		std::string 						getUserName(void) const;
 		void								setUserName(std::string const username);

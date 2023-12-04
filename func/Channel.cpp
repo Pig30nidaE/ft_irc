@@ -40,6 +40,14 @@ std::vector<User*>& Channel::getUserList(void) {
     return userList;
 }
 
+std::string Channel::getPassword(void) const {
+	return password;
+}
+
+void Channel::setPassword(std::string pwd) {
+	password = pwd;
+}
+
 
 Topic& Channel::getTopicRef(void) {
 	return *topic;
