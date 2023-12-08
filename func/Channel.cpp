@@ -1,10 +1,10 @@
 #include "Channel.hpp"
 
 
-Channel::Channel(std::string name, std::string topic_contents, int type):
+Channel::Channel(std::string name):
 channelName(name) {
-	topic = new Topic(topic_contents);
-	mode = new Mode(type);
+	mode = new Mode(ALL_MODES_OFF);
+	topic = new Topic("");
 }
 
 Channel::~Channel() {
@@ -29,7 +29,7 @@ void Channel::userDel(User& user) {
 	}
 	//int to_del_idx = *to_del_usr - *(getUserList().begin());
 	userList.erase(getUserList().begin() + (*to_del_usr)->getUserIndex());
-	user.getNickName().erase(getChannelName());
+	//user.getNickName().erase(getChannelName());
 }
 
 void Channel::setChannelName(std::string const channelname) {

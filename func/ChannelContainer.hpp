@@ -17,6 +17,8 @@ class ChannelContainer {
 
 		void	createChannel(Channel& toCreateChannel);
 		void	deleteChannel(Channel& toDeleteChannel);
+		//bool	checkUserName(std::string toFind);
+		bool	checkNickName(std::string toFind);
 
 		std::vector<Channel*> 	&getChannelList(void);
 		std::vector<User*>		&getUserList(void);
