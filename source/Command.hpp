@@ -4,7 +4,7 @@
 #include <string>
 class User;
 class ChannelContainer;
-class Channel;
+// class Channel;
 
 class Command {
 	public:
@@ -14,15 +14,41 @@ class Command {
 		Command operator=(Command &other);
 
 
-		void parser(std::string msg);
 
+		//--------teset용---------
+		Command(std::string serverPass); // test용
+		void setServerPass(std::string serverPass); // test용
+
+		// Pass error start
+		class ERR_NEEDMOREPARAMS : public std::exception {
+			public:
+				const char* what(void) const throw() {
+					return "ERR_NEEDMOREPARAMS!!\n";
+				};
+		};
+		class ERR_PASSWDMISMATCH : public std::exception {
+			public:
+				const char* what(void) const throw() {
+					return "ERR_PASSWDMISMATCH!!\n";
+				};
+		};
+		// Pass error end
+
+		void pass(std::string msg);
 	private:
-		void pass();
-		void nick();
-		void user();
-		void join();
-		void part();
-		void ping();
+		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
+		//----server 입장-----
+		void nick(std::string msg, User &user);
+		void user(std::string msg, User &user);
+
+		// ----channel join-----
+		void join(std::string msg);
+
+		// ----channel 나감-----
+		void part(std::string msg);
+
+		// ----client PING----
+		void ping(std::string msg);
 };
 
 
