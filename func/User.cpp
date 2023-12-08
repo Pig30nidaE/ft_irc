@@ -339,3 +339,20 @@ int	User::getUserIndex(void) const {
 void User::setUserIndex(int const index) {
 	userIndex = index;
 }
+
+//------------------------------------------
+void User::setUserSock(int sock) {
+	userSock = sock;
+}
+
+int User::getUserSock(void) const {
+	return userSock;
+}
+
+void User::setUserIsPass(int flag) {
+	isPass = flag;
+}
+
+int User::getUserIsPass(void) const {
+	return isPass;
+}

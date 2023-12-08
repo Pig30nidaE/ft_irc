@@ -1,12 +1,17 @@
 #include "./Server.hpp"
-#include "../dong_func/User.hpp"
-// #include "Command.hpp"
+#include "../func/User.hpp"
+#include "../func/ChannelContainer.hpp"
+// #include "../func/Channel.hpp"
+#include "./Command.hpp"
 
 
-Server::Server(void) {
+Server::Server(void) : channelContainer(new ChannelContainer()), command(new Command()) {
     if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) == -1)
         exitWithPerror("socket() error\n" + std::string(strerror(errno)));
 
+    //test
+    setServerPass("123");
+    //test
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -78,7 +83,6 @@ void Server::newUser(int serverSock) {
     
     user = new User();
     user->setUserSock(clientSocket);
-    user->setUserState(0);
     clients[clientSocket] = user;
 }
 
@@ -95,9 +99,8 @@ void Server::recvMsg(uintptr_t fd) {
     {
         buf[n] = '\0';
         std::string test = buf;
-        clients[fd]->setUserMsg(buf);
         std::cout << "recv: " << test << "\n";
-        command.parser(test);
+        parser(test, *clients[fd]);
     }
 }
 
@@ -164,3 +167,68 @@ void Server::exitWithPerror(const std::string& msg)
 }
 
 
+// ------------test용----------
+void Server::setServerPass(std::string serverPass) { // test용
+    this->serverPass = serverPass;
+    command->setServerPass(serverPass);
+}
+
+void Server::parser(std::string msg, User &user) {
+	std::string	arr[6] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING"};
+	std::string content;
+	int			flag;
+	int			end;
+
+	if (msg[0] == 0)
+		return ;
+	//------------------------------------
+
+	std::cout << "msg: " << msg[0] << ":" << (int)msg[0] << "\n";
+	for (size_t i = 0; i < 4; i++)
+	{
+		if (msg.compare(0, 4, arr[i]) == 0) 
+			flag = i;
+	}
+
+	end = msg.find((char)10);
+	content = msg.substr(5, end - 5);
+	switch (flag)
+	{
+		case PASS:
+            try
+            {
+                command->pass(content);
+                user.setUserIsPass(1);
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+            
+			break;
+		
+		case NICK:
+			break;
+
+		case USER:
+            // command->user(msg, user);
+			break;
+			
+		case JOIN:
+			break;
+			
+		case PART:
+			break;
+			
+		case PING:
+			break;
+
+		default:
+			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
+			break;
+	}
+	//--------------------------------------
+	std::cout << "-----------------------------\n";
+	if ((&msg[end])[0] != '\0')
+		parser(&msg[end + 1], user);
+}
