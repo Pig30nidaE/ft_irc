@@ -1,8 +1,10 @@
 CC			= c++
 
-CFLAGS		= -Wall -Wextra -Werror
+CFLAGS		= #-Wall -Wextra -Werror
 
 SOURCE	=	./source/
+
+FUNC	=	./func/
 
 IRC		= ircserver
 
@@ -10,7 +12,10 @@ NAME		= $(IRC)
 
 SRCS        =	$(SOURCE)Server.cpp\
 				$(SOURCE)Command.cpp\
-				./dong_func/User.cpp\
+				$(FUNC)User.cpp\
+				$(FUNC)ChannelContainer.cpp\
+				$(FUNC)Channel.cpp\
+
 
 OBJS		= $(SRCS:.c=.o)
 

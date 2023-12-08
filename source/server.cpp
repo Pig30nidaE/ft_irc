@@ -81,7 +81,7 @@ void Server::newUser(int serverSock) {
     fcntl(clientSocket, F_SETFL, O_NONBLOCK);
     changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
     
-    user = new User(*channelContainer);
+    user = new User();
     user->setUserSock(clientSocket);
     clients[clientSocket] = user;
 }
@@ -211,7 +211,7 @@ void Server::parser(std::string msg, User &user) {
 			break;
 
 		case USER:
-            command->user(msg, user);
+            // command->user(msg, user);
 			break;
 			
 		case JOIN:

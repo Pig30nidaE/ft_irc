@@ -14,6 +14,8 @@ class ChannelContainer;
 
 class User {
 	private:
+		int									userSock;
+		int									isPass;
 		int									userIndex;
 		std::string							userName;
 		std::string						 	nickName;
@@ -37,6 +39,10 @@ class User {
 		void	changeMode(ChannelContainer& channel_container, std::string channel, int type, ...);
 		void	topicCommand(ChannelContainer& channel_container, std::string channel, ...);
 
+		void setUserSock(int sock);
+		int getUserSock(void) const;
+		void setUserIsPass(int flag);
+		int getUserIsPass(void) const;
 		std::string 						getUserName(void) const;
 		void								setUserName(std::string const username);
 		//std::string						 	getNickName(std::string chName);

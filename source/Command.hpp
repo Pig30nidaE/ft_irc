@@ -38,17 +38,20 @@ class Command {
 	private:
 		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
 		//----server 입장-----
-		void nick(std::string msg, User &user);
+		void nick(std::string msg, ChannelContainer cc, User &user);
 		void user(std::string msg, User &user);
 
 		// ----channel join-----
-		void join(std::string msg);
+		void join(std::string msg, ChannelContainer &cc, User &user);
 
 		// ----channel 나감-----
-		void part(std::string msg);
+		void part(std::string msg, ChannelContainer &cc, User &user);
 
 		// ----client PING----
 		void ping(std::string msg);
+
+		// kick
+		void kick(std::string msg);
 };
 
 

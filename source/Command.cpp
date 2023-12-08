@@ -20,19 +20,27 @@ void Command::pass(std::string pass) {
 	std::cout << "content: " << pass << "\n";
 }
 
-void Command::nick(std::string msg, User &user) {
+void Command::nick(std::string msg, ChannelContainer cc, User &user) {
 	if (user.getUserIsPass() != 1) {
 		throw ERR_NEEDMOREPARAMS();
 	}
-	// 	보류
+	if (cc.checkNickName(msg)) {
+		// err
+		return ;
+	}
+	user.setNickName(msg);
 	std::cout << "[ NICK ]" << std::endl;
 	std::cout << "content: " << msg << "\n";
 
 }
 
-void Command::user(std::string msg) {
+void Command::user(std::string msg, User &user) {
 	int colon;
 
+	if (user.getNickName() == "") {
+		//err
+		return ;
+	}
 	colon = msg.find(':');
 	std::cout << "user colon: " << &(msg[colon]) << "\n";
 	// content = msg.substr(5, end - 5);
@@ -40,21 +48,35 @@ void Command::user(std::string msg) {
 	std::cout << "content: " << msg << "\n";
 }
 
-void Command::join(std::string msg) {
-			std::cout << "[ JOIN ]" << std::endl;
-			(void)msg;
+void Command::join(std::string msg, ChannelContainer &cc, User &user) {
+	std::cout << "[ JOIN ]" << std::endl;
 	std::cout << "content: " << msg << "\n";
+
+	// msg 에서 채널, 비밀번호 분리하기
+	// 초대받음: isInvited에 true로 넣기
+
+
+
 }
 
-void Command::part(std::string msg) {
-			(void)msg;
-			std::cout << "[ PART] ]" << std::endl;
+void Command::part(std::string msg, ChannelContainer &cc, User &user) {
+	std::cout << "[ PART] ]" << std::endl;
 	std::cout << "content: " << msg << "\n";
+	// 나갈 채널이랑 채널 사유 분리하기
+	// 채널 사유 출력하고 채널 나가기
+	user.exitChannel(msg, cc);//인원이 0되면 채널 지워줌
 }
 
 void Command::ping(std::string msg) {
 			(void)msg;
 			std::cout << "[ PING ]" << std::endl;
+	std::cout << "content: " << msg << "\n";
+}
+
+void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
+	// msg에서 toKickUser, Channel 두개 뽑아내기
+	user.kickUser("toKickUser", user.getSpecificChannelJoined("채널이름", cc), cc);
+	std::cout << "[ KICK ]" << std::endl;
 	std::cout << "content: " << msg << "\n";
 }
 
