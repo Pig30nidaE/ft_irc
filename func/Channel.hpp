@@ -57,7 +57,7 @@ class Channel {
 		Topic				*topic;
 		Mode				*mode;
 	public:
-		Channel(std::string name, std::string topic_contents, int type);
+		Channel(std::string name);
 		~Channel();
 
 		void	userAdd(User& user);
