@@ -4,6 +4,14 @@
 #include <vector>
 #include "User.hpp"
 
+#define MODE_CHECK_TYPE(type1, type2) ((type1) & (type2))
+
+#define ALL_MODES_OFF      0x00  // off
+#define MODE_INVITE_ONLY   0x01  // i
+#define MODE_TOPIC_LIMIT   0x02  // t
+#define MODE_CHANNEL_KEY   0x04  // k
+#define MODE_OPERATOR_ONLY 0x08  // o
+
 class User;
 
 class Topic {
@@ -29,8 +37,14 @@ class Mode {
 		int	getType(void) const {
 			return type;
 		};
-		void setType(int const toChangeType) {
-			type = toChangeType;
+		void turnOnType(int const toTurnOn) {
+			type |= toTurnOn;
+		};
+		void turnOffType(int const toTurnOff) {
+			type &= ~(toTurnOff);
+		};
+		bool checkType(int const toCheck) {
+			return (toCheck & type);
 		};
 };
 
@@ -39,8 +53,9 @@ class Channel {
 		int					index;
 		std::string 		channelName;
 		std::vector<User*>	userList;
-		Topic				topic;
-		Mode				mode;
+		std::string			password;
+		Topic				*topic;
+		Mode				*mode;
 	public:
 		Channel(std::string name, std::string topic_contents, int type);
 		~Channel();
@@ -50,9 +65,13 @@ class Channel {
 
 		std::string				getChannelName(void) const;
 		void					setChannelName(std::string const channelname);
-		std::vector<User*>	 	&getUserList(void) const;
-		Topic					&getTopicRef(void) const;
-		Mode					&getModeRef(void) const;
+		std::vector<User*>	 	&getUserList(void);
+		std::string				getPassword(void) const;
+		void					setPassword(std::string pwd);
+		Topic					&getTopicRef(void);
+		Mode					&getModeRef(void);
+		int						getIndex(void);
+		void					setIndex(int idx);
 
 
 };

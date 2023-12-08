@@ -1,10 +1,12 @@
 #include "ChannelContainer.hpp"
 
-ChannelContainer::ChannelContainer(void) {}
+ChannelContainer::ChannelContainer(void):channelIndex(-1) {}
 
 ChannelContainer::~ChannelContainer() {}
 
 void ChannelContainer::createChannel(Channel& toCreateChannel) {
+	setCurrentChIdx(getCurrentChIdx() + 1);
+	toCreateChannel.setIndex(getCurrentChIdx());
 	channelList.push_back(&toCreateChannel);
 }
 
@@ -19,6 +21,18 @@ void ChannelContainer::deleteChannel(Channel& toDeleteChannel) {
 	getChannelList().erase(getChannelList().begin() + to_del_idx);
 }
 
-std::vector<Channel*> ChannelContainer::getChannelList(void) const {
+std::vector<Channel*> &ChannelContainer::getChannelList(void) {
 	return channelList;
+}
+
+std::vector<User*> &ChannelContainer::getUserList(void) {
+	return userList;
+}
+
+int	ChannelContainer::getCurrentChIdx(void) {
+	return channelIndex;
+}
+
+void ChannelContainer::setCurrentChIdx(int idx) {
+	channelIndex = idx;
 }
