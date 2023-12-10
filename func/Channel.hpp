@@ -54,7 +54,7 @@ class Channel {
 		int							index;
 		std::string 				channelName;
 		std::vector<User*>			userList;
-		std::vector<int>			bannedUserList;
+		std::vector<int>			invitedUserList;
 		std::string					password;
 		int							capcity;
 		Topic						*topic;
@@ -65,12 +65,11 @@ class Channel {
 
 		void	userAdd(User& user);
 		void	userDel(User& user);
-		bool	isUserBan(int userSock);
 
 		std::string					getChannelName(void) const;
 		void						setChannelName(std::string const channelname);
 		std::vector<User*>	 		&getUserList(void);
-		std::vector<int>			&getBannedUserList(void);
+		std::vector<int>			&getInvitedUserList(void);
 		std::string					getPassword(void) const;
 		void						setPassword(std::string pwd);
 		Topic						&getTopicRef(void);
