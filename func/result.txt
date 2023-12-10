@@ -1,0 +1,8 @@
+main.cpp:56:45: warning: object backing the pointer will be destroyed at the end of the full-expression [-Wdangling-gsl]
+                        std::vector<User*>::iterator user_iter = (*testOperator.getJoinedChannel(Server)).getUserList().begin();
+                                                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+User.cpp:39:5: warning: object backing the pointer will be destroyed at the end of the full-expression [-Wdangling-gsl]
+                = channel_contaier.getChannelList().begin();
+                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.

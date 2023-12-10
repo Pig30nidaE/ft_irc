@@ -1,12 +1,17 @@
 #include "./Server.hpp"
-#include "../dong_func/User.hpp"
-// #include "Command.hpp"
+#include "../func/User.hpp"
+#include "../func/ChannelContainer.hpp"
+// #include "../func/Channel.hpp"
+#include "./Command.hpp"
 
 
-Server::Server(void) {
+Server::Server(void) : channelContainer(new ChannelContainer()), command(new Command()) {
     if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) == -1)
         exitWithPerror("socket() error\n" + std::string(strerror(errno)));
 
+    //test
+    setServerPass("123");
+    //test
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -78,7 +83,6 @@ void Server::newUser(int serverSock) {
     
     user = new User();
     user->setUserSock(clientSocket);
-    user->setUserState(0);
     clients[clientSocket] = user;
 }
 
@@ -95,9 +99,8 @@ void Server::recvMsg(uintptr_t fd) {
     {
         buf[n] = '\0';
         std::string test = buf;
-        clients[fd]->setUserMsg(buf);
-        std::cout << "recv: " << test << "\n";
-        command.parser(test);
+        std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
+        parser(test, *clients[fd]);
     }
 }
 
@@ -164,3 +167,111 @@ void Server::exitWithPerror(const std::string& msg)
 }
 
 
+// ------------test용----------
+void Server::setServerPass(std::string serverPass) { // test용
+    this->serverPass = serverPass;
+    command->setServerPass(serverPass);
+}
+
+void Server::parser(std::string msg, User &user) {
+	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
+	std::string content;
+    Channel *tmp;
+	int			flag;
+	int			end;
+
+	if (msg[0] == 0)
+		return ;
+	//------------------------------------
+    flag = -1;
+	// std::cout << "msg: " << msg[0] << ":" << (int)msg[0] << "\n";
+	for (size_t i = 0; i < 10; i++)
+	{
+		if (msg.compare(0, 4, arr[i]) == 0) 
+			flag = i;
+	}
+
+	end = msg.find((char)10);
+	content = msg.substr(5, end - 5);
+	switch (flag)
+	{
+		case PASS:
+            try
+            {
+                command->pass(content);
+                user.setUserIsPass(1);
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+            
+			break;
+		
+		case NICK:
+            command->nick(content, *channelContainer, user);
+			break;
+
+		case USER:
+            sendMsg(user, command->user(content, user));
+			break;
+			
+		case JOIN:
+            command->join(content, *channelContainer, user);
+            sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
+            tmp = user.getSpecificChannelJoined(content, *channelContainer);
+            broadcastMsg(user, *tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
+			break;
+			
+		case PART:
+            command->part(content, *channelContainer, user);
+			break;
+			
+		case PING:
+            command->ping(content, user);
+			break;
+
+        case KICK:
+            command->kick(content, *channelContainer, user);
+            break;
+        
+        case INVITE:
+            // 추후 수정
+            break;
+
+        case TOPIC:
+            tmp = user.getSpecificChannelJoined(content, *channelContainer);
+            sendMsg(user, command->topic(*tmp, content)); // 임시
+            break;
+
+        case MODE:
+            command->mode(content, content, content);
+            break;
+        
+		default:
+			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
+			break;
+	}
+	//--------------------------------------
+	std::cout << "-----------------------------\n";
+	if ((&msg[end])[0] != '\0')
+		parser(&msg[end + 1], user);
+}
+
+void	Server::sendMsg(User user, std::string msg) const {
+    if (msg == "")
+        return ;
+	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
+}
+
+void	Server::broadcastMsg(User user, Channel &channel, std::string msg) const {
+	std::vector<User *> userList;
+
+    if (&channel == nullptr)
+        return ; // err 던지기
+	userList = channel.getUserList();
+	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
+        if ((**iter).getUserSock() != user.getUserSock())
+            sendMsg(**iter, msg);
+	}
+}

@@ -1,0 +1,20 @@
+
+//-----혼자 들어올때-------
+:nickname!root@127.0.0.1 JOIN :#test
+:irc.local 353 nickname = #test :@nickname
+:irc.local 366 nickname #test :End of /NAMES list.
+
+
+//----누군가가 있는데 들어갈 떄----
+:nickname_!root@127.0.0.1 JOIN :#test
+:irc.local 353 nickname_ = #test :@nickname nickname_
+:irc.local 366 nickname_ #test :End of /NAMES list.
+
+127.000.000.001.06667-127.000.000.001.60662: :nickname_!root@127.0.0.1 JOIN :#test
+
+//----방장이 초대할 때---
+INVITE nickname_ #test
+
+:irc.local 341 nickname nickname_ :#test
+
+:nickname!root@127.0.0.1 INVITE nickname_ :#test

@@ -6,8 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-// #include "../dong_func/User.hpp"
-#include "./Command.hpp"
+//----------------------
 
 //----------------------
 #include <string.h>
@@ -20,37 +19,63 @@
 #define PORT 8080
 #define MAX_MSG 512
 
+enum {
+	PASS,
+	NICK,
+	USER,
+	JOIN,
+	PART,
+	PING,
+	KICK,
+	INVITE,
+	TOPIC,
+	MODE,
+};
+
 class User;
-// class Command;
+class Command;
+class Channel;
+class ChannelContainer;
 
 class Server {
 	public:
-	Server(void);
-	~Server();
-	void serverStart(void);
+		Server(void);
+		Server(int serverPass);
+		~Server();
+		void serverStart(void);
+
+		//---test용---
+		void setServerPass(std::string serverPass); // test 용
+		void parser(std::string msg, User &user);
+		//------------
 
 	private:
-	void readEventHandler(uintptr_t fd);
-	void newUser(int serverSock);
-	void recvMsg(uintptr_t fd);
+		void readEventHandler(uintptr_t fd);
+		void newUser(int serverSock);
+		void recvMsg(uintptr_t fd);
 
-	void errorEventHandler(uintptr_t fd);
-	
-	void disconnectClient(User *user);
+		void errorEventHandler(uintptr_t fd);
+		
+		void disconnectClient(User *user);
 
-	// --------utils-------
-	void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
-	void exitWithPerror(const std::string& msg);
-	Server &operator=(const Server &other);
-	Server(const Server &other);
+		void broadcastMsg(User user, Channel &channel, std::string msg) const;
+		void sendMsg(User user, std::string msg) const;
 
-	Command command;
-	std::vector<struct kevent> changeList;
-	struct kevent eventList[8];
-	std::map<uintptr_t, User*> clients; // User 목록
-	int serverSocket;
-	int kq;
-	struct sockaddr_in serverAddr;
+		// --------utils-------
+		void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+		void exitWithPerror(const std::string& msg);
+		Server &operator=(const Server &other);
+		Server(const Server &other);
+
+		int serverSocket;
+		struct sockaddr_in serverAddr;
+		int kq;
+		std::vector<struct kevent> changeList;
+		struct kevent eventList[8];
+		std::map<uintptr_t, User*> clients; // User 목록
+		ChannelContainer *channelContainer;
+		Command *command;
+		std::string serverPass;
 };
 
 #endif
