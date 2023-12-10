@@ -131,22 +131,22 @@ void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_cont
 }
 
 
-void User::kickUser(User& toKickUser, Channel& fromChannel, ChannelContainer& channel_container) {
+void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container) {
 	if (!isOperator) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
-	if (toKickUser.getUserName() == (*this).getUserName()) {
+	if (toKickUser == getUserName()) {
 		std::cerr << "Can't kick yourself." << std::endl;
 		return ;
 	}
 	typedef std::vector<User*>::iterator UserIterator;
 	std::vector <User*> toChUsrList = fromChannel.getUserList();
 	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
-		if ((*user_iter)->getUserName() == toKickUser.getUserName()) {
-			fromChannel.getBannedUserList().push_back(toKickUser.getUserSock());
-			toKickUser.exitChannel(fromChannel.getChannelName(), channel_container);
-			std::cout << toKickUser.getNickName() << " is kicked from this channel." << std::endl;
+		if ((*user_iter)->getUserName() == toKickUser) {
+			fromChannel.getBannedUserList().push_back((*user_iter)->getUserSock());
+			(*user_iter)->exitChannel(fromChannel.getChannelName(), channel_container);
+			std::cout << toKickUser << " is kicked from this channel." << std::endl;
 			return ;
 		}
 	}
