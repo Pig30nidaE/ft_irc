@@ -51,7 +51,7 @@ class Command {
 		void ping(std::string msg);
 
 		// kick
-		void kick(std::string msg);
+		void kick(std::string msg, ChannelContainer &cc, User &user);
 };
 
 

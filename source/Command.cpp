@@ -9,7 +9,9 @@ void Command::pass(std::string pass) {
 	std::cout << "[ PASS ]" << std::endl;
 	std::cout << "server_pass: " << serverPass << "\n";
 	std::cout << "client_input: " << pass << "\n";
-	if (serverPass.compare("123")) {
+	if (pass == "")
+		std::cout << "없없음음\n";
+	if (serverPass != pass) {
 		std::cout << "fail : " << result << "\n";
 		throw ERR_PASSWDMISMATCH();
 	}
@@ -75,7 +77,7 @@ void Command::ping(std::string msg) {
 
 void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
 	// msg에서 toKickUser, Channel 두개 뽑아내기
-	user.kickUser("toKickUser", user.getSpecificChannelJoined("채널이름", cc), cc);
+	// user.kickUser("toKickUser", user.getSpecificChannelJoined("채널이름", cc), cc);
 	std::cout << "[ KICK ]" << std::endl;
 	std::cout << "content: " << msg << "\n";
 }
