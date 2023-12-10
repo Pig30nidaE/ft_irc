@@ -50,28 +50,31 @@ class Mode {
 
 class Channel {
 	private:
-		int					index;
-		std::string 		channelName;
-		std::vector<User*>	userList;
-		std::string			password;
-		Topic				*topic;
-		Mode				*mode;
+		int							index;
+		std::string 				channelName;
+		std::vector<User*>			userList;
+		std::vector<int>			bannedUserList;
+		std::string					password;
+		Topic						*topic;
+		Mode						*mode;
 	public:
 		Channel(std::string name);
 		~Channel();
 
 		void	userAdd(User& user);
 		void	userDel(User& user);
+		bool	isUserBan(std::string user_name);
 
-		std::string				getChannelName(void) const;
-		void					setChannelName(std::string const channelname);
-		std::vector<User*>	 	&getUserList(void);
-		std::string				getPassword(void) const;
-		void					setPassword(std::string pwd);
-		Topic					&getTopicRef(void);
-		Mode					&getModeRef(void);
-		int						getIndex(void);
-		void					setIndex(int idx);
+		std::string					getChannelName(void) const;
+		void						setChannelName(std::string const channelname);
+		std::vector<User*>	 		&getUserList(void);
+		std::vector<int>			&getBannedUserList(void);
+		std::string					getPassword(void) const;
+		void						setPassword(std::string pwd);
+		Topic						&getTopicRef(void);
+		Mode						&getModeRef(void);
+		int							getIndex(void);
+		void						setIndex(int idx);
 
 
 };

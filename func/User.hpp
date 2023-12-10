@@ -39,10 +39,6 @@ class User {
 		void	changeMode(ChannelContainer& channel_container, std::string channel, int type, ...);
 		void	topicCommand(ChannelContainer& channel_container, std::string channel, ...);
 
-		void setUserSock(int sock);
-		int getUserSock(void) const;
-		void setUserIsPass(int flag);
-		int getUserIsPass(void) const;
 		std::string 						getUserName(void) const;
 		void								setUserName(std::string const username);
 		//std::string						 	getNickName(std::string chName);
@@ -58,6 +54,10 @@ class User {
 		Channel								*getSpecificChannelJoined(std::string toGet, ChannelContainer& channel_container);
 		int									getUserIndex(void) const;
 		void								setUserIndex(int const user_index);
+		void 								setUserSock(int sock);
+		int 								getUserSock(void) const;
+		void 								setUserIsPass(int flag);
+		int 								getUserIsPass(void) const;
 		class NoJoinedChannelException : public std::exception {
 			public:
 				const char* what(void) const throw() {
