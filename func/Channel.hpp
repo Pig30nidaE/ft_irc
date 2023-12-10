@@ -65,7 +65,7 @@ class Channel {
 
 		void	userAdd(User& user);
 		void	userDel(User& user);
-		bool	isUserBan(std::string user_name);
+		bool	isUserBan(int userSock);
 
 		std::string					getChannelName(void) const;
 		void						setChannelName(std::string const channelname);

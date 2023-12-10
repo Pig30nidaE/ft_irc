@@ -82,7 +82,7 @@ void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelC
 		for (channel_iter = channel_contaier.getChannelList().begin();\
 			channel_iter != channel_contaier.getChannelList().end();channel_iter++) {
 			if ((*channel_iter)->getChannelName() == toJoinChannel) {
-				if ((*channel_iter)->isUserBan(getUserName())) {
+				if ((*channel_iter)->isUserBan(getUserSock())) {
 					std::cout << "You're banned from this channel." << std::endl;
 					return ;
 				}
@@ -143,7 +143,7 @@ void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContain
 	typedef std::vector<User*>::iterator UserIterator;
 	std::vector <User*> toChUsrList = fromChannel.getUserList();
 	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
-		if ((*user_iter)->getUserName() == toKickUser) {
+		if ((*user_iter)->getNickName() == toKickUser) {
 			fromChannel.getBannedUserList().push_back((*user_iter)->getUserSock());
 			(*user_iter)->exitChannel(fromChannel.getChannelName(), channel_container);
 			std::cout << toKickUser << " is kicked from this channel." << std::endl;

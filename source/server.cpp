@@ -99,7 +99,7 @@ void Server::recvMsg(uintptr_t fd) {
     {
         buf[n] = '\0';
         std::string test = buf;
-        std::cout << "recv: " << test << "\n";
+        std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
         parser(test, *clients[fd]);
     }
 }
@@ -174,17 +174,18 @@ void Server::setServerPass(std::string serverPass) { // test용
 }
 
 void Server::parser(std::string msg, User &user) {
-	std::string	arr[6] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING"};
+	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
 	std::string content;
+    Channel *tmp;
 	int			flag;
 	int			end;
 
 	if (msg[0] == 0)
 		return ;
 	//------------------------------------
-
-	std::cout << "msg: " << msg[0] << ":" << (int)msg[0] << "\n";
-	for (size_t i = 0; i < 4; i++)
+    flag = -1;
+	// std::cout << "msg: " << msg[0] << ":" << (int)msg[0] << "\n";
+	for (size_t i = 0; i < 10; i++)
 	{
 		if (msg.compare(0, 4, arr[i]) == 0) 
 			flag = i;
@@ -208,21 +209,41 @@ void Server::parser(std::string msg, User &user) {
 			break;
 		
 		case NICK:
+            command->nick(content, *channelContainer, user);
 			break;
 
 		case USER:
-            // command->user(msg, user);
+            command->user(content, user);
 			break;
 			
 		case JOIN:
+            command->join(content, *channelContainer, user);
+            sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
+            tmp = user.getSpecificChannelJoined(content, *channelContainer);
+            broadcastMsg(user, *tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
 			break;
 			
 		case PART:
+            command->part(content, *channelContainer, user);
 			break;
 			
 		case PING:
+            command->ping(content, user);
 			break;
 
+        case KICK:
+            command->kick(content, *channelContainer, user);
+            break;
+        
+        case INVITE:
+            break;
+
+        case TOPIC:
+            break;
+
+        case MODE:
+            break;
+        
 		default:
 			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
 			break;
@@ -231,4 +252,20 @@ void Server::parser(std::string msg, User &user) {
 	std::cout << "-----------------------------\n";
 	if ((&msg[end])[0] != '\0')
 		parser(&msg[end + 1], user);
+}
+
+void	Server::sendMsg(User user, const char *msg) const {
+	write(user.getUserSock(), msg, strlen(msg) + 1);
+}
+
+void	Server::broadcastMsg(User user, Channel channel, const char *msg) const {
+	std::vector<User *> userList;
+
+    if (&channel == nullptr)
+        return ; // err 던지기
+	userList = channel.getUserList();
+	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
+        if ((**iter).getUserSock() != user.getUserSock())
+            sendMsg(**iter, msg);
+	}
 }

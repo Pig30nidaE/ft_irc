@@ -32,8 +32,8 @@ void Channel::userDel(User& user) {
 	//user.getNickName().erase(getChannelName());
 }
 
-bool Channel::isUserBan(std::string user_name) {
-	if (std::find(bannedUserList.begin(), bannedUserList.end(), user_name) != bannedUserList.end())
+bool Channel::isUserBan(int userSock) {
+	if (std::find(bannedUserList.begin(), bannedUserList.end(), userSock) != bannedUserList.end())
 		return true;
 	return false;
 }
