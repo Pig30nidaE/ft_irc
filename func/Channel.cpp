@@ -32,12 +32,22 @@ void Channel::userDel(User& user) {
 	//user.getNickName().erase(getChannelName());
 }
 
+bool Channel::isUserBan(std::string user_name) {
+	if (std::find(bannedUserList.begin(), bannedUserList.end(), user_name) != bannedUserList.end())
+		return true;
+	return false;
+}
+
 void Channel::setChannelName(std::string const channelname) {
 	channelName = channelname;
 }
 
 std::vector<User*>& Channel::getUserList(void) {
     return userList;
+}
+
+std::vector<std::string>& Channel::getBannedUserList(void) {
+	return bannedUserList;
 }
 
 std::string Channel::getPassword(void) const {

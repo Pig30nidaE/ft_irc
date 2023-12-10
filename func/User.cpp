@@ -82,12 +82,12 @@ void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelC
 		for (channel_iter = channel_contaier.getChannelList().begin();\
 			channel_iter != channel_contaier.getChannelList().end();channel_iter++) {
 			if ((*channel_iter)->getChannelName() == toJoinChannel) {
+				if ((*channel_iter)->isUserBan(getUserName())) {
+					std::cout << "You're banned from this channel." << std::endl;
+					return ;
+				}
 				Mode& channel_mode = (*channel_iter)->getModeRef();
-				//int channel_mode = (*channel_iter)->getModeRef().getType();
 				if (channel_mode.checkType(MODE_CHANNEL_KEY)) {
-					//std::string enterPwd;
-					//std::cout << "PASSWORD: ";
-					//std::getline(std::cin, enterPwd);
 					if (enterPwd != (*channel_iter)->getPassword()) {
 						std::cout << "wrong password." << std::endl;
 						return ;
@@ -100,27 +100,19 @@ void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelC
 					}
 				}
 				setUserIndex(channel_contaier.getChannelList().size());
-				//nickRegister(*(*channel_iter), channel_contaier);
 				(*channel_iter)->userAdd(*this);
 				getJoinedChannelList(channel_contaier).push_back(*channel_iter);
-				//setJoinedChannelIndex(index);
 				return ;
 			}
 			index++;
 		}
 	}
 	std::cout << "no such channel. new channel generate." << std::endl;
-	//std::string topic;
-	//std::cout << "channel topic: ";
-	//std::getline(std::cin, topic);
 	Channel *toJoin = new Channel(toJoinChannel);
-	//nickRegister(*toJoin, channel_contaier);
 	setIsOperator(true);
 	toJoin->userAdd(*this);
 	channel_contaier.createChannel(*toJoin);
 	getJoinedChannelList(channel_contaier).push_back(toJoin);
-	//setIsChannelJoined(true);
-	//setJoinedChannelIndex(index);
 	setUserIndex(0);
 }
 
@@ -152,6 +144,7 @@ void User::kickUser(User& toKickUser, Channel& fromChannel, ChannelContainer& ch
 	std::vector <User*> toChUsrList = fromChannel.getUserList();
 	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
 		if ((*user_iter)->getUserName() == toKickUser.getUserName()) {
+			fromChannel.getBannedUserList().push_back(toKickUser.getUserName());
 			toKickUser.exitChannel(fromChannel.getChannelName(), channel_container);
 			std::cout << toKickUser.getNickName() << " is kicked from this channel." << std::endl;
 			return ;
