@@ -174,7 +174,7 @@ void Server::setServerPass(std::string serverPass) { // test용
 }
 
 void Server::parser(std::string msg, User &user) {
-	std::string	arr[6] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING"};
+	std::string	arr[7] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK"};
 	std::string content;
 	int			flag;
 	int			end;
@@ -182,9 +182,9 @@ void Server::parser(std::string msg, User &user) {
 	if (msg[0] == 0)
 		return ;
 	//------------------------------------
-
+    flag = -1;
 	std::cout << "msg: " << msg[0] << ":" << (int)msg[0] << "\n";
-	for (size_t i = 0; i < 4; i++)
+	for (size_t i = 0; i < 7; i++)
 	{
 		if (msg.compare(0, 4, arr[i]) == 0) 
 			flag = i;
@@ -208,21 +208,29 @@ void Server::parser(std::string msg, User &user) {
 			break;
 		
 		case NICK:
+            command->nick(content, *channelContainer, user);
 			break;
 
 		case USER:
-            // command->user(msg, user);
+            command->user(msg, user);
 			break;
 			
 		case JOIN:
+            command->join(content, *channelContainer, user);
 			break;
 			
 		case PART:
+            command->part(content, *channelContainer, user);
 			break;
 			
 		case PING:
+            command->ping(content, user);
 			break;
 
+        case KICK:
+            command->kick(content, *channelContainer, user);
+            break;
+        
 		default:
 			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
 			break;

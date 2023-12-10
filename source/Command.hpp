@@ -2,6 +2,7 @@
 #define COMMAND_HPP
 
 #include <string>
+#include <unistd.h>
 class User;
 class ChannelContainer;
 // class Channel;
@@ -33,25 +34,26 @@ class Command {
 				};
 		};
 		// Pass error end
-
-		void pass(std::string msg);
-	private:
-		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
 		//----server 입장-----
+		void pass(std::string msg);
 		void nick(std::string msg, ChannelContainer cc, User &user);
 		void user(std::string msg, User &user);
-
 		// ----channel join-----
 		void join(std::string msg, ChannelContainer &cc, User &user);
-
 		// ----channel 나감-----
 		void part(std::string msg, ChannelContainer &cc, User &user);
-
-		// ----client PING----
-		void ping(std::string msg);
-
 		// kick
 		void kick(std::string msg, ChannelContainer &cc, User &user);
+		// ----client PING----
+		void ping(std::string msg, User &user);
+
+	private:
+		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
+
+		int	checkLogin(User user);
+
+
+
 };
 
 

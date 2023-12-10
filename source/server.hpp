@@ -25,7 +25,8 @@ enum {
 	USER,
 	JOIN,
 	PART,
-	PING
+	PING,
+	KICK
 };
 
 class User;
