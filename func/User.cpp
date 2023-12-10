@@ -144,7 +144,7 @@ void User::kickUser(User& toKickUser, Channel& fromChannel, ChannelContainer& ch
 	std::vector <User*> toChUsrList = fromChannel.getUserList();
 	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
 		if ((*user_iter)->getUserName() == toKickUser.getUserName()) {
-			fromChannel.getBannedUserList().push_back(toKickUser.getUserName());
+			fromChannel.getBannedUserList().push_back(toKickUser.getUserSock());
 			toKickUser.exitChannel(fromChannel.getChannelName(), channel_container);
 			std::cout << toKickUser.getNickName() << " is kicked from this channel." << std::endl;
 			return ;

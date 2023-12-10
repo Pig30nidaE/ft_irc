@@ -46,7 +46,7 @@ std::vector<User*>& Channel::getUserList(void) {
     return userList;
 }
 
-std::vector<std::string>& Channel::getBannedUserList(void) {
+std::vector<int>& Channel::getBannedUserList(void) {
 	return bannedUserList;
 }
 

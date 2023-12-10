@@ -53,7 +53,7 @@ class Channel {
 		int							index;
 		std::string 				channelName;
 		std::vector<User*>			userList;
-		std::vector<std::string>	bannedUserList;
+		std::vector<int>			bannedUserList;
 		std::string					password;
 		Topic						*topic;
 		Mode						*mode;
@@ -68,7 +68,7 @@ class Channel {
 		std::string					getChannelName(void) const;
 		void						setChannelName(std::string const channelname);
 		std::vector<User*>	 		&getUserList(void);
-		std::vector<std::string>	&getBannedUserList(void);
+		std::vector<int>			&getBannedUserList(void);
 		std::string					getPassword(void) const;
 		void						setPassword(std::string pwd);
 		Topic						&getTopicRef(void);
