@@ -213,7 +213,7 @@ void Server::parser(std::string msg, User &user) {
 			break;
 
 		case USER:
-            command->user(content, user);
+            sendMsg(user, command->user(content, user));
 			break;
 			
 		case JOIN:
@@ -236,12 +236,16 @@ void Server::parser(std::string msg, User &user) {
             break;
         
         case INVITE:
+            // 추후 수정
             break;
 
         case TOPIC:
+            tmp = user.getSpecificChannelJoined(content, *channelContainer);
+            sendMsg(user, command->topic(*tmp, content)); // 임시
             break;
 
         case MODE:
+            command->mode(content, content, content);
             break;
         
 		default:
@@ -254,11 +258,13 @@ void Server::parser(std::string msg, User &user) {
 		parser(&msg[end + 1], user);
 }
 
-void	Server::sendMsg(User user, const char *msg) const {
-	write(user.getUserSock(), msg, strlen(msg) + 1);
+void	Server::sendMsg(User user, std::string msg) const {
+    if (msg == "")
+        return ;
+	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
-void	Server::broadcastMsg(User user, Channel channel, const char *msg) const {
+void	Server::broadcastMsg(User user, Channel &channel, std::string msg) const {
 	std::vector<User *> userList;
 
     if (&channel == nullptr)

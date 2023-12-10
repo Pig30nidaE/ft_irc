@@ -58,8 +58,8 @@ class Server {
 		
 		void disconnectClient(User *user);
 
-		void broadcastMsg(User user, Channel channel, const char *msg) const;
-		void sendMsg(User user, const char *msg) const;
+		void broadcastMsg(User user, Channel &channel, std::string msg) const;
+		void sendMsg(User user, std::string msg) const;
 
 		// --------utils-------
 		void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
