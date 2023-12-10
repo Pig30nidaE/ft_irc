@@ -6,11 +6,12 @@
 
 #define MODE_CHECK_TYPE(type1, type2) ((type1) & (type2))
 
-#define ALL_MODES_OFF      0x00  // off
-#define MODE_INVITE_ONLY   0x01  // i
-#define MODE_TOPIC_LIMIT   0x02  // t
-#define MODE_CHANNEL_KEY   0x04  // k
-#define MODE_OPERATOR_ONLY 0x08  // o
+#define ALL_MODES_OFF      		0x00  // off
+#define MODE_INVITE_ONLY   		0x01  // i
+#define MODE_TOPIC_LIMIT   		0x02  // t
+#define MODE_CHANNEL_KEY   		0x04  // k
+#define MODE_OPERATOR_GRANTED 	0x08  // o
+#define MODE_CAPCITY_LIMIT 		0x16  // l
 
 class User;
 
@@ -55,6 +56,7 @@ class Channel {
 		std::vector<User*>			userList;
 		std::vector<int>			bannedUserList;
 		std::string					password;
+		int							capcity;
 		Topic						*topic;
 		Mode						*mode;
 	public:
@@ -75,6 +77,8 @@ class Channel {
 		Mode						&getModeRef(void);
 		int							getIndex(void);
 		void						setIndex(int idx);
+		int							getCapcity(void);
+		void						setCapcity(int size);
 
 
 };
