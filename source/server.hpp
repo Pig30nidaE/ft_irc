@@ -26,7 +26,10 @@ enum {
 	JOIN,
 	PART,
 	PING,
-	KICK
+	KICK,
+	INVITE,
+	TOPIC,
+	MODE,
 };
 
 class User;
@@ -54,6 +57,9 @@ class Server {
 		void errorEventHandler(uintptr_t fd);
 		
 		void disconnectClient(User *user);
+
+		void broadcastMsg(User user, Channel channel, const char *msg) const;
+		void sendMsg(User user, const char *msg) const;
 
 		// --------utils-------
 		void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);

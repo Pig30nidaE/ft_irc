@@ -46,14 +46,14 @@ class Command {
 		void kick(std::string msg, ChannelContainer &cc, User &user);
 		// ----client PING----
 		void ping(std::string msg, User &user);
+		// ----client INVITE---
+		void invite(std::string nick, std::string channel, User &user);
+
 
 	private:
 		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
 
 		int	checkLogin(User user);
-
-
-
 };
 
 

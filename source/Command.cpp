@@ -7,8 +7,6 @@
 void Command::pass(std::string pass) {
 	int result;
 	std::cout << "[ PASS ]" << std::endl;
-	std::cout << "server_pass: " << serverPass << "\n";
-	std::cout << "client_input: " << pass << "\n";
 	if (pass == "")
 		std::cout << "없없음음\n";
 	// if (serverPass != pass) {
@@ -16,10 +14,8 @@ void Command::pass(std::string pass) {
 	// 	throw ERR_PASSWDMISMATCH();
 	// }
 	else {
-		std::cout << "SUCCESS : " << result << "\n";
 		std::cout << "PASS SUCCESS!!\n";
 	}
-	std::cout << "content: " << pass << "\n";
 }
 
 void Command::nick(std::string msg, ChannelContainer cc, User &user) {
@@ -31,7 +27,7 @@ void Command::nick(std::string msg, ChannelContainer cc, User &user) {
 		return ;
 	}
 	user.setNickName(msg);
-	std::cout << "content: " << msg << "\n";
+	std::cout << "msg: " << msg << "\n";
 
 }
 
@@ -45,12 +41,12 @@ void Command::user(std::string msg, User &user) {
 	std::cout << "msg: " << msg << "\n";
 
 
+	user.setUserName(msg);
 	//---------------------
 	std::string say = ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1";
 	int len = say.length();
-	std::cout << "len: " << len << "\n";
+	// std::cout << "len: " << len << "\n";
 	write(user.getUserSock(), ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1\n", len + 1);
-	// user.setUserName(msg);
 	
 }
 
@@ -78,11 +74,18 @@ void Command::ping(std::string msg, User &user) {
 }
 
 void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
-	// msg에서 toKickUser, Channel 두개 뽑아내기
-	int spaceIndex = msg.find(' ');
-	// user.kickUser("toKickUser", user.getSpecificChannelJoined(msg, cc), cc);
 	std::cout << "[ KICK ]" << std::endl;
-	std::cout << "content: " << msg << "\n";
+	std::cout << "msg: " << msg << "\n";
+	int spaceIndex = msg.find(' ');
+	std::string channelName = msg.substr(0, spaceIndex);
+	std::string userName = msg.substr(spaceIndex + 1, msg.length());
+	std::cout << "username: " << userName << "\n";
+	std::cout << "channelName: " << channelName << "\n";
+	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
+}
+
+void Command::invite(std::string nick. std::string channel, User &user) {
+	user.setIsInvite(1);
 }
 
 Command::Command(void) {}
