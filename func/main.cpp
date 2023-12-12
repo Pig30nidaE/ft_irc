@@ -5,7 +5,7 @@ int main() {
 	User test;
 	test.setUserName("sanghyol");
 	test.setNickName("LSH");
-	test.joinChannel("test", "", Server, false);
+	test.joinChannel("test", "", Server);
 	test.getSpecificChannelJoined("test", Server)->getTopicRef().setTopic("for test");
 	User guest;
 	guest.setUserName("GUEST");
@@ -18,10 +18,11 @@ int main() {
 		std::cout << "topic: " << (*ch_iter)->getTopicRef().getTopic() << std::endl;
 	}
 
-	test.changeMode(Server, "test", MODE_INVITE_ONLY);
-	test.changeMode(Server, "test", MODE_CHANNEL_KEY, "password");
-	guest.joinChannel("test", "password", Server, false);
+	test.changeMode(Server, "test", MODE_INVITE_ONLY, true);
+	test.changeMode(Server, "test", MODE_CHANNEL_KEY, true, "password");
+	guest.joinChannel("test", "password", Server);
 	test.inviteUser(guest, *test.getSpecificChannelJoined("test", Server), "password", Server);
+	guest.joinChannel("test", "password", Server);
 
 	typedef std::vector<User*>::iterator UserIterator;
 	std::vector<User*>& user_list_in_ch = test.getSpecificChannelJoined("test", Server)->getUserList();
@@ -35,7 +36,7 @@ int main() {
 	guest2.setUserName("GUEST2");
 	guest2.setNickName("gst2");
 	guest.inviteUser(guest2, *test.getSpecificChannelJoined("test", Server), "password", Server);
-	test.kickUser(guest, *test.getSpecificChannelJoined("test", Server), Server);
+	test.kickUser("gst", *test.getSpecificChannelJoined("test", Server), Server);
 	for (UserIterator user_iter = user_list_in_ch.begin();user_iter != user_list_in_ch.end();user_iter++) {
 		std::cout << "--------------------" << std::endl;
 		std::cout << "user     |nick" << std::endl;

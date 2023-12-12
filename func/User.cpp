@@ -73,7 +73,7 @@ void User::userInfoErase(User& user) {
 	//user.setJoinedChannelIndex(-1);
 }
 
-void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_contaier, bool isInvited) {
+void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_contaier) {
 	int	index = 0;
 	if (!channel_contaier.getChannelList().empty()) {
 		std::vector<Channel*>::iterator channel_iter \
@@ -90,7 +90,10 @@ void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelC
 					}
 				}
 				if (channel_mode.checkType(MODE_INVITE_ONLY)) {
-					if (!isInvited) {
+					typedef std::vector<int>::iterator INVITED;
+					INVITED iv_iter_begin = (*channel_iter)->getInvitedUserList().begin();
+					INVITED iv_iter_end = (*channel_iter)->getInvitedUserList().end();
+					if (std::find(iv_iter_begin, iv_iter_end, getUserSock()) == iv_iter_end) {
 						std::cout << "This channel is invite only." << std::endl;
 						return ;
 					}
@@ -122,7 +125,8 @@ void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_cont
     if (iter != JoinedChannels.end()) {
 		std::vector<int>::iterator sock_iter = std::find(exitCh->getInvitedUserList().begin(),\
 			exitCh->getInvitedUserList().end(), getUserSock());
-		exitCh->getInvitedUserList().erase(sock_iter);
+		if (sock_iter != exitCh->getInvitedUserList().end())
+			exitCh->getInvitedUserList().erase(sock_iter);
         JoinedChannels.erase(iter);
     }
 	if (exitCh->getUserList().empty())
