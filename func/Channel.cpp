@@ -32,12 +32,6 @@ void Channel::userDel(User& user) {
 	//user.getNickName().erase(getChannelName());
 }
 
-bool Channel::isUserBan(int userSock) {
-	if (std::find(bannedUserList.begin(), bannedUserList.end(), userSock) != bannedUserList.end())
-		return true;
-	return false;
-}
-
 void Channel::setChannelName(std::string const channelname) {
 	channelName = channelname;
 }
@@ -46,9 +40,10 @@ std::vector<User*>& Channel::getUserList(void) {
     return userList;
 }
 
-std::vector<int>& Channel::getBannedUserList(void) {
-	return bannedUserList;
-}
+
+std::vector<int>& Channel::getInvitedUserList(void) {
+	return invitedUserList;
+} 
 
 std::string Channel::getPassword(void) const {
 	return password;
