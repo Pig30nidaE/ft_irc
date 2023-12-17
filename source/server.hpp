@@ -47,9 +47,12 @@ class Server {
 		//---test용---
 		void setServerPass(std::string serverPass); // test 용
 		void parser(std::string msg, User &user);
+
 		//------------
 
 	private:
+		void executeCommand(std::string msg, User &user);
+
 		void readEventHandler(uintptr_t fd);
 		void newUser(int serverSock);
 		void recvMsg(uintptr_t fd);

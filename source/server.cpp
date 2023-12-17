@@ -173,7 +173,7 @@ void Server::setServerPass(std::string serverPass) { // test용
     command->setServerPass(serverPass);
 }
 
-void Server::parser(std::string msg, User &user) {
+void Server::executeCommand(std::string msg, User &user) {
 	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
 	std::string content;
     Channel *tmp;
@@ -256,6 +256,29 @@ void Server::parser(std::string msg, User &user) {
 	std::cout << "-----------------------------\n";
 	if ((&msg[end])[0] != '\0')
 		parser(&msg[end + 1], user);
+
+}
+
+void Server::parser(std::string msg, User &user) {
+	int			end;
+    int         cr;
+    int         lf;
+
+    std::cout << "msg:" << msg << "\n";
+	if ((cr = msg.find('\r')) != 0) {
+        std::cout << "cr: " << cr << "\n";
+    }
+	if ((lf = msg.find('\n')) != 0) {
+        std::cout << "lf: " << cr << "\n";
+    }
+    
+
+
+	// end = msg.find((char)10);
+	// content = msg.substr(5, end - 5);
+        
+	// if ((&msg[end])[0] != '\0')
+	// 	parser(&msg[end + 1], user);
 }
 
 void	Server::sendMsg(User user, std::string msg) const {
