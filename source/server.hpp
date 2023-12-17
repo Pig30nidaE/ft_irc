@@ -10,6 +10,7 @@
 
 //----------------------
 #include <string.h>
+#include <sstream> // 공백 제거용
 #include <iostream>
 #include <vector>
 #include <unistd.h>
@@ -51,7 +52,9 @@ class Server {
 		//------------
 
 	private:
-		void executeCommand(std::string msg, User &user);
+		void		executeCommand(std::string msg, User &user);
+		int			countSpace(std::string msg);
+		void splitSpace(std::string msg);
 
 		void readEventHandler(uintptr_t fd);
 		void newUser(int serverSock);
