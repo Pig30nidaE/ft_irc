@@ -220,7 +220,7 @@ void Server::executeCommand(std::string msg, User &user) {
             command->join(content, *channelContainer, user);
             sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
             tmp = user.getSpecificChannelJoined(content, *channelContainer);
-            broadcastMsg(user, *tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
+            broadcastMsg(user, tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
 			break;
 			
 		case PART:
@@ -287,12 +287,12 @@ void	Server::sendMsg(User user, std::string msg) const {
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
-void	Server::broadcastMsg(User user, Channel &channel, std::string msg) const {
+void	Server::broadcastMsg(User user, Channel *channel, std::string msg) const {
 	std::vector<User *> userList;
 
-    if (&channel == nullptr)
+    if (channel == nullptr)
         return ; // err 던지기
-	userList = channel.getUserList();
+	userList = channel->getUserList();
 	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
         if ((**iter).getUserSock() != user.getUserSock())
             sendMsg(**iter, msg);
