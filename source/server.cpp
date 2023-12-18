@@ -106,7 +106,10 @@ void Server::recvMsg(uintptr_t fd) {
         buf[n] = '\0';
         std::string test = buf;
         std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
-        parser(test, *clients[fd]);
+        //parser(test, *clients[fd]);
+        executeCommand(test, *clients[fd]);
+        std::cout << "NICK: " << (*clients[fd]).getNickName() << std::endl;
+
     }
 }
 
@@ -216,6 +219,7 @@ void Server::executeCommand(std::string msg, User &user) {
 		
 		case NICK:
             command->nick(content, *channelContainer, user);
+            std::cout << user.getNickName() << " in switch" << std::endl;
 			break;
 
 		case USER:

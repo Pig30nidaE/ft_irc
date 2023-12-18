@@ -1,6 +1,8 @@
 #include "User.hpp"
 
-//ToDo: 유저에 대한 operator 권한을 어떻게 할 것인지 정해야함.
+//ToDo: feat invite
+//ToDo: JOIN ~ 모든 명령어 검사
+//ToDo: 미구현한 명령어 확인
 
 
 User::User(void):
@@ -135,13 +137,18 @@ void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_cont
 
 
 void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container) {
+	//std::cout << toKickUser << std::endl;
+	//std::cout << this->getUserName() << std::endl;
 	if (!isOperator) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
-	if (toKickUser == getUserName()) {
+	if (toKickUser == getNickName()) {
 		std::cerr << "Can't kick yourself." << std::endl;
 		return ;
+	}
+	if (&fromChannel == nullptr) {
+		return ; // fromChannel없을때
 	}
 	typedef std::vector<User*>::iterator UserIterator;
 	std::vector <User*> toChUsrList = fromChannel.getUserList();

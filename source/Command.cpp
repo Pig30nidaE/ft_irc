@@ -28,6 +28,7 @@ void Command::nick(std::string msg, ChannelContainer cc, User &user) {
 	}
 	user.setNickName(msg);
 	std::cout << "msg: " << msg << "\n";
+	std::cout << "nick: " << user.getNickName() << std::endl;
 
 }
 
@@ -78,21 +79,24 @@ void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
 	std::string userName = msg.substr(spaceIndex + 1, msg.length());
 	std::cout << "username: " << userName << "\n";
 	std::cout << "channelName: " << channelName << "\n";
+	std::cout << user.getUserName() << std::endl;
 	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
 }
 
 void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
-	//std::vector<User*> usrList = (cc).getUserList();
-	typedef std::vector<User*>::iterator UserIter;
-	UserIter user_iter_begin = cc.getUserList().begin();
-	UserIter user_iter_end = cc.getUserList().end();
-	UserIter user_iter_find = std::find(user_iter_begin, user_iter_end, nick);
-	if (user_iter_find == user_iter_end)
-		std::cout << "no such user." << std::endl; // ToDo: 에러메세지 바꾸삼.
-	else {
-		User* toInvite = *user_iter_find;
-		user.inviteUser(*toInvite, *user.getSpecificChannelJoined(channel, cc), cc);
-	}
+	////std::vector<User*> usrList = (cc).getUserList();
+	//typedef std::vector<User*>::iterator UserIter;
+	//UserIter user_iter_begin = cc.getUserList().begin();
+	//UserIter user_iter_end = cc.getUserList().end();
+	//UserIter user_iter_find = std::find(user_iter_begin, user_iter_end, nick);
+
+	//if (user_iter_find == user_iter_end)
+	//	std::cout << "no such user." << std::endl; // ToDo: 에러메세지 바꾸삼.
+	//else {
+	//	User* toInvite = *user_iter_find;
+	//	user.inviteUser(*toInvite, *user.getSpecificChannelJoined(channel, cc), cc);
+	//}
+}
 
 std::string Command::topic(Channel &channel, std::string topic) {
 	// topic set한 사람 저장하기
