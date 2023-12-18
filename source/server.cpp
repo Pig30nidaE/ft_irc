@@ -62,8 +62,9 @@ void Server::serverStart(void) {
 
 // READ event!!
 void Server::readEventHandler(uintptr_t fd) {
-    if (fd == static_cast<uintptr_t> (serverSocket))
+    if (fd == static_cast<uintptr_t> (serverSocket)) {
         newUser(static_cast<int>(fd));
+    }
     else if (clients.find(fd) != clients.end()) {
         recvMsg(fd);
     }
@@ -84,6 +85,7 @@ void Server::newUser(int serverSock) {
     user = new User();
     user->setUserSock(clientSocket);
     clients[clientSocket] = user;
+    getChannelContainer().getUserList().push_back(user); // channel_container의 user_list에도 추가해야해서 넣음. //LSH
 }
 
 void Server::recvMsg(uintptr_t fd) {
@@ -219,7 +221,6 @@ void Server::executeCommand(std::string msg, User &user) {
 		
 		case NICK:
             command->nick(content, *channelContainer, user);
-            std::cout << user.getNickName() << " in switch" << std::endl;
 			break;
 
 		case USER:
@@ -245,7 +246,8 @@ void Server::executeCommand(std::string msg, User &user) {
             command->kick(content, *channelContainer, user);
             break;
         
-        case INVITE:
+        case INVITE: //LSH
+            command->invite() // invite 맞춰서 수정해야함.
             // 추후 수정
             break;
 
@@ -255,7 +257,7 @@ void Server::executeCommand(std::string msg, User &user) {
             break;
 
         case MODE:
-            command->mode(content, content, content);
+            command->mode(content, content, content); // LSH 이거 그냥 user.changeMode로 인자넘기는게 나을거같은디
             break;
         
 		default:

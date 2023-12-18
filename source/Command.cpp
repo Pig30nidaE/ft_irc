@@ -26,7 +26,15 @@ void Command::nick(std::string msg, ChannelContainer cc, User &user) {
 		std::cout << "nick 겹침 err\n";
 		return ;
 	}
-	user.setNickName(msg);
+	std::vector<User*> usrList = cc.getUserList();
+	std::vector<User*>::iterator iter = find(usrList.begin(), usrList.end(), &user);
+	if (iter == usrList.end()) {
+		//std::cout << "in" << std::endl;
+		usrList.push_back(&user);
+	}
+	else {
+		(*iter)->setNickName(msg);
+	}
 	std::cout << "msg: " << msg << "\n";
 	std::cout << "nick: " << user.getNickName() << std::endl;
 
@@ -83,19 +91,32 @@ void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
 	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
 }
 
-void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
-	////std::vector<User*> usrList = (cc).getUserList();
-	//typedef std::vector<User*>::iterator UserIter;
-	//UserIter user_iter_begin = cc.getUserList().begin();
-	//UserIter user_iter_end = cc.getUserList().end();
-	//UserIter user_iter_find = std::find(user_iter_begin, user_iter_end, nick);
+static bool checkNameCorrect(User usr1, User usr2) {
+	if (usr1.getNickName() == usr2.getNickName())
+		return true;
+	return false;
+}
 
-	//if (user_iter_find == user_iter_end)
-	//	std::cout << "no such user." << std::endl; // ToDo: 에러메세지 바꾸삼.
-	//else {
-	//	User* toInvite = *user_iter_find;
-	//	user.inviteUser(*toInvite, *user.getSpecificChannelJoined(channel, cc), cc);
-	//}
+void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
+	//std::vector<User*> usrList = (cc).getUserList();
+	typedef std::vector<User*>::iterator UserIter;
+	std::vector<User*> usrList = cc.getUserList();
+	//std::string toFind;
+	UserIter toFind;
+	for (UserIter user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
+		if ((*user_iter)->getNickName() == nick) {
+			toFind = user_iter;
+			break ;
+		}
+	}
+	if (toFind == usrList.end()) {
+		std::cerr << "no such user." << std::endl; //err메세지 바꾸기
+		return ;
+	}
+	else {
+		User* toInvite = *toFind;
+		user.inviteUser(*toInvite, *user.getSpecificChannelJoined(channel, cc), cc);
+	}
 }
 
 std::string Command::topic(Channel &channel, std::string topic) {
@@ -109,7 +130,10 @@ std::string Command::topic(Channel &channel, std::string topic) {
 	}
 }
 
-void Command::mode(std::string channel, std::string flag, std::string parm) {
+void Command::mode(User& user, ChannelContainer& cc, std::string channel_name, bool onoff_flag) { //LSH
+	//std::cout << "[ MODE ]" << std::endl;
+	//user.changeMode(cc, user.getSpecificChannelJoined(channel_name, cc),\
+	//	onoff_flag, )
 }
 
 Command::Command(void) {}

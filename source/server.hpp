@@ -49,7 +49,10 @@ class Server {
 		void setServerPass(std::string serverPass); // test 용
 		void parser(std::string msg, User &user);
 
-		//------------
+		//------------ sanghyol 건듦.
+		ChannelContainer& getChannelContainer(void) {
+			return *channelContainer;
+		}
 
 	private:
 		void		executeCommand(std::string msg, User &user);

@@ -22,9 +22,11 @@ void ChannelContainer::deleteChannel(Channel& toDeleteChannel) {
 }
 
 bool ChannelContainer::checkNickName(std::string toFind) {
+	std::cout << "1" << std::endl;
 	typedef std::vector<User*>::iterator UserIterator;
 	UserIterator user_iter;
 	for (user_iter = getUserList().begin();user_iter != getUserList().end();user_iter++) {
+		std::cout << (*user_iter)->getNickName() << std::endl;
 		if ((*user_iter)->getNickName() == toFind) {
 			return true;
 		}
