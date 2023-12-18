@@ -21,7 +21,7 @@ int main() {
 	test.changeMode(Server, "test", MODE_INVITE_ONLY, true);
 	test.changeMode(Server, "test", MODE_CHANNEL_KEY, true, "password");
 	guest.joinChannel("test", "password", Server);
-	test.inviteUser(guest, *test.getSpecificChannelJoined("test", Server), "password", Server);
+	test.inviteUser(guest, *test.getSpecificChannelJoined("test", Server), Server);
 	guest.joinChannel("test", "password", Server);
 
 	typedef std::vector<User*>::iterator UserIterator;
@@ -35,7 +35,7 @@ int main() {
 	User guest2;
 	guest2.setUserName("GUEST2");
 	guest2.setNickName("gst2");
-	guest.inviteUser(guest2, *test.getSpecificChannelJoined("test", Server), "password", Server);
+	guest.inviteUser(guest2, *test.getSpecificChannelJoined("test", Server), Server);
 	test.kickUser("gst", *test.getSpecificChannelJoined("test", Server), Server);
 	for (UserIterator user_iter = user_list_in_ch.begin();user_iter != user_list_in_ch.end();user_iter++) {
 		std::cout << "--------------------" << std::endl;

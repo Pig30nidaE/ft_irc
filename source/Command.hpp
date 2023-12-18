@@ -47,7 +47,7 @@ class Command {
 		// ----client PING----
 		std::string ping(std::string msg, User &user);
 		// ----client INVITE---
-		void invite(std::string nick, std::string channel, User &user);
+		void invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
 		// ----topic------------
 		std::string topic(Channel &channel, std::string topic);
 		// ----mode-------------
