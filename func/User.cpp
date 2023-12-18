@@ -396,3 +396,11 @@ void User::setUserIsPass(int flag) {
 int User::getUserIsPass(void) const {
 	return isPass;
 }
+
+void User::setBuf(std::string buf) {
+	this->buf = buf;
+}
+
+std::string User::getBuf(void) const {
+	return buf;
+}

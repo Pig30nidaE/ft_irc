@@ -97,6 +97,12 @@ void Server::recvMsg(uintptr_t fd) {
     }
     else
     {
+        // std::cout << "n: " << n << "\n";
+        // std::cout << "buf[n]: " << buf[n] << ", " << (int)buf[n]<< "\n";
+        // std::cout << "buf[n - 1]: " << buf[n - 1] << ", " << (int)buf[n - 1]<< "\n";
+        // if (n >= 2) {
+        //     std::cout << "buf[n - 2]: " << buf[n - 2] << ", " << (int)buf[n - 2]<< "\n";
+        // }
         buf[n] = '\0';
         std::string test = buf;
         std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
@@ -173,7 +179,7 @@ void Server::setServerPass(std::string serverPass) { // test용
     command->setServerPass(serverPass);
 }
 
-void Server::parser(std::string msg, User &user) {
+void Server::executeCommand(std::string msg, User &user) {
 	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
 	std::string content;
     Channel *tmp;
@@ -220,7 +226,7 @@ void Server::parser(std::string msg, User &user) {
             command->join(content, *channelContainer, user);
             sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
             tmp = user.getSpecificChannelJoined(content, *channelContainer);
-            broadcastMsg(user, *tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
+            broadcastMsg(user, tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
 			break;
 			
 		case PART:
@@ -256,7 +262,79 @@ void Server::parser(std::string msg, User &user) {
 	std::cout << "-----------------------------\n";
 	if ((&msg[end])[0] != '\0')
 		parser(&msg[end + 1], user);
+
 }
+
+
+
+void Server::parser(std::string msg, User &user) {
+	int			end;
+    int         cr = 0;
+    int         lf = 0;
+    int         crlf = 0;
+    int         lfcr = 0;
+    int          i = 0;
+    std::string temp;
+
+    // std::cout << "\\r : " << (int)'\r' << "\n";
+    // std::cout << "\\n : " << (int)'\n' << "\n";
+    // std::cout << "msg:" << msg << "\n\n";
+    // cr = msg.find('\r', cr);
+    // std::cout << "cr을 찾은것:" << &msg[cr] << "| len: " << strlen(&msg[cr]) << "\n";
+    // lf = msg.find('\n', lf);
+    // std::cout << "lf를 찾은것:" << &msg[lf] << "| len: " << strlen(&msg[lf]) << "\n";
+    // crlf = msg.find("\r\n", crlf);
+    // if (crlf == std::string::npos) {
+    //     std::cout << "마지막줄:" << msg << "\n";
+    // }
+    // std::cout << "crlf를 찾은것:" << &msg[crlf] << "| len: " << strlen(&msg[crlf]) << "\n";
+    // lfcr = msg.find("\n\r", lfcr);
+    // std::cout << "lfcr를 찾은것:" << &msg[lfcr] << "| len: " << strlen(&msg[lfcr]) << "\n";
+
+    if ((cr = msg.find('\r')) == std::string::npos) {
+        if ((lf = msg.find('\n', lf)) == std::string::npos) {
+            temp = user.getBuf();
+            std::cout << "befor: " << temp << "\n";
+            temp += msg;
+            std::cout << "after: " << temp << "\n";
+            user.setBuf(temp);            
+        }
+        else {
+            temp = user.getBuf();
+            std::cout << "befor: " << temp << "\n";
+            temp += msg;
+            std::cout << "after: " << temp << "\n";
+            splitSpace(temp);
+        }
+    }
+    else if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
+        splitSpace(msg.substr(0, crlf));
+        if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
+            parser(&msg[crlf + 1], user);
+        }
+    }
+	// end = msg.find((char)10);
+	// content = msg.substr(5, end - 5);
+        
+	// if ((&msg[end])[0] != '\0')
+	// 	parser(&msg[end + 1], user);
+}
+
+void    Server::splitSpace(std::string msg) {
+    int i = 0;
+    std::stringstream iss(msg);
+    std::string str;
+    std::vector <std::string> msgs;
+
+    while (iss >> str) {
+        msgs.push_back(str);
+    }
+    for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) {
+        std::cout << "msg:" << *iter << "\n";
+    }
+    // return msgs;
+}
+
 
 void	Server::sendMsg(User user, std::string msg) const {
     if (msg == "")
@@ -264,12 +342,12 @@ void	Server::sendMsg(User user, std::string msg) const {
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
-void	Server::broadcastMsg(User user, Channel &channel, std::string msg) const {
+void	Server::broadcastMsg(User user, Channel *channel, std::string msg) const {
 	std::vector<User *> userList;
 
-    if (&channel == nullptr)
+    if (channel == nullptr)
         return ; // err 던지기
-	userList = channel.getUserList();
+	userList = channel->getUserList();
 	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
         if ((**iter).getUserSock() != user.getUserSock())
             sendMsg(**iter, msg);

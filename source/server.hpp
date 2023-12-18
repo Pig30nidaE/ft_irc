@@ -10,6 +10,7 @@
 
 //----------------------
 #include <string.h>
+#include <sstream> // 공백 제거용
 #include <iostream>
 #include <vector>
 #include <unistd.h>
@@ -47,9 +48,14 @@ class Server {
 		//---test용---
 		void setServerPass(std::string serverPass); // test 용
 		void parser(std::string msg, User &user);
+
 		//------------
 
 	private:
+		void		executeCommand(std::string msg, User &user);
+		int			countSpace(std::string msg);
+		void splitSpace(std::string msg);
+
 		void readEventHandler(uintptr_t fd);
 		void newUser(int serverSock);
 		void recvMsg(uintptr_t fd);
@@ -58,7 +64,7 @@ class Server {
 		
 		void disconnectClient(User *user);
 
-		void broadcastMsg(User user, Channel &channel, std::string msg) const;
+		void broadcastMsg(User user, Channel *channel, std::string msg) const;
 		void sendMsg(User user, std::string msg) const;
 
 		// --------utils-------
