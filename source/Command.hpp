@@ -2,10 +2,10 @@
 #define COMMAND_HPP
 
 #include <string>
-#include <unistd.h>
+
 class User;
 class ChannelContainer;
-// class Channel;
+class Channel;
 
 class Command {
 	public:
@@ -37,7 +37,7 @@ class Command {
 		//----server 입장-----
 		void pass(std::string msg);
 		void nick(std::string msg, ChannelContainer cc, User &user);
-		void user(std::string msg, User &user);
+		std::string user(std::string msg, User &user);
 		// ----channel join-----
 		void join(std::string msg, ChannelContainer &cc, User &user);
 		// ----channel 나감-----
@@ -45,9 +45,13 @@ class Command {
 		// kick
 		void kick(std::string msg, ChannelContainer &cc, User &user);
 		// ----client PING----
-		void ping(std::string msg, User &user);
+		std::string ping(std::string msg, User &user);
 		// ----client INVITE---
 		void invite(std::string nick, std::string channel, User &user);
+		// ----topic------------
+		std::string topic(Channel &channel, std::string topic);
+		// ----mode-------------
+		void mode(std::string channel, std::string flag, std::string parm);
 
 
 	private:

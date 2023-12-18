@@ -1,7 +1,7 @@
 #include "Command.hpp"
 #include "../func/User.hpp"
 #include "../func/ChannelContainer.hpp"
-// #include "../func/Channel.hpp"
+#include "../func/Channel.hpp"
 
 
 void Command::pass(std::string pass) {
@@ -31,23 +31,20 @@ void Command::nick(std::string msg, ChannelContainer cc, User &user) {
 
 }
 
-void Command::user(std::string msg, User &user) {
+std::string Command::user(std::string msg, User &user) {
 	// msg[0] = username
 	std::cout << "[ USER ]" << std::endl;
 	if (user.getNickName() == "") { // pass -> nick -> user 순서 준수를 위해 체크
 		std::cout << "nick 설정 안함err\n";
-		return ;
+		return "";
 	}
 	std::cout << "msg: " << msg << "\n";
 
 
 	user.setUserName(msg);
 	//---------------------
-	std::string say = ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1";
-	int len = say.length();
-	// std::cout << "len: " << len << "\n";
-	write(user.getUserSock(), ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1\n", len + 1);
-	
+	std::string say = ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1\n";
+	return say;
 }
 
 void Command::join(std::string msg, ChannelContainer &cc, User &user) {
@@ -65,12 +62,12 @@ void Command::part(std::string msg, ChannelContainer &cc, User &user) {
 	user.exitChannel(msg, cc);//인원이 0되면 채널 지워줌
 }
 
-void Command::ping(std::string msg, User &user) {
+std::string Command::ping(std::string msg, User &user) {
 	std::cout << "[ PING ]" << std::endl;
 	std::cout << "content: " << msg << "\n";
 	std::string req = "PONG " + msg;
-	write(user.getUserSock(), &req, req.length() + 1);
 	std::cout << "req: " << req << "\n";
+	return req;
 }
 
 void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
@@ -84,8 +81,24 @@ void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
 	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
 }
 
-void Command::invite(std::string nick. std::string channel, User &user) {
-	user.setIsInvite(1);
+void Command::invite(std::string nick, std::string channel, User &user) {
+	// user.setIsInvite(1);
+	return ;
+}
+
+std::string Command::topic(Channel &channel, std::string topic) {
+	// topic set한 사람 저장하기
+	if (topic == "") {
+		return (channel.getTopicRef().getTopic());
+	}
+	else {
+		channel.getTopicRef().setTopic(topic);
+		return "";
+	}
+}
+
+void Command::mode(std::string channel, std::string flag, std::string parm) {
+
 }
 
 Command::Command(void) {}
