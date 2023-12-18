@@ -155,7 +155,7 @@ void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContain
 	std::cerr << "No such user." << std::endl;
 }
 
-void User::inviteUser(User& toInviteUser, Channel& toChannel, std::string enterPwd, ChannelContainer& channel_container) {
+void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container) {
 	if (!isOperator) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;

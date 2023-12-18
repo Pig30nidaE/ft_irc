@@ -54,7 +54,7 @@ void Command::join(std::string msg, ChannelContainer &cc, User &user) {
 	std::cout << "[ JOIN ]" << std::endl;
 	// msg[0] == 채널, msg[1] == 비번 파싱하면 적용
 	
-	user.joinChannel(msg, "", cc, false);
+	user.joinChannel(msg, "", cc); // join 마지막 인자 없앰 (flag)
 }
 
 void Command::part(std::string msg, ChannelContainer &cc, User &user) {
@@ -84,8 +84,18 @@ void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
 	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
 }
 
-void Command::invite(std::string nick. std::string channel, User &user) {
-	user.setIsInvite(1);
+void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
+	//std::vector<User*> usrList = (cc).getUserList();
+	typedef std::vector<User*>::iterator UserIter;
+	UserIter user_iter_begin = cc.getUserList().begin();
+	UserIter user_iter_end = cc.getUserList().end();
+	UserIter user_iter_find = std::find(user_iter_begin, user_iter_end, nick);
+	if (user_iter_find == user_iter_end)
+		std::cout << "no such user." << std::endl; // ToDo: 에러메세지 바꾸삼.
+	else {
+		User* toInvite = *user_iter_find;
+		user.inviteUser(*toInvite, *user.getSpecificChannelJoined(channel, cc), cc);
+	}
 }
 
 Command::Command(void) {}
