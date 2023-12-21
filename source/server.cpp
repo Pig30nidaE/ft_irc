@@ -246,19 +246,19 @@ void Server::executeCommand(std::string msg, User &user) {
             command->kick(content, *channelContainer, user);
             break;
         
-        case INVITE: //LSH
-            command->invite() // invite 맞춰서 수정해야함.
-            // 추후 수정
-            break;
+        //case INVITE: //LSH
+        //    command->invite() // invite 맞춰서 수정해야함.
+        //    // 추후 수정
+        //    break;
 
         case TOPIC:
             tmp = user.getSpecificChannelJoined(content, *channelContainer);
             sendMsg(user, command->topic(*tmp, content)); // 임시
             break;
 
-        case MODE:
-            command->mode(content, content, content); // LSH 이거 그냥 user.changeMode로 인자넘기는게 나을거같은디
-            break;
+        //case MODE:
+        //    command->mode(content, content, content); // LSH 이거 그냥 user.changeMode로 인자넘기는게 나을거같은디
+        //    break;
         
 		default:
 			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";

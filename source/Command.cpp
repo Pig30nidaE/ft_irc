@@ -18,6 +18,12 @@ void Command::pass(std::string pass) {
 	}
 }
 
+//static bool checkNameCorrect(std::vector<User*>::iterator &usr1, std::vector<User*>::iterator &usr2) {
+//	if ((*usr1)->getNickName() == (*usr2)->getNickName())
+//		return true;
+//	return false;
+//}
+
 void Command::nick(std::string msg, ChannelContainer cc, User &user) {
 	// msg[0] == nickname
 	std::cout << "[ NICK ]" << std::endl;
@@ -26,18 +32,15 @@ void Command::nick(std::string msg, ChannelContainer cc, User &user) {
 		std::cout << "nick 겹침 err\n";
 		return ;
 	}
-	std::vector<User*> usrList = cc.getUserList();
-	std::vector<User*>::iterator iter = find(usrList.begin(), usrList.end(), &user);
-	if (iter == usrList.end()) {
-		//std::cout << "in" << std::endl;
-		usrList.push_back(&user);
-	}
-	else {
-		(*iter)->setNickName(msg);
-	}
-	std::cout << "msg: " << msg << "\n";
-	std::cout << "nick: " << user.getNickName() << std::endl;
-
+	user.setNickName(msg);
+	//std::vector<User*> usrList = cc.getUserList();
+	//typedef std::vector<User*>::iterator UserIter;
+	//for (UserIter iter = usrList.begin();iter != usrList.end();iter++) {
+	//	if ((*iter)->getNickName() == user.getNickName())
+	//		(*iter)->setNickName(msg);
+	//}
+	//std::cout << "msg: " << msg << "\n";
+	//std::cout << "nick: " << user.getNickName() << std::endl;
 }
 
 std::string Command::user(std::string msg, User &user) {
@@ -61,6 +64,12 @@ void Command::join(std::string msg, ChannelContainer &cc, User &user) {
 	// msg[0] == 채널, msg[1] == 비번 파싱하면 적용
 	
 	user.joinChannel(msg, "", cc); // join 마지막 인자 없앰 (flag)
+	std::vector<User*> userList = user.getSpecificChannelJoined(msg, cc)->getUserList();
+	typedef std::vector<User*>::iterator iter;
+	for (iter a = userList.begin();a != userList.end();a++) {
+		std::cout << (*a)->getNickName() << std::endl;
+		std::cout << "======" << std::endl;
+	}
 }
 
 void Command::part(std::string msg, ChannelContainer &cc, User &user) {
@@ -89,12 +98,6 @@ void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
 	std::cout << "channelName: " << channelName << "\n";
 	std::cout << user.getUserName() << std::endl;
 	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
-}
-
-static bool checkNameCorrect(User usr1, User usr2) {
-	if (usr1.getNickName() == usr2.getNickName())
-		return true;
-	return false;
 }
 
 void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {

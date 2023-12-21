@@ -22,9 +22,9 @@
 
 enum {
 	PASS,
-	NICK,
+	NICK, //O
 	USER,
-	JOIN,
+	JOIN, //O
 	PART,
 	PING,
 	KICK,
