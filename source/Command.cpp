@@ -63,18 +63,21 @@ void Command::join(std::string msg, ChannelContainer &cc, User &user) {
 	std::cout << "[ JOIN ]" << std::endl;
 	// msg[0] == 채널, msg[1] == 비번 파싱하면 적용
 	
+	std::cout << "CHECKER1" << std::endl;
 	user.joinChannel(msg, "", cc); // join 마지막 인자 없앰 (flag)
-	std::vector<User*> userList = user.getSpecificChannelJoined(msg, cc)->getUserList();
+	std::cout << "CHECKER2" << std::endl;
+	std::vector<User*> userList = user.getSpecificChannelJoined(msg, cc)->getUserList(); //이밑에서 터짐.
 	typedef std::vector<User*>::iterator iter;
 	for (iter a = userList.begin();a != userList.end();a++) {
 		std::cout << (*a)->getNickName() << std::endl;
 		std::cout << "======" << std::endl;
 	}
+	std::cout << "CHECKER3" << std::endl;
 }
 
 void Command::part(std::string msg, ChannelContainer &cc, User &user) {
-	std::cout << "[ PART] ]" << std::endl;
-	// std::cout << "content: " << msg << "\n";
+	std::cout << "[ PART ]" << std::endl;
+	 std::cout << "content: " << msg << "\n";
 	// 나갈 채널이랑 채널 사유 분리하기
 	// 채널 사유 출력하고 채널 나가기
 	user.exitChannel(msg, cc);//인원이 0되면 채널 지워줌
@@ -133,8 +136,14 @@ std::string Command::topic(Channel &channel, std::string topic) {
 	}
 }
 
-void Command::mode(User& user, ChannelContainer& cc, std::string channel_name, bool onoff_flag) { //LSH
-	//std::cout << "[ MODE ]" << std::endl;
+void Command::mode(std::vector<std::string> msg, User& user, ChannelContainer& cc) { //LSH
+	std::cout << "[ MODE ]" << std::endl;
+	//일단 /MODE <channel> [+/-] 이런식으로 테스트, MODE를 바꾸려면 직접 수정.
+	std::cout << msg.at(0) << std::endl;
+	if (msg.at(1) == "+")
+		user.changeMode(cc, msg.at(0), true, MODE_INVITE_ONLY);
+	else
+		user.changeMode(cc, msg.at(0), false, MODE_INVITE_ONLY);
 	//user.changeMode(cc, user.getSpecificChannelJoined(channel_name, cc),\
 	//	onoff_flag, )
 }

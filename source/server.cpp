@@ -204,6 +204,7 @@ void Server::executeCommand(std::string msg, User &user) {
 
 	end = msg.find((char)10);
 	content = msg.substr(5, end - 5);
+    std::vector<std::string> testCmd; //LSH
 	switch (flag)
 	{
 		case PASS:
@@ -256,10 +257,13 @@ void Server::executeCommand(std::string msg, User &user) {
             sendMsg(user, command->topic(*tmp, content)); // 임시
             break;
 
-        //case MODE:
-        //    command->mode(content, content, content); // LSH 이거 그냥 user.changeMode로 인자넘기는게 나을거같은디
-        //    break;
-        
+        case MODE:
+            //command->mode(content, content, content);
+            /* test용 */
+            testCmd.push_back("test");
+            testCmd.push_back("+");
+            command->mode(testCmd, user, *channelContainer);
+            break;
 		default:
 			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
 			break;

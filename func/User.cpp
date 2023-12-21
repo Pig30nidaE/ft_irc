@@ -121,7 +121,8 @@ void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_cont
     Channel *exitCh = getSpecificChannelJoined(toExitChannel, channel_container);
     std::vector<Channel*>& JoinedChannels = getJoinedChannelList(channel_container);
 
-    exitCh->userDel(*this);
+	//std::cout << "CHECKER1" << std::endl;
+    exitCh->userDel(*this); //
 
     std::vector<Channel*>::iterator iter = std::find(JoinedChannels.begin(), JoinedChannels.end(), exitCh);
     if (iter != JoinedChannels.end()) {
@@ -188,13 +189,13 @@ void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& 
 }
 
 void User::changeMode(ChannelContainer& channel_container, std::string channel, bool onoff_flag, int type, ...) {
-	if (!isOperator) {
-		std::cerr << "Not permitted." << std::endl;
-		return ;
-	}
 	Channel* joinedChannel = getSpecificChannelJoined(channel, channel_container);
 	if (!joinedChannel) {
 		std::cerr << "no such channel." << std::endl;
+		return ;
+	}
+	if (!isOperator) {
+		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
 	Mode& channelMode = joinedChannel->getModeRef();

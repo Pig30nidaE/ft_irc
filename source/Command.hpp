@@ -52,7 +52,7 @@ class Command {
 		std::string topic(Channel &channel, std::string topic);
 		// ----mode------------- //LSH
 		//void mode(std::string channel, std::string flag, std::string parm);
-		void mode(User& user, ChannelContainer& cc, std::string channel_name, bool onoff_flag);
+		void mode(std::vector<std::string> msg, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
 

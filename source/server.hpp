@@ -25,7 +25,7 @@ enum {
 	NICK, //O
 	USER,
 	JOIN, //O
-	PART,
+	PART, // channel 인자가 없으면 터짐. 일단 냄겨두겠음.
 	PING,
 	KICK,
 	INVITE,
