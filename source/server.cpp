@@ -9,7 +9,7 @@ Server::Server(void) {
     return ;
 }
 
-Server::Server(std::string pass) : channelContainer(new ChannelContainer()), command(new Command(pass)) {
+Server::Server(std::string port, std::string pass) : channelContainer(new ChannelContainer()), command(new Command(pass)) {
     if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) == -1)
         exitWithPerror("socket() error\n" + std::string(strerror(errno)));
 
@@ -158,8 +158,8 @@ void Server::disconnectClient(User *user)
     fd = user->getUserSock();
     std::cout << "client disconnected: " << fd << std::endl;
     close(fd);
-    // clients.erase(fd);
     delete clients[fd]; // User delete
+    clients.erase(fd);
 }
 
 
@@ -188,6 +188,7 @@ void Server::setServerPass(std::string serverPass) { // test용
 
 void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
+    std::string result;
     Channel *tmp;
 	int			flag;
 
@@ -216,8 +217,14 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
 
             case USER:
-                // command->user(msgs, user)
-                sendMsg(user, command->user(msgs, user));
+                result = command->user(msgs, user);
+                if (result != "") {
+                    sendMsg(user, result);
+                    (channelContainer->getUserList()).push_back(&user);
+                }
+                else {
+                    disconnectClient(&user);
+                }
             	break;
                 
             // case JOIN:
@@ -280,26 +287,26 @@ void Server::parser(std::string msg, User &user) {
     int          i = 0;
     std::string temp;
 
+    if (msg == "") {
+        std::cout << "[parser] msg == \"\"\n";
+        return ;
+    }
     if ((cr = msg.find('\r')) == std::string::npos) {
         if ((lf = msg.find('\n', lf)) == std::string::npos) {
             temp = user.getBuf();
-            std::cout << "befor: " << temp << "\n";
             temp += msg;
-            std::cout << "after: " << temp << "\n";
             user.setBuf(temp);            
         }
         else {
             temp = user.getBuf();
-            std::cout << "befor: " << temp << "\n";
             temp += msg;
-            std::cout << "after: " << temp << "\n";
             splitSpace(temp, user);
         }
     }
     else if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
         splitSpace(msg.substr(0, crlf), user);
         if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
-            parser(&msg[crlf + 1], user);
+            parser(&msg[crlf + 2], user);
         }
     }
 }

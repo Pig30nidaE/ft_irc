@@ -66,7 +66,7 @@ std::string Command::user(std::vector<std::string> msgs, User &user) {
 		realname = msgs[4];
 	}
 	std::cout << "realname:" << realname << "\n";
-	user.setUserName(msg);
+	user.setUserName(realname);
 	std::string say = ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1\n";
 	return say;
 }
