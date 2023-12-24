@@ -5,13 +5,20 @@
 #include "./Command.hpp"
 
 
-Server::Server(void) : channelContainer(new ChannelContainer()), command(new Command()) {
+Server::Server(void) {
+    return ;
+}
+
+Server::Server(std::string pass) : channelContainer(new ChannelContainer()), command(new Command(pass)) {
     if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) == -1)
         exitWithPerror("socket() error\n" + std::string(strerror(errno)));
 
+    //test // 초기화 리스트에서 Command()생성자로 서버 패스워드 설정
+    // command->setServerPass(pass); //
+    // setServerPass(pass);
+    // command
     //test
-    setServerPass("123");
-    //test
+
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -184,40 +191,30 @@ void Server::setServerPass(std::string serverPass) { // test용
     command->setServerPass(serverPass);
 }
 
-void Server::executeCommand(std::string msg, User &user) {
+void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
-	std::string content;
     Channel *tmp;
 	int			flag;
-	int			end;
 
-	if (msg[0] == 0)
-		return ;
-	//------------------------------------
-    flag = -1;
-	// std::cout << "msg: " << msg[0] << ":" << (int)msg[0] << "\n";
-	for (size_t i = 0; i < 10; i++)
+	if (msgs.empty()) { // msgs가 비어있다면
+        std::cout << "msgs is empty!!\n";
+        return ;
+    }
+
+	for (size_t i = 0; i < 10; i++) // command 개수만큼 반복
 	{
-		if (msg.compare(0, 4, arr[i]) == 0) 
-			flag = i;
+		if (msgs[0].compare(0, 4, arr[i]) == 0) 
+			flag = i; // 찾은 command 플래그 저장
 	}
 
-	end = msg.find((char)10);
-	content = msg.substr(5, end - 5);
-    std::vector<std::string> testCmd; //LSH
-	switch (flag)
-	{
-		case PASS:
-            try
-            {
-                command->pass(content);
+    try
+    {
+        switch (flag)
+        {
+            case PASS:
+                command->pass(msgs);
                 user.setUserIsPass(1);
-            }
-            catch(const std::exception& e)
-            {
-                std::cerr << e.what() << '\n';
-            }
-            
+                break;
 			break;
 		
 		case NICK:
@@ -268,10 +265,15 @@ void Server::executeCommand(std::string msg, User &user) {
 			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
 			break;
 	}
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
 	//--------------------------------------
 	std::cout << "-----------------------------\n";
-	if ((&msg[end])[0] != '\0')
-		parser(&msg[end + 1], user);
+	// if ((&msg[end])[0] != '\0')
+	// 	parser(&msg[end + 1], user);
 
 }
 
@@ -286,21 +288,6 @@ void Server::parser(std::string msg, User &user) {
     int          i = 0;
     std::string temp;
 
-    // std::cout << "\\r : " << (int)'\r' << "\n";
-    // std::cout << "\\n : " << (int)'\n' << "\n";
-    // std::cout << "msg:" << msg << "\n\n";
-    // cr = msg.find('\r', cr);
-    // std::cout << "cr을 찾은것:" << &msg[cr] << "| len: " << strlen(&msg[cr]) << "\n";
-    // lf = msg.find('\n', lf);
-    // std::cout << "lf를 찾은것:" << &msg[lf] << "| len: " << strlen(&msg[lf]) << "\n";
-    // crlf = msg.find("\r\n", crlf);
-    // if (crlf == std::string::npos) {
-    //     std::cout << "마지막줄:" << msg << "\n";
-    // }
-    // std::cout << "crlf를 찾은것:" << &msg[crlf] << "| len: " << strlen(&msg[crlf]) << "\n";
-    // lfcr = msg.find("\n\r", lfcr);
-    // std::cout << "lfcr를 찾은것:" << &msg[lfcr] << "| len: " << strlen(&msg[lfcr]) << "\n";
-
     if ((cr = msg.find('\r')) == std::string::npos) {
         if ((lf = msg.find('\n', lf)) == std::string::npos) {
             temp = user.getBuf();
@@ -314,23 +301,18 @@ void Server::parser(std::string msg, User &user) {
             std::cout << "befor: " << temp << "\n";
             temp += msg;
             std::cout << "after: " << temp << "\n";
-            splitSpace(temp);
+            splitSpace(temp, user);
         }
     }
     else if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
-        splitSpace(msg.substr(0, crlf));
+        splitSpace(msg.substr(0, crlf), user);
         if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
             parser(&msg[crlf + 1], user);
         }
     }
-	// end = msg.find((char)10);
-	// content = msg.substr(5, end - 5);
-        
-	// if ((&msg[end])[0] != '\0')
-	// 	parser(&msg[end + 1], user);
 }
 
-void    Server::splitSpace(std::string msg) {
+void    Server::splitSpace(std::string msg, User &user) {
     int i = 0;
     std::stringstream iss(msg);
     std::string str;
@@ -339,10 +321,10 @@ void    Server::splitSpace(std::string msg) {
     while (iss >> str) {
         msgs.push_back(str);
     }
-    for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) {
+    for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) { // tester
         std::cout << "msg:" << *iter << "\n";
     }
-    // return msgs;
+    executeCommand(msgs, user);
 }
 
 

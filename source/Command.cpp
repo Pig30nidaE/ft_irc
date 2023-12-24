@@ -4,57 +4,69 @@
 #include "../func/Channel.hpp"
 
 
-void Command::pass(std::string pass) {
-	int result;
+void Command::pass(std::vector<std::string> msgs) {
+	size_t msgsSize;
 	std::cout << "[ PASS ]" << std::endl;
-	if (pass == "")
-		std::cout << "없없음음\n";
-	// if (serverPass != pass) {
-	// 	std::cout << "fail : " << result << "\n";
-	// 	throw ERR_PASSWDMISMATCH();
-	// }
+
+	msgsSize = msgs.size();
+	if (msgsSize < 2) {
+		std::cout << "ERROR: NEDDMOREPARAMS\n";
+		throw ERR_NEEDMOREPARAMS();
+	}
+	if (serverPass != msgs[1]) {
+		std::cout << "ERROR: PASSWDMISMATCH\n";
+		throw ERR_PASSWDMISMATCH();
+	}
 	else {
 		std::cout << "PASS SUCCESS!!\n";
 	}
 }
 
-//static bool checkNameCorrect(std::vector<User*>::iterator &usr1, std::vector<User*>::iterator &usr2) {
-//	if ((*usr1)->getNickName() == (*usr2)->getNickName())
-//		return true;
-//	return false;
-//}
-
-void Command::nick(std::string msg, ChannelContainer cc, User &user) {
-	// msg[0] == nickname
+void Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user) {
+	size_t msgsSize;
 	std::cout << "[ NICK ]" << std::endl;
-	if (cc.checkNickName(msg)) {
-		// err
-		std::cout << "nick 겹침 err\n";
+
+	msgsSize = msgs.size();
+	if (msgsSize < 2) {
+		std::cout << "ERROR: NEDDMOREPARMS\n";
 		return ;
 	}
-	user.setNickName(msg);
-	//std::vector<User*> usrList = cc.getUserList();
-	//typedef std::vector<User*>::iterator UserIter;
-	//for (UserIter iter = usrList.begin();iter != usrList.end();iter++) {
-	//	if ((*iter)->getNickName() == user.getNickName())
-	//		(*iter)->setNickName(msg);
-	//}
-	//std::cout << "msg: " << msg << "\n";
-	//std::cout << "nick: " << user.getNickName() << std::endl;
+	if (cc.checkNickName(msgs[1])) {
+		std::cout << "ERROR: NICK USED\n";
+		return ;
+	}
+	user.setNickName(msgs[1]);
+	std::cout << "NICK SUCCESS!!\n";
 }
 
-std::string Command::user(std::string msg, User &user) {
-	// msg[0] = username
+std::string Command::user(std::vector<std::string> msgs, User &user) {
+	size_t msgsSize;
+	std::string realname;
 	std::cout << "[ USER ]" << std::endl;
-	if (user.getNickName() == "") { // pass -> nick -> user 순서 준수를 위해 체크
-		std::cout << "nick 설정 안함err\n";
+
+	msgsSize = msgs.size();
+	if (msgsSize < 5) {
+		std::cout << "ERROR: NEED MORE PARMS\n";
 		return "";
 	}
-	std::cout << "msg: " << msg << "\n";
-
-
+	if (user.getNickName() == "") { // pass -> nick -> user 순서 준수를 위해 체크
+		std::cout << "ERROR: NEED NICK COMMAND\n";
+		return "";
+	}
+	if (msgs[4][0] == ':') {
+		for(std::vector<std::string>::iterator iter = msgs.begin()+4; iter != msgs.end(); iter++) {
+			realname += *iter;
+			if ((iter + 1) != msgs.end()) {
+				realname += ' ';
+			}
+		}
+		realname = &(realname[1]);
+	}
+	else {
+		realname = msgs[4];
+	}
+	std::cout << "realname:" << realname << "\n";
 	user.setUserName(msg);
-	//---------------------
 	std::string say = ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1\n";
 	return say;
 }

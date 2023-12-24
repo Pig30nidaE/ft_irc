@@ -41,6 +41,7 @@ class ChannelContainer;
 class Server {
 	public:
 		Server(void);
+		Server(std::string pass);
 		Server(int serverPass);
 		~Server();
 		void serverStart(void);
@@ -55,9 +56,8 @@ class Server {
 		}
 
 	private:
-		void		executeCommand(std::string msg, User &user);
-		int			countSpace(std::string msg);
-		void splitSpace(std::string msg);
+		void		executeCommand(std::vector<std::string> msgs, User &user);
+		void splitSpace(std::string msg, User &user);
 
 		void readEventHandler(uintptr_t fd);
 		void newUser(int serverSock);
