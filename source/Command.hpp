@@ -43,8 +43,11 @@ class Command {
 		void invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
 		// ----topic------------
 		std::string topic(Channel &channel, std::string topic);
-		// ----mode-------------
-		void mode(std::string channel, std::string flag, std::string parm);
+		// ----mode------------- //LSH
+		//void mode(std::string channel, std::string flag, std::string parm);
+		void mode(std::vector<std::string> msg, User& user, ChannelContainer& cc);
+		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
+
 
 
 	private:

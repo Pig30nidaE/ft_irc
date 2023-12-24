@@ -22,10 +22,10 @@
 
 enum {
 	PASS,
-	NICK,
+	NICK, //O
 	USER,
-	JOIN,
-	PART,
+	JOIN, //O
+	PART, // channel 인자가 없으면 터짐. 일단 냄겨두겠음.
 	PING,
 	KICK,
 	INVITE,
@@ -50,7 +50,10 @@ class Server {
 		void setServerPass(std::string serverPass); // test 용
 		void parser(std::string msg, User &user);
 
-		//------------
+		//------------ sanghyol 건듦.
+		ChannelContainer& getChannelContainer(void) {
+			return *channelContainer;
+		}
 
 	private:
 		void		executeCommand(std::vector<std::string> msgs, User &user);

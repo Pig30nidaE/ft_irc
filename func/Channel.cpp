@@ -21,15 +21,21 @@ void Channel::userAdd(User& user) {
 }
 
 void Channel::userDel(User& user) {
-	std::vector<User*>::iterator to_del_usr = find(getUserList().begin(), getUserList().end(),\
-		 &user);
-	if (to_del_usr == getUserList().end()) {
-		std::cerr << "no such user." << std::endl;
-		return ;
+	std::cout << "CHECKER1" << std::endl;
+	std::vector<User*> usrList = getUserList();
+	std::cout << "CHECKER2" << std::endl;
+	typedef std::vector<User*>::iterator UserIter;
+	std::cout << "CHECKER3" << std::endl;
+
+	for (UserIter iter = usrList.begin();iter != usrList.end();iter++) {
+		if ((*iter)->getNickName() == user.getNickName()) {
+			std::cout << "CHECKER4" << std::endl;
+			usrList.erase(iter);
+			std::cout << "CHECKER5" << std::endl;
+			return ;
+		}
 	}
-	//int to_del_idx = *to_del_usr - *(getUserList().begin());
-	userList.erase(getUserList().begin() + (*to_del_usr)->getUserIndex());
-	//user.getNickName().erase(getChannelName());
+	std::cerr << "no such user." << std::endl;
 }
 
 void Channel::setChannelName(std::string const channelname) {

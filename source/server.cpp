@@ -69,8 +69,9 @@ void Server::serverStart(void) {
 
 // READ event!!
 void Server::readEventHandler(uintptr_t fd) {
-    if (fd == static_cast<uintptr_t> (serverSocket))
+    if (fd == static_cast<uintptr_t> (serverSocket)) {
         newUser(static_cast<int>(fd));
+    }
     else if (clients.find(fd) != clients.end()) {
         recvMsg(fd);
     }
@@ -91,6 +92,7 @@ void Server::newUser(int serverSock) {
     user = new User();
     user->setUserSock(clientSocket);
     clients[clientSocket] = user;
+    getChannelContainer().getUserList().push_back(user); // channel_container의 user_list에도 추가해야해서 넣음. //LSH
 }
 
 void Server::recvMsg(uintptr_t fd) {
@@ -113,7 +115,10 @@ void Server::recvMsg(uintptr_t fd) {
         buf[n] = '\0';
         std::string test = buf;
         std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
-        parser(test, *clients[fd]);
+        //parser(test, *clients[fd]);
+        executeCommand(test, *clients[fd]);
+        std::cout << "NICK: " << (*clients[fd]).getNickName() << std::endl;
+
     }
 }
 
@@ -210,58 +215,61 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 command->pass(msgs);
                 user.setUserIsPass(1);
                 break;
-            
-            case NICK:
-                command->nick(msgs, *channelContainer, user);
-                break;
+			break;
+		
+		case NICK:
+            command->nick(content, *channelContainer, user);
+			break;
 
-            case USER:
-                // command->user(msgs, user)
-                sendMsg(user, command->user(msgs, user));
-            	break;
-                
-            // case JOIN:
-            //     command->join(content, *channelContainer, user);
-            //     sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
-            //     tmp = user.getSpecificChannelJoined(content, *channelContainer);
-            //     broadcastMsg(user, tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
-            // 	break;
-                
-            // case PART:
-            //     command->part(content, *channelContainer, user);
-            // 	break;
-                
-            // case PING:
-            //     command->ping(content, user);
-            // 	break;
+		case USER:
+            sendMsg(user, command->user(content, user));
+			break;
+			
+		case JOIN:
+            command->join(content, *channelContainer, user);
+            sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
+            tmp = user.getSpecificChannelJoined(content, *channelContainer);
+            broadcastMsg(user, tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
+			break;
+			
+		case PART:
+            command->part(content, *channelContainer, user);
+			break;
+			
+		case PING:
+            command->ping(content, user);
+			break;
 
-            // case KICK:
-            //     command->kick(content, *channelContainer, user);
-            //     break;
-            
-            // case INVITE:
-            //     // 추후 수정
-            //     break;
+        case KICK:
+            command->kick(content, *channelContainer, user);
+            break;
+        
+        //case INVITE: //LSH
+        //    command->invite() // invite 맞춰서 수정해야함.
+        //    // 추후 수정
+        //    break;
 
-            // case TOPIC:
-            //     tmp = user.getSpecificChannelJoined(content, *channelContainer);
-            //     sendMsg(user, command->topic(*tmp, content)); // 임시
-            //     break;
+        case TOPIC:
+            tmp = user.getSpecificChannelJoined(content, *channelContainer);
+            sendMsg(user, command->topic(*tmp, content)); // 임시
+            break;
 
-            // case MODE:
-            //     command->mode(content, content, content);
-            //     break;
-            
-            default:
-                std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
-                break;
-        }
+        case MODE:
+            //command->mode(content, content, content);
+            /* test용 */
+            testCmd.push_back("test");
+            testCmd.push_back("+");
+            command->mode(testCmd, user, *channelContainer);
+            break;
+		default:
+			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
+			break;
+	}
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
-    
 	//--------------------------------------
 	std::cout << "-----------------------------\n";
 	// if ((&msg[end])[0] != '\0')
