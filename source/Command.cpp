@@ -66,19 +66,24 @@ std::string Command::user(std::vector<std::string> msgs, User &user) {
 		realname = msgs[4];
 	}
 	std::cout << "realname:" << realname << "\n";
-	user.setUserName(msg);
+	//user.setUserName(msg);
+	user.setUserName(realname);
 	std::string say = ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1\n";
 	return say;
 }
 
-void Command::join(std::string msg, ChannelContainer &cc, User &user) {
+void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	std::cout << "[ JOIN ]" << std::endl;
-	// msg[0] == 채널, msg[1] == 비번 파싱하면 적용
+	// msgs[0] == 채널, msgs[1] == 비번 파싱하면 적용
 	
-	std::cout << "CHECKER1" << std::endl;
-	user.joinChannel(msg, "", cc); // join 마지막 인자 없앰 (flag)
-	std::cout << "CHECKER2" << std::endl;
-	std::vector<User*> userList = user.getSpecificChannelJoined(msg, cc)->getUserList(); //이밑에서 터짐.
+	//std::cout << "CHECKER1" << std::endl;
+	if (msgs[2].size())
+		user.joinChannel(msgs[1], msgs[1], cc); // join 마지막 인자 없앰 (flag)
+	else
+		user.joinChannel(msgs[1], "", cc);
+	//std::cout << "CHECKER2" << std::endl;
+	//여기서 user는 조인하려는 사람, 그런데 조인도 안했는데 getSpecific을 실행해서 터짐.
+	std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
 	typedef std::vector<User*>::iterator iter;
 	for (iter a = userList.begin();a != userList.end();a++) {
 		std::cout << (*a)->getNickName() << std::endl;
@@ -87,12 +92,14 @@ void Command::join(std::string msg, ChannelContainer &cc, User &user) {
 	std::cout << "CHECKER3" << std::endl;
 }
 
-void Command::part(std::string msg, ChannelContainer &cc, User &user) {
+void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	std::cout << "[ PART ]" << std::endl;
-	 std::cout << "content: " << msg << "\n";
+	// std::cout << "content: " << msg << "\n";
 	// 나갈 채널이랑 채널 사유 분리하기
 	// 채널 사유 출력하고 채널 나가기
-	user.exitChannel(msg, cc);//인원이 0되면 채널 지워줌
+	if (msgs[1].size())
+		std::cout << user.getNickName() << " is exit by " << msgs[1] << std::endl;
+	user.exitChannel(msgs[0], cc);//인원이 0되면 채널 지워줌
 }
 
 std::string Command::ping(std::string msg, User &user) {
@@ -103,14 +110,16 @@ std::string Command::ping(std::string msg, User &user) {
 	return req;
 }
 
-void Command::kick(std::string msg, ChannelContainer &cc, User &user) {
+void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	std::cout << "[ KICK ]" << std::endl;
-	std::cout << "msg: " << msg << "\n";
-	int spaceIndex = msg.find(' ');
-	std::string channelName = msg.substr(0, spaceIndex);
-	std::string userName = msg.substr(spaceIndex + 1, msg.length());
-	std::cout << "username: " << userName << "\n";
-	std::cout << "channelName: " << channelName << "\n";
+	//std::cout << "msg: " << msg << "\n";
+	//int spaceIndex = msg.find(' ');
+	//std::string channelName = msg.substr(0, spaceIndex);
+	std::string channelName = msgs[0];
+	//std::string userName = msg.substr(spaceIndex + 1, msg.length());
+	std::string userName = msgs[1];
+	//std::cout << "username: " << userName << "\n";
+	//std::cout << "channelName: " << channelName << "\n";
 	std::cout << user.getUserName() << std::endl;
 	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
 }
@@ -148,14 +157,32 @@ std::string Command::topic(Channel &channel, std::string topic) {
 	}
 }
 
-void Command::mode(std::vector<std::string> msg, User& user, ChannelContainer& cc) { //LSH
+void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc) { //LSH
 	std::cout << "[ MODE ]" << std::endl;
 	//일단 /MODE <channel> [+/-] 이런식으로 테스트, MODE를 바꾸려면 직접 수정.
-	std::cout << msg.at(0) << std::endl;
-	if (msg.at(1) == "+")
-		user.changeMode(cc, msg.at(0), true, MODE_INVITE_ONLY);
+	// MODE +k-k+k 와 같이 여러번 들어오는 것도 가능함. 일단은 하나만 들어온다고 가정함.
+	std::cout << msgs.at(0) << std::endl;
+	std::cout << msgs.at(1) << std::endl;
+	std::cout << msgs.at(2) << std::endl;
+	bool flag;
+	if (msgs.at(2)[0] == '+')
+		flag = true;
 	else
-		user.changeMode(cc, msg.at(0), false, MODE_INVITE_ONLY);
+		flag = false;
+	std::string type = msgs[2].substr(1, msgs[2].size() - 1);
+	std::cout << type << std::endl;
+	if (type == "i")
+		user.changeMode(cc, msgs.at(1), flag, MODE_INVITE_ONLY);
+	else if (type == "t")
+		user.changeMode(cc, msgs.at(1), flag, MODE_TOPIC_LIMIT);
+	else if (type == "k")
+		user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY);
+	else if (type == "o")
+		user.changeMode(cc, msgs.at(1), flag, MODE_OPERATOR_GRANTED);
+	else if (type == "l")
+		user.changeMode(cc, msgs.at(1), flag, MODE_CAPCITY_LIMIT);
+	else
+		std::cout << "invalid option." << std::endl;
 	//user.changeMode(cc, user.getSpecificChannelJoined(channel_name, cc),\
 	//	onoff_flag, )
 }

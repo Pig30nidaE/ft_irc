@@ -32,11 +32,11 @@ class Command {
 		std::string user(std::vector<std::string> msgs, User &user);
 		
 		// ----channel join-----
-		void join(std::string msg, ChannelContainer &cc, User &user);
+		void join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// ----channel 나감-----
-		void part(std::string msg, ChannelContainer &cc, User &user);
+		void part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// kick
-		void kick(std::string msg, ChannelContainer &cc, User &user);
+		void kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// ----client PING----
 		std::string ping(std::string msg, User &user);
 		// ----client INVITE---
@@ -45,7 +45,7 @@ class Command {
 		std::string topic(Channel &channel, std::string topic);
 		// ----mode------------- //LSH
 		//void mode(std::string channel, std::string flag, std::string parm);
-		void mode(std::vector<std::string> msg, User& user, ChannelContainer& cc);
+		void mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
 
