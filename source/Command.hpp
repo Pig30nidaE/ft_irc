@@ -32,7 +32,7 @@ class Command {
 		std::string user(std::vector<std::string> msgs, User &user);
 		
 		// ----channel join-----
-		void join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+		int	 join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// ----channel 나감-----
 		void part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// kick

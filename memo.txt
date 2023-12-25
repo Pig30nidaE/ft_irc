@@ -18,3 +18,30 @@ INVITE nickname_ #test
 :irc.local 341 nickname nickname_ :#test
 
 :nickname!root@127.0.0.1 INVITE nickname_ :#test
+
+
+
+// 예외 목록
+1. MODE +i 와 같이 모드 설정해서 다른 유저가 join 못했음에도 broadcast 메세지 때림. (O)
+-> joinChannel 을 void->int로 변경, join에 실패할 시 -1리턴하도록함.
+2. MODE +k 설정하면 터짐 / passwd가 인자로 안들어오는 경우. (O)
+-> 모든 명령어 int형으로 바꿔서 return 에 따라 성공여부 확인하는 것이 좋을듯
+-> k 옵션이 들어올 때 passwd 인자가 들어오는지 msgs.size() > 3으로 체크함. 나중에 올바른 조건문인지 확인하기.
+-> -k 일때도 msgs.size() > 3 일때만 동작하도록 함.
+3. MODE +i 와 같은 다음인자가 필요없는 경우에 인자가 들어와도 실행됨. 어떻게 처리할지 생각해야함. (X)
+4. MODE +o 터짐. (O)
+5. 에러 메세지 같은 메세지들 클라이언트도 뜨도록 해야함. (X)
+*******->>> 이것부터 해야할듯, 앵간한거 다 std::cout << 이런식으로 출력됨.***********
+6. :irc.local 366 nickname #test :End of /NAMES list 같은 메세지들 실제 닉네임 나오게 수정해야함. (X)
+7. 처음 서버에 들어가면 NICK이 없는 상태로 존재하는데 어떻게 할건지 정해야함. (X)
+8. MODE +l -> channel_capcity 이상한값드감. (O)
+9. MODE +l -> 이것만 뒤에 인자가 올수도있고 안올수도 있음. (O)
+10. TOPIC 명령어 되는지 확인 후 -> MODE +t 옵션일 때 operator만 가능한지 확인해야함. (X)
+-> 확인해보니 TOPIC 명령어 안됨.
+-> switch문에 TOPIC은 있으나 실제로 입력하면 COMMAND ERROR로 감.
+11. INVITE 기능 확인해야함. (X)
+12. INVITE 확인 후, MODE +i 옵션 준 뒤 INVITE한 친구가 들어올 수 있는지 봐야함. (X)
+13. PART 명령어 시 segfault남. (X)
+14. PART 해결 후 INVITE_ONLY 채널에서 INVITE->invite 받은 유저 join->PART->다시 join했을 때
+못들어가야하는거(다시초대받아야하는) 확인해야함. (X)
+15. User가 여러 채널 join할 수 있으며, 확실히 정해야함. 정한 후 다신 바꾸지 않기. (X)

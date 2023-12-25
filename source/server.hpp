@@ -22,10 +22,10 @@
 
 enum {
 	PASS,
-	NICK, //O
+	NICK, 
 	USER,
-	JOIN, //O
-	PART, // channel 인자가 없으면 터짐. 일단 냄겨두겠음.
+	JOIN, 
+	PART,
 	PING,
 	KICK,
 	INVITE,

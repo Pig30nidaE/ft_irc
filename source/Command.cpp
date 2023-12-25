@@ -72,24 +72,26 @@ std::string Command::user(std::vector<std::string> msgs, User &user) {
 	return say;
 }
 
-void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
+int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	std::cout << "[ JOIN ]" << std::endl;
 	// msgs[0] == 채널, msgs[1] == 비번 파싱하면 적용
 	
 	//std::cout << "CHECKER1" << std::endl;
+	int status;
 	if (msgs[2].size())
-		user.joinChannel(msgs[1], msgs[1], cc); // join 마지막 인자 없앰 (flag)
+		status = user.joinChannel(msgs[1], msgs[2], cc); // join 마지막 인자 없앰 (flag)
 	else
-		user.joinChannel(msgs[1], "", cc);
+		status = user.joinChannel(msgs[1], "", cc);
+	return status;
 	//std::cout << "CHECKER2" << std::endl;
 	//여기서 user는 조인하려는 사람, 그런데 조인도 안했는데 getSpecific을 실행해서 터짐.
-	std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
-	typedef std::vector<User*>::iterator iter;
-	for (iter a = userList.begin();a != userList.end();a++) {
-		std::cout << (*a)->getNickName() << std::endl;
-		std::cout << "======" << std::endl;
-	}
-	std::cout << "CHECKER3" << std::endl;
+	//std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
+	//typedef std::vector<User*>::iterator iter;
+	//for (iter a = userList.begin();a != userList.end();a++) {
+	//	std::cout << (*a)->getNickName() << std::endl;
+	//	std::cout << "======" << std::endl;
+	//}
+	//std::cout << "CHECKER3" << std::endl;
 }
 
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -161,26 +163,51 @@ void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& 
 	std::cout << "[ MODE ]" << std::endl;
 	//일단 /MODE <channel> [+/-] 이런식으로 테스트, MODE를 바꾸려면 직접 수정.
 	// MODE +k-k+k 와 같이 여러번 들어오는 것도 가능함. 일단은 하나만 들어온다고 가정함.
-	std::cout << msgs.at(0) << std::endl;
-	std::cout << msgs.at(1) << std::endl;
-	std::cout << msgs.at(2) << std::endl;
 	bool flag;
 	if (msgs.at(2)[0] == '+')
 		flag = true;
 	else
 		flag = false;
 	std::string type = msgs[2].substr(1, msgs[2].size() - 1);
-	std::cout << type << std::endl;
+	//std::cout << type << std::endl;
 	if (type == "i")
 		user.changeMode(cc, msgs.at(1), flag, MODE_INVITE_ONLY);
 	else if (type == "t")
 		user.changeMode(cc, msgs.at(1), flag, MODE_TOPIC_LIMIT);
-	else if (type == "k")
-		user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY);
-	else if (type == "o")
-		user.changeMode(cc, msgs.at(1), flag, MODE_OPERATOR_GRANTED);
-	else if (type == "l")
-		user.changeMode(cc, msgs.at(1), flag, MODE_CAPCITY_LIMIT);
+	else if (type == "k") {
+			if (msgs.size() > 3) {
+				user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY, msgs.at(3).c_str());	
+			}
+			else {
+				std::cout << "ERROR" << std::endl;
+			}
+		}
+		//if (flag && msgs.size() == 4) { // 나중에 확인하기. == 4가 맞는가?
+		//	user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY, msgs.at(3).c_str());
+		//	std::cout << 1;
+		//}
+		//else {
+		//	std::cout << "need passwd" << std::endl;
+		//	std::cout << 2;
+		//}
+	else if (type == "o") {
+		if (msgs.size() > 3)
+			user.changeMode(cc, msgs.at(1), flag, MODE_OPERATOR_GRANTED, msgs.at(3).c_str());
+		else {
+			std::cout << "ERROR" << std::endl;
+		}
+	}
+	else if (type == "l") {
+		if (flag) {
+			if (msgs.size() > 3)
+				user.changeMode(cc, msgs.at(1), flag, MODE_CAPACITY_LIMIT, std::atoi(msgs.at(3).c_str()));
+			else {
+				std::cout << "ERROR" << std::endl;
+			}
+		}
+		else
+			user.changeMode(cc, msgs.at(1), flag, MODE_CAPACITY_LIMIT);
+	}
 	else
 		std::cout << "invalid option." << std::endl;
 	//user.changeMode(cc, user.getSpecificChannelJoined(channel_name, cc),\

@@ -2,7 +2,7 @@
 
 
 Channel::Channel(std::string name):
-channelName(name),capcity(0) {
+channelName(name),capacity(0) {
 	mode = new Mode(ALL_MODES_OFF);
 	topic = new Topic("");
 }
@@ -76,10 +76,10 @@ void Channel::setIndex(int idx) {
 	index = idx;
 }
 
-int	Channel::getCapcity(void) {
-	return capcity;
+int	Channel::getCapacity(void) {
+	return capacity;
 }
 
-void Channel::setCapcity(int size) {
-	capcity = size;
+void Channel::setCapacity(int size) {
+	capacity = size;
 }
