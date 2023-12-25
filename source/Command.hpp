@@ -20,24 +20,17 @@ class Command {
 		Command(std::string serverPass); // test용
 		void setServerPass(std::string serverPass); // test용
 
-		// Pass error start
-		class ERR_NEEDMOREPARAMS : public std::exception {
-			public:
-				const char* what(void) const throw() {
-					return "ERR_NEEDMOREPARAMS!!\n";
-				};
-		};
-		class ERR_PASSWDMISMATCH : public std::exception {
-			public:
-				const char* what(void) const throw() {
-					return "ERR_PASSWDMISMATCH!!\n";
-				};
-		};
-		// Pass error end
+
 		//----server 입장-----
-		void pass(std::string msg);
-		void nick(std::string msg, ChannelContainer cc, User &user);
-		std::string user(std::string msg, User &user);
+		// PASS
+		void pass(std::vector<std::string> msgs);
+
+		// NICK
+		void nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
+
+		// USER
+		std::string user(std::vector<std::string> msgs, User &user);
+		
 		// ----channel join-----
 		void join(std::string msg, ChannelContainer &cc, User &user);
 		// ----channel 나감-----
@@ -56,8 +49,23 @@ class Command {
 
 	private:
 		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
-
 		int	checkLogin(User user);
+
+		// PASS ERROR
+		class ERR_NEEDMOREPARAMS : public std::exception {
+			public:
+				const char* what(void) const throw() {
+					return "ERR_NEEDMOREPARAMS!!\n";
+				};
+		};
+		class ERR_PASSWDMISMATCH : public std::exception {
+			public:
+				const char* what(void) const throw() {
+					return "ERR_PASSWDMISMATCH!!\n";
+				};
+		};
+		// PASS ERROR
+
 };
 
 

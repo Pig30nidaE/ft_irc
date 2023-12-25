@@ -9,7 +9,7 @@ isOperator(false),userIndex(-1) {
 	// connectionTime = std::time(nullptr);
 }
 
-User::~User() {}
+User::~User() {std::cout << "destroyed user: " << userSock << "\n";}
 
 //void User::userRegister(ChannelContainer &channel_container, std::string enteredUserName, std::string enteredNickName) {
 //	typedef std::vector<User*>::iterator UserIterator;
