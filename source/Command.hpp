@@ -24,9 +24,10 @@ class Command {
 		//----server 입장-----
 		// PASS
 		void pass(std::vector<std::string> msgs, User &user);
+		void checkLastPassState(User &user) const;
 
 		// NICK
-		void nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
+		int nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
 
 		// USER
 		std::string user(std::vector<std::string> msgs, User &user);

@@ -21,25 +21,29 @@ void Command::pass(std::vector<std::string> msgs, User &user) {
 		user.setUserIsPass(3);
 	}
 	else {
-		std::cout << "PASS SUCCESS!!\n";
+		std::cout << "PASS SUCCESS!!" << std::endl;
+		user.setUserIsPass(1);
 	}
 }
 
-void Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user) {
+int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user) {
 	size_t msgsSize;
 	std::cout << "[ NICK ]" << std::endl;
 
 	msgsSize = msgs.size();
 	if (msgsSize < 2) {
 		std::cout << "ERROR: NEDDMOREPARMS\n";
-		return ;
+		throw ERR_PASSWDMISMATCH();
 	}
-	if (cc.checkNickName(msgs[1])) {
+	if (cc.checkNickName(msgs[1])) { // 중복되면 에러가 아닌 수정을 해준다.
 		std::cout << "ERROR: NICK USED\n";
-		return ;
+		user.getUserIndex();
+		msgs[1] = msgs[1] + '_';
 	}
+	std::cout << "NICK SET NICKNAME: " << msgs[1] << "\n";
 	user.setNickName(msgs[1]);
 	std::cout << "NICK SUCCESS!!\n";
+	return 1;
 }
 
 std::string Command::user(std::vector<std::string> msgs, User &user) {
@@ -49,12 +53,12 @@ std::string Command::user(std::vector<std::string> msgs, User &user) {
 
 	msgsSize = msgs.size();
 	if (msgsSize < 5) {
-		std::cout << "ERROR: NEED MORE PARMS\n";
-		return "";
+		std::cout << "ERROR: NEDDMOREPARAMS\n";
+		throw ERR_NEEDMOREPARAMS();
 	}
 	if (user.getNickName() == "") { // pass -> nick -> user 순서 준수를 위해 체크
 		std::cout << "ERROR: NEED NICK COMMAND\n";
-		return "";
+		throw ERR_NEEDMOREPARAMS();
 	}
 	if (msgs[4][0] == ':') {
 		for(std::vector<std::string>::iterator iter = msgs.begin()+4; iter != msgs.end(); iter++) {
@@ -230,6 +234,20 @@ Command Command::operator=(Command &other) {
 
 int	checkLogin(User User) {
 	return 1;
+}
+
+void Command::checkLastPassState(User &user) const {
+	int value;
+
+	value = user.getUserIsPass();
+	if (value == 2) {
+		std::cout << "ERROR: NEDDMOREPARAMS\n";
+		throw ERR_NEEDMOREPARAMS();
+	}
+	else if (value == 3) {
+		std::cout << "ERROR: PASSWDMISMATCH\n";
+		throw ERR_PASSWDMISMATCH();
+	}
 }
 
 // ---------------test용---------------
