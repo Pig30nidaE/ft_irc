@@ -23,7 +23,7 @@ class Command {
 
 		//----server 입장-----
 		// PASS
-		void pass(std::vector<std::string> msgs);
+		void pass(std::vector<std::string> msgs, User &user);
 
 		// NICK
 		void nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);

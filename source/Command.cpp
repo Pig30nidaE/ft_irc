@@ -4,18 +4,21 @@
 #include "../func/Channel.hpp"
 
 
-void Command::pass(std::vector<std::string> msgs) {
+void Command::pass(std::vector<std::string> msgs, User &user) {
 	size_t msgsSize;
 	std::cout << "[ PASS ]" << std::endl;
 
 	msgsSize = msgs.size();
 	if (msgsSize < 2) {
-		std::cout << "ERROR: NEDDMOREPARAMS\n";
-		throw ERR_NEEDMOREPARAMS();
+		// std::cout << "ERROR: NEDDMOREPARAMS\n";
+		// throw ERR_NEEDMOREPARAMS();
+		user.setUserIsPass(2);
+		return ;
 	}
 	if (serverPass != msgs[1]) {
-		std::cout << "ERROR: PASSWDMISMATCH\n";
-		throw ERR_PASSWDMISMATCH();
+		// std::cout << "ERROR: PASSWDMISMATCH\n";
+		// throw ERR_PASSWDMISMATCH();
+		user.setUserIsPass(3);
 	}
 	else {
 		std::cout << "PASS SUCCESS!!\n";

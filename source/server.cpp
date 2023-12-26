@@ -215,7 +215,7 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
         {
             case PASS:
                 command->pass(msgs);
-                user.setUserIsPass(1);
+                // user.setUserIsPass(1); // 마지막 PASS만 인식하기 위해서 pass()안에서 설정
                 break;
 		
             case NICK:
