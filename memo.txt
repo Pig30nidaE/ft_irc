@@ -45,3 +45,11 @@ INVITE nickname_ #test
 14. PART 해결 후 INVITE_ONLY 채널에서 INVITE->invite 받은 유저 join->PART->다시 join했을 때
 못들어가야하는거(다시초대받아야하는) 확인해야함. (X)
 15. User가 여러 채널 join할 수 있으며, 확실히 정해야함. 정한 후 다신 바꾸지 않기. (X)
+16. 채팅방에 들어가고 PASS를 실행시 ":irc.local 462 dong :You may not reregister" 출력
+
+-------------------User의 isPass 플래그 목록 ------------------------------
+0	:	초기값
+1	:	성공
+2	:	NEDDMOREPARMS
+3	:	PASSWDMISMATCH
+4	:	login 상태

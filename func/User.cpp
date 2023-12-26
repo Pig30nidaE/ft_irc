@@ -6,12 +6,12 @@
 
 
 User::User(void):
-isOperator(false),userIndex(-1) {
+buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {
 	//userRegister(channel_container);
 	// connectionTime = std::time(nullptr);
 }
 
-User::~User() {std::cout << "destroyed user: " << userSock << "\n";}
+User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
 
 //void User::userRegister(ChannelContainer &channel_container, std::string enteredUserName, std::string enteredNickName) {
 //	typedef std::vector<User*>::iterator UserIterator;
