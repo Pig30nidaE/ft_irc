@@ -41,7 +41,7 @@ class ChannelContainer;
 class Server {
 	public:
 		Server(void);
-		Server(std::string pass);
+		Server(std::string port, std::string pass);
 		Server(int serverPass);
 		~Server();
 		void serverStart(void);

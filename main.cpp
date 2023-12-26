@@ -2,14 +2,11 @@
 
 int main(int argc, char **argv)
 {
-	// if (argc != 3) {
-	// 	std::cout << "argv error\n";
-	// }
-	if (argc < 2) {
-		std::cout << "plz password\n";
-		return 1;
+	if (argc != 3) {
+		std::cout << "ERROR: NEEDMOREPARMS\n";
 	}
-	std::cout << "server pass :" << argv[1] << "\n";
-	Server server(argv[1]);
+	std::cout << "server pass :" << argv[2] << "\n";
+	std::cout << "server port :" << argv[1] << "\n";
+	Server server(argv[1], argv[2]);
 	server.serverStart();
 }
