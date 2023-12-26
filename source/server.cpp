@@ -306,7 +306,7 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
         std::cerr << "[Catch]: " <<  e.what() << '\n';
         sendMsg(user, e.what());
     }
-    if ((flag == USER || flag == NICK) && user.getNickName() != "" && user.getUserName() != "") {
+    if ((flag == USER || flag == NICK) && userPass == 4 && user.getNickName() != "" && user.getUserName() != "") {
         user.setUserIsPass(5);
         sendMsg(user, ":irc.local 001 " + user.getNickName() + ":Welcome to the Localnet IRC Network " + user.getNickName() + "!root@127.0.0.1\n");
     }
