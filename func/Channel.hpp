@@ -11,7 +11,7 @@
 #define MODE_TOPIC_LIMIT   		0x02  // t
 #define MODE_CHANNEL_KEY   		0x04  // k
 #define MODE_OPERATOR_GRANTED 	0x08  // o
-#define MODE_CAPCITY_LIMIT 		0x16  // l
+#define MODE_CAPACITY_LIMIT 	0x10  // l
 
 class User;
 
@@ -54,9 +54,9 @@ class Channel {
 		int							index;
 		std::string 				channelName;
 		std::vector<User*>			userList;
-		std::vector<int>			bannedUserList;
+		std::vector<int>			invitedUserList;
 		std::string					password;
-		int							capcity;
+		int							capacity;
 		Topic						*topic;
 		Mode						*mode;
 	public:
@@ -65,20 +65,19 @@ class Channel {
 
 		void	userAdd(User& user);
 		void	userDel(User& user);
-		bool	isUserBan(int userSock);
 
 		std::string					getChannelName(void) const;
 		void						setChannelName(std::string const channelname);
 		std::vector<User*>	 		&getUserList(void);
-		std::vector<int>			&getBannedUserList(void);
+		std::vector<int>			&getInvitedUserList(void);
 		std::string					getPassword(void) const;
 		void						setPassword(std::string pwd);
 		Topic						&getTopicRef(void);
 		Mode						&getModeRef(void);
 		int							getIndex(void);
 		void						setIndex(int idx);
-		int							getCapcity(void);
-		void						setCapcity(int size);
+		int							getCapacity(void);
+		void						setCapacity(int size);
 
 
 };

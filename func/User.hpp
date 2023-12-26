@@ -33,10 +33,10 @@ class User {
 		void	userInfoErase(User& user); // do I need?
 		void	changeUserName(std::string toChange);
 		//void	changeNickName(std::string toChange);
-		void	joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_container, bool isInvited);
+		int		joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_container);
 		void	exitChannel(std::string toExitChannel, ChannelContainer& channel_container);
 		void	kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container);
-		void	inviteUser(User& toInviteUser, Channel& toChannel, std::string enterPwd, ChannelContainer& channel_container);
+		void	inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container);
 		void	changeMode(ChannelContainer& channel_container, std::string channel, bool onoff_flag, int type, ...);
 		void	topicCommand(ChannelContainer& channel_container, std::string channel, ...);
 

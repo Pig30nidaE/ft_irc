@@ -1,6 +1,8 @@
 #include "User.hpp"
 
-//ToDo: 유저에 대한 operator 권한을 어떻게 할 것인지 정해야함.
+//ToDo: feat invite
+//ToDo: JOIN ~ 모든 명령어 검사
+//ToDo: 미구현한 명령어 확인
 
 
 User::User(void):
@@ -73,7 +75,7 @@ void User::userInfoErase(User& user) {
 	//user.setJoinedChannelIndex(-1);
 }
 
-void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_contaier, bool isInvited) {
+int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_contaier) {
 	int	index = 0;
 	if (!channel_contaier.getChannelList().empty()) {
 		std::vector<Channel*>::iterator channel_iter \
@@ -82,27 +84,39 @@ void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelC
 		for (channel_iter = channel_contaier.getChannelList().begin();\
 			channel_iter != channel_contaier.getChannelList().end();channel_iter++) {
 			if ((*channel_iter)->getChannelName() == toJoinChannel) {
-				if ((*channel_iter)->isUserBan(getUserSock())) {
-					std::cout << "You're banned from this channel." << std::endl;
-					return ;
+				int channel_capacity = (*channel_iter)->getCapacity();
+				if (channel_capacity) {
+					if ((*channel_iter)->getUserList().size() == channel_capacity) {
+						std::cout << "this channel is full." << std::endl;
+						return -1;
+					}
 				}
 				Mode& channel_mode = (*channel_iter)->getModeRef();
 				if (channel_mode.checkType(MODE_CHANNEL_KEY)) {
-					if (enterPwd != (*channel_iter)->getPassword()) {
-						std::cout << "wrong password." << std::endl;
-						return ;
+					if (enterPwd.length()) {
+						if (enterPwd != (*channel_iter)->getPassword()) {
+							std::cout << "wrong password." << std::endl;
+							return -1;
+						}
+					}
+					else {
+						std::cout << "Need password." << std::endl;
+						return -1;
 					}
 				}
 				if (channel_mode.checkType(MODE_INVITE_ONLY)) {
-					if (!isInvited) {
+					typedef std::vector<int>::iterator INVITED;
+					INVITED iv_iter_begin = (*channel_iter)->getInvitedUserList().begin();
+					INVITED iv_iter_end = (*channel_iter)->getInvitedUserList().end();
+					if (std::find(iv_iter_begin, iv_iter_end, getUserSock()) == iv_iter_end) {
 						std::cout << "This channel is invite only." << std::endl;
-						return ;
+						return -1;
 					}
 				}
 				setUserIndex(channel_contaier.getChannelList().size());
 				(*channel_iter)->userAdd(*this);
 				getJoinedChannelList(channel_contaier).push_back(*channel_iter);
-				return ;
+				return 0;
 			}
 			index++;
 		}
@@ -114,16 +128,22 @@ void User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelC
 	channel_contaier.createChannel(*toJoin);
 	getJoinedChannelList(channel_contaier).push_back(toJoin);
 	setUserIndex(0);
+	return 0;
 }
 
 void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_container) {
     Channel *exitCh = getSpecificChannelJoined(toExitChannel, channel_container);
     std::vector<Channel*>& JoinedChannels = getJoinedChannelList(channel_container);
 
-    exitCh->userDel(*this);
+	//std::cout << "CHECKER1" << std::endl;
+    exitCh->userDel(*this); //
 
     std::vector<Channel*>::iterator iter = std::find(JoinedChannels.begin(), JoinedChannels.end(), exitCh);
     if (iter != JoinedChannels.end()) {
+		std::vector<int>::iterator sock_iter = std::find(exitCh->getInvitedUserList().begin(),\
+			exitCh->getInvitedUserList().end(), getUserSock());
+		if (sock_iter != exitCh->getInvitedUserList().end())
+			exitCh->getInvitedUserList().erase(sock_iter);
         JoinedChannels.erase(iter);
     }
 	if (exitCh->getUserList().empty())
@@ -132,19 +152,23 @@ void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_cont
 
 
 void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container) {
+	//std::cout << toKickUser << std::endl;
+	//std::cout << this->getUserName() << std::endl;
 	if (!isOperator) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
-	if (toKickUser == getUserName()) {
+	if (toKickUser == getNickName()) {
 		std::cerr << "Can't kick yourself." << std::endl;
 		return ;
+	}
+	if (&fromChannel == nullptr) {
+		return ; // fromChannel없을때
 	}
 	typedef std::vector<User*>::iterator UserIterator;
 	std::vector <User*> toChUsrList = fromChannel.getUserList();
 	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
 		if ((*user_iter)->getNickName() == toKickUser) {
-			fromChannel.getBannedUserList().push_back((*user_iter)->getUserSock());
 			(*user_iter)->exitChannel(fromChannel.getChannelName(), channel_container);
 			std::cout << toKickUser << " is kicked from this channel." << std::endl;
 			return ;
@@ -153,7 +177,7 @@ void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContain
 	std::cerr << "No such user." << std::endl;
 }
 
-void User::inviteUser(User& toInviteUser, Channel& toChannel, std::string enterPwd, ChannelContainer& channel_container) {
+void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container) {
 	if (!isOperator) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
@@ -162,32 +186,35 @@ void User::inviteUser(User& toInviteUser, Channel& toChannel, std::string enterP
 		std::cerr << "Can't invite yourself." << std::endl;
 		return ;
 	}
-	typedef std::vector<User*>::iterator UserIterator;
-	std::vector <User*> toChUsrList = toChannel.getUserList();
-	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
-		if ((*user_iter)->getUserName() == toInviteUser.getUserName()) {
-			std::cerr << "Already exist in the channel." << std::endl;
+	typedef std::vector<int>::iterator InvitedIterator;
+	std::vector <int> invUsrLst = toChannel.getInvitedUserList();
+	for (InvitedIterator inv_iter = invUsrLst.begin();inv_iter != invUsrLst.end();inv_iter++) {
+		if (*inv_iter == toInviteUser.getUserSock()) {
+			std::cerr << "Already invited." << std::endl;
 			return ;
 		}
 	}
-	if (toChannel.getModeRef().checkType(MODE_CHANNEL_KEY))
-		toInviteUser.joinChannel(toChannel.getChannelName(), enterPwd, channel_container, true);
-	else
-		toInviteUser.joinChannel(toChannel.getChannelName(), "",channel_container, true);
+	toChannel.getInvitedUserList().push_back(toInviteUser.getUserSock());
+	std::cout << toInviteUser.getUserName() << " is invited." << std::endl;
+	//if (toChannel.getModeRef().checkType(MODE_CHANNEL_KEY))
+	//	toInviteUser.joinChannel(toChannel.getChannelName(), enterPwd, channel_container, true);
+	//else
+	//	toInviteUser.joinChannel(toChannel.getChannelName(), "",channel_container, true);
 }
 
 void User::changeMode(ChannelContainer& channel_container, std::string channel, bool onoff_flag, int type, ...) {
-	if (!isOperator) {
-		std::cerr << "Not permitted." << std::endl;
-		return ;
-	}
 	Channel* joinedChannel = getSpecificChannelJoined(channel, channel_container);
 	if (!joinedChannel) {
 		std::cerr << "no such channel." << std::endl;
 		return ;
 	}
+	if (!isOperator) {
+		std::cerr << "Not permitted." << std::endl;
+		return ;
+	}
 	Mode& channelMode = joinedChannel->getModeRef();
-	if (onoff_flag) {
+	std::cout << "type: " << type << std::endl;
+	if (onoff_flag) { // MODE ON
 		if (MODE_CHECK_TYPE(type, MODE_INVITE_ONLY))
 			channelMode.turnOnType(MODE_INVITE_ONLY);
 		if (MODE_CHECK_TYPE(type, MODE_TOPIC_LIMIT))
@@ -196,13 +223,21 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			channelMode.turnOnType(MODE_CHANNEL_KEY);
 			va_list ap;
 			va_start(ap, type);
-			std::string passwd(va_arg(ap, char*));
+			char *passwd_ap = va_arg(ap, char*);
+			if (passwd_ap == nullptr)
+				return ;
+			std::string passwd(passwd_ap);
+			std::cout << passwd << std::endl;
 			joinedChannel->setPassword(passwd);
 		}
 		if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) {
 			va_list ap;
 			va_start(ap, type);
-			std::string targetNick(va_arg(ap, char *));
+			char *target_ap = va_arg(ap, char*);
+			if (target_ap == nullptr)
+				return ;
+			std::string targetNick(target_ap);
+			//std::string targetNick(va_arg(ap, char *));
 			std::vector<User*> usrList = joinedChannel->getUserList();
 			typedef std::vector<User*>::iterator usrIterator;
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
@@ -214,14 +249,16 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			}
 			std::cout << "no such user." << std::endl;
 		}
-		if (MODE_CHECK_TYPE(type, MODE_CAPCITY_LIMIT)) {
+		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
 			va_list ap;
 			va_start(ap, type);
 			int size = va_arg(ap, int);
-			joinedChannel->setCapcity(size);
+			if (!size)
+				return ;
+			joinedChannel->setCapacity(size);
 		}
 	}
-	else {
+	else { // MODE OFF
 		if (MODE_CHECK_TYPE(type, MODE_INVITE_ONLY))
 			channelMode.turnOffType(MODE_INVITE_ONLY);
 		if (MODE_CHECK_TYPE(type, MODE_TOPIC_LIMIT))
@@ -229,7 +266,10 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 		if (MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY)) {
 			va_list ap;
 			va_start(ap, type);
-			std::string passwd(va_arg(ap, char*));
+			char* passwd_ap = va_arg(ap, char*);
+			if (passwd_ap == nullptr)
+				return ;
+			std::string passwd(passwd_ap);
 			if (passwd == joinedChannel->getPassword()) {
 				joinedChannel->setPassword("");
 				channelMode.turnOffType(MODE_CHANNEL_KEY);
@@ -253,14 +293,16 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			}
 			std::cout << "no such user." << std::endl;
 		}
-		if (MODE_CHECK_TYPE(type, MODE_CAPCITY_LIMIT)) {
-			va_list ap;
-			va_start(ap, type);
-			int size = va_arg(ap, int);
-			joinedChannel->setCapcity(size);
-		}
-		if (MODE_CHECK_TYPE(type, MODE_CAPCITY_LIMIT))
-			joinedChannel->setCapcity(0);
+		//if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
+		//	va_list ap;
+		//	va_start(ap, type);
+		//	int size = va_arg(ap, int);
+		//	if (!size)
+		//		return ;
+		//	joinedChannel->setCapacity(size);
+		//}
+		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT))
+			joinedChannel->setCapacity(0);
 	}
 }
 
@@ -279,7 +321,8 @@ void User::topicCommand(ChannelContainer& channel_container, std::string channel
 	}
 	va_list ap;
 	va_start(ap, channel);
-	std::string newTopic(va_arg(ap, char*));
+	char *topic_ap = va_arg(ap, char*);
+	std::string newTopic(topic_ap);
 	if (!newTopic.length()) {
 		std::cout << joinedChannel->getTopicRef().getTopic() << std::endl;
 	}

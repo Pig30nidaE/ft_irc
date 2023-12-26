@@ -22,9 +22,9 @@
 
 enum {
 	PASS,
-	NICK,
+	NICK, 
 	USER,
-	JOIN,
+	JOIN, 
 	PART,
 	PING,
 	KICK,
@@ -50,7 +50,10 @@ class Server {
 		void setServerPass(std::string serverPass); // test 용
 		void parser(std::string msg, User &user);
 
-		//------------
+		//------------ sanghyol 건듦.
+		ChannelContainer& getChannelContainer(void) {
+			return *channelContainer;
+		}
 
 	private:
 		void		executeCommand(std::vector<std::string> msgs, User &user);

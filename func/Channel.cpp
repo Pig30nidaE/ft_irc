@@ -2,7 +2,7 @@
 
 
 Channel::Channel(std::string name):
-channelName(name),capcity(0) {
+channelName(name),capacity(0) {
 	mode = new Mode(ALL_MODES_OFF);
 	topic = new Topic("");
 }
@@ -21,21 +21,21 @@ void Channel::userAdd(User& user) {
 }
 
 void Channel::userDel(User& user) {
-	std::vector<User*>::iterator to_del_usr = find(getUserList().begin(), getUserList().end(),\
-		 &user);
-	if (to_del_usr == getUserList().end()) {
-		std::cerr << "no such user." << std::endl;
-		return ;
-	}
-	//int to_del_idx = *to_del_usr - *(getUserList().begin());
-	userList.erase(getUserList().begin() + (*to_del_usr)->getUserIndex());
-	//user.getNickName().erase(getChannelName());
-}
+	std::cout << "CHECKER1" << std::endl;
+	std::vector<User*> usrList = getUserList();
+	std::cout << "CHECKER2" << std::endl;
+	typedef std::vector<User*>::iterator UserIter;
+	std::cout << "CHECKER3" << std::endl;
 
-bool Channel::isUserBan(int userSock) {
-	if (std::find(bannedUserList.begin(), bannedUserList.end(), userSock) != bannedUserList.end())
-		return true;
-	return false;
+	for (UserIter iter = usrList.begin();iter != usrList.end();iter++) {
+		if ((*iter)->getNickName() == user.getNickName()) {
+			std::cout << "CHECKER4" << std::endl;
+			usrList.erase(iter);
+			std::cout << "CHECKER5" << std::endl;
+			return ;
+		}
+	}
+	std::cerr << "no such user." << std::endl;
 }
 
 void Channel::setChannelName(std::string const channelname) {
@@ -46,9 +46,10 @@ std::vector<User*>& Channel::getUserList(void) {
     return userList;
 }
 
-std::vector<int>& Channel::getBannedUserList(void) {
-	return bannedUserList;
-}
+
+std::vector<int>& Channel::getInvitedUserList(void) {
+	return invitedUserList;
+} 
 
 std::string Channel::getPassword(void) const {
 	return password;
@@ -75,10 +76,10 @@ void Channel::setIndex(int idx) {
 	index = idx;
 }
 
-int	Channel::getCapcity(void) {
-	return capcity;
+int	Channel::getCapacity(void) {
+	return capacity;
 }
 
-void Channel::setCapcity(int size) {
-	capcity = size;
+void Channel::setCapacity(int size) {
+	capacity = size;
 }
