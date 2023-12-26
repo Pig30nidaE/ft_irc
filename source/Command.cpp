@@ -9,20 +9,25 @@ void Command::pass(std::vector<std::string> msgs, User &user) {
 	std::cout << "[ PASS ]" << std::endl;
 
 	msgsSize = msgs.size();
-	if (msgsSize < 2) {
-		// std::cout << "ERROR: NEDDMOREPARAMS\n";
-		// throw ERR_NEEDMOREPARAMS();
-		user.setUserIsPass(2);
-		return ;
-	}
-	if (serverPass != msgs[1]) {
-		// std::cout << "ERROR: PASSWDMISMATCH\n";
-		// throw ERR_PASSWDMISMATCH();
-		user.setUserIsPass(3);
+	if (user.getUserIsPass() == 0) {
+		if (msgsSize < 2) {
+			// std::cout << "ERROR: NEDDMOREPARAMS\n";
+			// throw ERR_NEEDMOREPARAMS();
+			user.setUserIsPass(2);
+			return ;
+		}
+		if (serverPass != msgs[1]) {
+			// std::cout << "ERROR: PASSWDMISMATCH\n";
+			// throw ERR_PASSWDMISMATCH();
+			user.setUserIsPass(3);
+		}
+		else {
+			std::cout << "PASS SUCCESS!!" << std::endl;
+			user.setUserIsPass(1);
+		}
 	}
 	else {
-		std::cout << "PASS SUCCESS!!" << std::endl;
-		user.setUserIsPass(1);
+		throw Err_alreadyregistered();
 	}
 }
 
@@ -30,20 +35,25 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 	size_t msgsSize;
 	std::cout << "[ NICK ]" << std::endl;
 
-	msgsSize = msgs.size();
-	if (msgsSize < 2) {
-		std::cout << "ERROR: NEDDMOREPARMS\n";
-		throw ERR_PASSWDMISMATCH();
+	if (user.getUserIsPass() != 4) {
+		msgsSize = msgs.size();
+		if (msgsSize < 2) {
+			std::cout << "ERROR: NEDDMOREPARMS\n";
+			throw ERR_PASSWDMISMATCH();
+		}
+		if (cc.checkNickName(msgs[1])) { // 중복되면 에러가 아닌 수정을 해준다.
+			std::cout << "ERROR: NICK USED\n";
+			user.getUserIndex();
+			msgs[1] = msgs[1] + '_';
+		}
+		std::cout << "NICK SET NICKNAME: " << msgs[1] << "\n";
+		user.setNickName(msgs[1]);
+		std::cout << "NICK SUCCESS!!\n";
+		return 1;
 	}
-	if (cc.checkNickName(msgs[1])) { // 중복되면 에러가 아닌 수정을 해준다.
-		std::cout << "ERROR: NICK USED\n";
-		user.getUserIndex();
-		msgs[1] = msgs[1] + '_';
+	else {
+		return 0;
 	}
-	std::cout << "NICK SET NICKNAME: " << msgs[1] << "\n";
-	user.setNickName(msgs[1]);
-	std::cout << "NICK SUCCESS!!\n";
-	return 1;
 }
 
 std::string Command::user(std::vector<std::string> msgs, User &user) {
@@ -240,7 +250,10 @@ void Command::checkLastPassState(User &user) const {
 	int value;
 
 	value = user.getUserIsPass();
-	if (value == 2) {
+	if (value == 1) {
+		user.setUserIsPass(4);
+	}
+	else if (value == 2) {
 		std::cout << "ERROR: NEDDMOREPARAMS\n";
 		throw ERR_NEEDMOREPARAMS();
 	}

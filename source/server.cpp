@@ -207,6 +207,7 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
     std::string result;
     Channel     *tmp;
 	int         flag = -1;
+    int         userPass;
 
 	if (msgs.empty()) { // msgs가 비어있다면
         std::cout << "msgs is empty!!\n";
@@ -219,9 +220,10 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
         if (msgs[0] == arr[i])
 			flag = i; // 찾은 command 플래그 저장
 	}
+    userPass = user.getUserIsPass();
     try
     {
-        if (flag != PASS && user.getUserIsPass() != 0) { // 마지막으로 남아있는 user의 isPass를 검사하여 pass명령어 진행
+        if (userPass != 4 && flag != PASS && userPass != 0) { // 마지막으로 남아있는 user의 isPass를 검사하여 pass명령어 진행
             command->checkLastPassState(user);
         }
         switch (flag)

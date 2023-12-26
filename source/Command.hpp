@@ -68,6 +68,12 @@ class Command {
 					return "ERR_PASSWDMISMATCH!!\n";
 				};
 		};
+		class Err_alreadyregistered : public std::exception {
+			public:
+				const char* what(void) const throw() {
+					return " :You may not reregister\n";
+				};
+		};
 		// PASS ERROR
 
 };
