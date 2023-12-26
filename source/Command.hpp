@@ -2,6 +2,7 @@
 #define COMMAND_HPP
 
 #include <string>
+#include <unistd.h>
 
 class User;
 class ChannelContainer;
@@ -21,6 +22,8 @@ class Command {
 		void setServerPass(std::string serverPass); // test용
 
 
+		void sendMsg(User &user, std::string msg) const;
+
 		//----server 입장-----
 		// PASS
 		void pass(std::vector<std::string> msgs, User &user);
@@ -30,7 +33,7 @@ class Command {
 		int nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
 
 		// USER
-		std::string user(std::vector<std::string> msgs, User &user);
+		void user(std::vector<std::string> msgs, User &user);
 		
 		// ----channel join-----
 		int	 join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
@@ -56,18 +59,30 @@ class Command {
 		int	checkLogin(User user);
 
 		// PASS ERROR
-		class ERR_NEEDMOREPARAMS : public std::exception {
+		class Err_anyError : public std::exception {
+			public:
+				Err_anyError(const char *command) : _command(command) {}
+				const char *what() const throw() {
+					return _command;
+				}
+			private:
+				const char *_command;
+		};
+
+		class Err_needmoreparams : public std::exception {
 			public:
 				const char* what(void) const throw() {
-					return "ERR_NEEDMOREPARAMS!!\n";
-				};
+					return ":Not enough parameters\n";
+				}
 		};
+
 		class ERR_PASSWDMISMATCH : public std::exception {
 			public:
 				const char* what(void) const throw() {
-					return "ERR_PASSWDMISMATCH!!\n";
+					return ":Password incorrect\n";
 				};
 		};
+		
 		class Err_alreadyregistered : public std::exception {
 			public:
 				const char* what(void) const throw() {

@@ -234,17 +234,11 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
 		
             case NICK:
-                if (command->nick(msgs, *channelContainer, user)) {
-                    // sendMsg()
-                }
+                command->nick(msgs, *channelContainer, user);
                 break;
 
             case USER:
-                result = command->user(msgs, user);
-                if (result != "") {
-                    sendMsg(user, result);
-                    // (channelContainer->getUserList()).push_back(&user);
-                }
+                command->user(msgs, user);
                 break;
 			
             case JOIN:
@@ -306,7 +300,9 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
             disconnectClient(&user);
         }
         std::cerr << e.what() << '\n';
+        sendMsg(user, e.what());
     }
+    // catch(const Command::Err_needmoreparams& e)
 	//--------------------------------------
 	std::cout << "-----------------------------\n";
 	// if ((&msg[end])[0] != '\0')
