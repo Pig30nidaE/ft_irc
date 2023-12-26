@@ -115,9 +115,9 @@ void Server::recvMsg(uintptr_t fd) {
         buf[n] = '\0';
         std::string test = buf;
         std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
-        //parser(test, *clients[fd]);
-        executeCommand(test, *clients[fd]);
-        std::cout << "NICK: " << (*clients[fd]).getNickName() << std::endl;
+        parser(test, *clients[fd]);
+        //executeCommand(test, *clients[fd]);
+        //std::cout << "NICK: " << (*clients[fd]).getNickName() << std::endl;
 
     }
 }
@@ -203,7 +203,8 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 
 	for (size_t i = 0; i < 10; i++) // command 개수만큼 반복
 	{
-		if (msgs[0].compare(0, 4, arr[i]) == 0) 
+		//if (msgs[0].compare(0, 4, arr[i]) == 0) 
+        if (msgs[0].c_str() == arr[i])
 			flag = i; // 찾은 command 플래그 저장
 	}
 
@@ -218,30 +219,31 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 			break;
 		
 		case NICK:
-            command->nick(content, *channelContainer, user);
+            command->nick(msgs, *channelContainer, user);
 			break;
 
 		case USER:
-            sendMsg(user, command->user(content, user));
+            sendMsg(user, command->user(msgs, user));
 			break;
 			
 		case JOIN:
-            command->join(content, *channelContainer, user);
-            sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
-            tmp = user.getSpecificChannelJoined(content, *channelContainer);
-            broadcastMsg(user, tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
+            if (command->join(msgs, *channelContainer, user) >= 0) {
+                sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
+                tmp = user.getSpecificChannelJoined(msgs[0], *channelContainer);
+                broadcastMsg(user, tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
+            }
 			break;
 			
 		case PART:
-            command->part(content, *channelContainer, user);
+            command->part(msgs, *channelContainer, user);
 			break;
 			
 		case PING:
-            command->ping(content, user);
+            command->ping(msgs[0], user);
 			break;
 
         case KICK:
-            command->kick(content, *channelContainer, user);
+            command->kick(msgs, *channelContainer, user);
             break;
         
         //case INVITE: //LSH
@@ -250,16 +252,24 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
         //    break;
 
         case TOPIC:
-            tmp = user.getSpecificChannelJoined(content, *channelContainer);
-            sendMsg(user, command->topic(*tmp, content)); // 임시
+			if (msgs.size() < 2) {
+				std::cout << "need channel name." << std::endl;
+				break ;
+			}
+            tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
+			if (tmp == nullptr) {
+				std::cout << "ERROR" << std::endl;
+				break ;
+			}
+            sendMsg(user, command->topic(*tmp, msgs[1])); // 임시
             break;
 
         case MODE:
             //command->mode(content, content, content);
             /* test용 */
-            testCmd.push_back("test");
-            testCmd.push_back("+");
-            command->mode(testCmd, user, *channelContainer);
+            //testCmd.push_back("test");
+            //testCmd.push_back("+");
+            command->mode(msgs, user, *channelContainer);
             break;
 		default:
 			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
