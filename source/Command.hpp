@@ -2,6 +2,7 @@
 #define COMMAND_HPP
 
 #include <string>
+#include <unistd.h>
 
 class User;
 class ChannelContainer;
@@ -21,15 +22,18 @@ class Command {
 		void setServerPass(std::string serverPass); // test용
 
 
+		void sendMsg(User &user, std::string msg) const;
+
 		//----server 입장-----
 		// PASS
-		void pass(std::vector<std::string> msgs);
+		void pass(std::vector<std::string> msgs, User &user);
+		void checkLastPassState(User &user) const;
 
 		// NICK
-		void nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
+		int nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
 
 		// USER
-		std::string user(std::vector<std::string> msgs, User &user);
+		void user(std::vector<std::string> msgs, User &user);
 		
 		// ----channel join-----
 		int	 join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
@@ -48,28 +52,44 @@ class Command {
 		void mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
-
+		// test
+		class ErrNotRegistered : public std::invalid_argument {
+			public:
+				ErrNotRegistered(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
+		};
 
 	private:
 		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
 		int	checkLogin(User user);
 
-		// PASS ERROR
-		class ERR_NEEDMOREPARAMS : public std::exception {
+		// ---------EXCEPTION--------
+		// ----PASS----
+		class ErrPasswdMisMatch : public std::exception {
 			public:
 				const char* what(void) const throw() {
-					return "ERR_NEEDMOREPARAMS!!\n";
+					return " PASS :Password incorrect\n";
 				};
 		};
-		class ERR_PASSWDMISMATCH : public std::exception {
-			public:
-				const char* what(void) const throw() {
-					return "ERR_PASSWDMISMATCH!!\n";
-				};
-		};
-		// PASS ERROR
 
+		class ErrAlreadyRegistered : public std::invalid_argument { 
+			public:
+				ErrAlreadyRegistered(const std::string &command) : std::invalid_argument(command + ":You may not reregister\n") {}
+		};
+
+		// 공통
+		class ErrNeedMoreParams : public std::invalid_argument {
+			public:
+				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
+		};
+
+
+		// NICK ERROR
+		class ErrNickNameInUser : public std::invalid_argument {
+			public:
+				ErrNickNameInUser(const std::string& nickname) : std::invalid_argument(nickname + " :Nickname is already is user\n") {}
+		};
+
+		// USER ERROR
 };
-
 
 #endif
