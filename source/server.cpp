@@ -223,12 +223,15 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
     userPass = user.getUserIsPass();
     try
     {
+        // PASS 마지막만 적용하기 위한 코드
         if ((userPass == 1 || userPass == 2 || userPass == 3) && flag != PASS) { // 마지막으로 남아있는 user의 isPass를 검사하여 pass명령어 진행
             command->checkLastPassState(user);
         }
+        // 레지스터 전 다른 명령어 사용에 대한 예외처리
         else if (userPass != 5 && !(flag >= -1 && flag <= 2)) {
             throw Command::ErrNotRegistered(arr[flag]);
         }
+        // PASS 확인 이전에 다른 명령어에 예외처리
         else if (userPass == 0 && (flag != PASS && flag != -1)) {
             throw Command::ErrNotRegistered(arr[flag]);
         }
@@ -307,7 +310,7 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
         sendMsg(user, e.what());
     }
     if ((flag == USER || flag == NICK) && userPass == 4 && user.getNickName() != "" && user.getUserName() != "") {
-        user.setUserIsPass(5);
+        user.setUserIsPass(5); // USER NICK 상관없이 register하는 예외처리
         sendMsg(user, ":irc.local 001 " + user.getNickName() + ":Welcome to the Localnet IRC Network " + user.getNickName() + "!root@127.0.0.1\n");
     }
 
