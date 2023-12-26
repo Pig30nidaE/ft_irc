@@ -9,7 +9,7 @@ void Command::pass(std::vector<std::string> msgs, User &user) {
 	std::cout << "[ PASS ]" << std::endl;
 
 	msgsSize = msgs.size();
-	if (user.getUserIsPass() == 0) {
+	if (user.getUserIsPass() != 5 && user.getUserIsPass() != 4) {
 		if (msgsSize < 2) {
 			user.setUserIsPass(2);
 			return ;
@@ -23,7 +23,7 @@ void Command::pass(std::vector<std::string> msgs, User &user) {
 		}
 	}
 	else {
-		throw Err_alreadyregistered();
+		throw ErrAlreadyRegistered("PASS");
 	}
 }
 
@@ -36,25 +36,17 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 	msgsSize = msgs.size();
 	if (msgsSize < 2) {
 		std::cout << "ERROR: NEDDMOREPARMS\n";
-		throw Err_anyError("NICK :NOT enough parameters\n");
+		throw ErrNeedMoreParams("NICK");
 	}
-	if (nickname == "") { // nickname이 초기 값일때
-		if (cc.checkNickName(msgs[1])) {
-			std::cout << "ERROR: NICK USED\n";
-			user.getUserIndex();
-			msgs[1] = msgs[1] + '_';
-		}
+	if (nickname == msgs[1]) { // 본인 닉넴으로 변경할 때는 그냥 넘김
+		return 1;
 	}
-	else { // 이전 nickname이 있을 때
-		if (nickname == msgs[1]) { // 본인 닉넴으로 변경할 때는 그냥 넘김
-			return 1;
-		}
-		else if (cc.checkNickName(msgs[1])) {
-			std::cout << "ERROR: NICK USED\n";
-			throw ERR_PASSWDMISMATCH();
-		}
+	else if (cc.checkNickName(msgs[1])) {
+		std::cout << "ERROR: NICK USED\n";
+		throw ErrNickNameInUser(msgs[1]);
+	}
+	if (nickname != "") // 회원가입 할 때는 안보냄
 		sendMsg(user, nickname + " NICK :" + msgs[1] + '\n');
-	}
 	user.setNickName(msgs[1]);
 	std::cout << "NICK SUCCESS!!\n";
 	return 1;
@@ -66,31 +58,31 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 	std::string nickname;
 	std::cout << "[ USER ]" << std::endl;
 
-	msgsSize = msgs.size();
-	if (msgsSize < 5) {
-		std::cout << "ERROR: NEDDMOREPARAMS\n";
-		throw Err_anyError("USER :NOT enough parameters\n");
-	}
-	nickname = user.getNickName();
-	if (nickname == "") { // pass -> nick -> user 순서 준수를 위해 체크
-		std::cout << "ERROR: NEED NICK COMMAND\n";
-		throw std::exception();
-	}
-	if (msgs[4][0] == ':') {
-		for(std::vector<std::string>::iterator iter = msgs.begin()+4; iter != msgs.end(); iter++) {
-			realname += *iter;
-			if ((iter + 1) != msgs.end()) {
-				realname += ' ';
-			}
+	if (user.getUserIsPass() != 5) {
+		msgsSize = msgs.size();
+		if (msgsSize < 5) {
+			std::cout << "ERROR: NEDDMOREPARAMS\n";
+			throw ErrNeedMoreParams("USER");
 		}
-		realname = &(realname[1]);
+		nickname = user.getNickName();
+		if (msgs[4][0] == ':') {
+			for(std::vector<std::string>::iterator iter = msgs.begin()+4; iter != msgs.end(); iter++) {
+				realname += *iter;
+				if ((iter + 1) != msgs.end()) {
+					realname += ' ';
+				}
+			}
+			realname = &(realname[1]);
+		}
+		else {
+			realname = msgs[4];
+		}
+		std::cout << "realname:" << realname << "\n";
+		user.setUserName(realname);
 	}
 	else {
-		realname = msgs[4];
+		throw ErrAlreadyRegistered("USER");
 	}
-	std::cout << "realname:" << realname << "\n";
-	user.setUserName(realname);
-	sendMsg(user, ":irc.local 001 " + nickname + ":Welcome to the Localnet IRC Network " + nickname + "!root@127.0.0.1\n");
 }
 
 int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -260,11 +252,11 @@ void Command::checkLastPassState(User &user) const {
 	}
 	else if (value == 2) {
 		std::cout << "ERROR: NEDDMOREPARAMS\n";
-		throw Err_anyError("PASS :NOT enough parameters\n");
+		throw ErrNeedMoreParams("PASS");
 	}
 	else if (value == 3) {
 		std::cout << "ERROR: PASSWDMISMATCH\n";
-		throw ERR_PASSWDMISMATCH();
+		throw ErrPasswdMisMatch();
 	}
 }
 

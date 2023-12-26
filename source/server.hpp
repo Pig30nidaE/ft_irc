@@ -20,6 +20,7 @@
 #define PORT 8080
 #define MAX_MSG 512
 
+
 enum {
 	PASS,
 	NICK, 

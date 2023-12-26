@@ -223,14 +223,19 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
     userPass = user.getUserIsPass();
     try
     {
-        if (userPass != 4 && flag != PASS && userPass != 0) { // 마지막으로 남아있는 user의 isPass를 검사하여 pass명령어 진행
+        if ((userPass == 1 || userPass == 2 || userPass == 3) && flag != PASS) { // 마지막으로 남아있는 user의 isPass를 검사하여 pass명령어 진행
             command->checkLastPassState(user);
+        }
+        else if (userPass != 5 && !(flag >= -1 && flag <= 2)) {
+            throw Command::ErrNotRegistered(arr[flag]);
+        }
+        else if (userPass == 0 && (flag != PASS && flag != -1)) {
+            throw Command::ErrNotRegistered(arr[flag]);
         }
         switch (flag)
         {
             case PASS:
                 command->pass(msgs, user);
-                // user.setUserIsPass(1); // 마지막 PASS만 인식하기 위해서 pass()안에서 설정
                 break;
 		
             case NICK:
@@ -292,22 +297,21 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
         }
     }
-    catch(const std::exception& e)
-    {
-        std::cout << "-- [catch]: " << flag << " --\n";
-        if (flag == USER || user.getUserIsPass() == 2 || user.getUserIsPass() == 3) {
+    catch(const std::exception& e) {
+        std::cout << "-- [CATCH]: " << flag << " --\n";
+        if (user.getUserIsPass() == 2 || user.getUserIsPass() == 3) { // 수정 요함
             std::cout << "disconnect User: " << flag << "\n";
             disconnectClient(&user);
         }
-        std::cerr << e.what() << '\n';
+        std::cerr << "[Catch]: " <<  e.what() << '\n';
         sendMsg(user, e.what());
     }
-    // catch(const Command::Err_needmoreparams& e)
-	//--------------------------------------
-	std::cout << "-----------------------------\n";
-	// if ((&msg[end])[0] != '\0')
-	// 	parser(&msg[end + 1], user);
+    if ((flag == USER || flag == NICK) && user.getNickName() != "" && user.getUserName() != "") {
+        user.setUserIsPass(5);
+        sendMsg(user, ":irc.local 001 " + user.getNickName() + ":Welcome to the Localnet IRC Network " + user.getNickName() + "!root@127.0.0.1\n");
+    }
 
+	std::cout << "-----------------------------\n";
 }
 
 
