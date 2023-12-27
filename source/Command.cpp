@@ -92,21 +92,22 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 	std::cout << "[ JOIN ]" << std::endl;
 	// Ban 당하는 것에 대한 처리 해야됨!!
 	// 입장하면 topic을 알려줘야됨!!
+	// 채널명 확인 요함 (ex: #이 붙어있는지)
 
 	msgsSize = msgs.size();
-	if (msgsSize < 2) {
+	if (msgsSize < 2) { // channelName도 없으면 에러
 		std::cout << "ERROR: NEDDMOREPARMS\n";
 		throw ErrNeedMoreParams("JOIN");
 	}
 	else if ((user.getJoinedChannelList(cc)).size() >= 1) { // 최대 가입 가능한 채널 수 1
-		throw ErrTooManyChannels(msgs[1]);
+		throw ErrTooManyChannels(msgs[1]); //최대 가입 가능한 채널 수 넘으면 에
 	}
-	if (msgsSize >= 3)
+	if (msgsSize >= 3) // Input에 비밀번호까지 있는지, 그 이후는 걍 무시
 		result = user.joinChannel(msgs[1], msgs[2], cc); // key가 있을 때
-	else
+	else // 비번 없이 채널 명만 들어왔을 떄
 		result = user.joinChannel(msgs[1], "", cc); // key가 없을 때
 
-	switch (result)
+	switch (result) // joinChannel의 리턴값 수정함 memo.txt. 밑에 리턴값에 따른 에러 명세 해놓음
 	{
 	case 1:
 		throw ErrChannelIsFull(msgs[1]);

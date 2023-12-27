@@ -252,7 +252,7 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
             case JOIN:
                 if (command->join(msgs, *channelContainer, user) >= 0) {
                     sendMsg(user, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + user.getNickName() + " = #test :@" +user.getNickName()+"\n:irc.local 366 " + user.getNickName() + " #test :End of /NAMES list.\n");
-                    tmp = user.getSpecificChannelJoined(msgs[0], *channelContainer);
+                    tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
                     broadcastMsg(user, tmp, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n");
                 }
                 break;
