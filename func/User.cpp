@@ -440,7 +440,7 @@ int User::getUserIsPass(void) const {
 	return isPass;
 }
 
-void User::setBuf(std::string buf) {
+void User::setBuf(const std::string &buf) {
 	this->buf = buf;
 }
 

@@ -58,7 +58,7 @@ class Server {
 
 	private:
 		void		executeCommand(std::vector<std::string> msgs, User &user);
-		void splitSpace(std::string msg, User &user);
+		void splitSpace(const std::string &msg, User &user);
 
 		void readEventHandler(uintptr_t fd);
 		void newUser(int serverSock);
