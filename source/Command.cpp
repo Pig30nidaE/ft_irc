@@ -11,11 +11,11 @@ void Command::pass(std::vector<std::string> msgs) {
 	msgsSize = msgs.size();
 	if (msgsSize < 2) {
 		std::cout << "ERROR: NEDDMOREPARAMS\n";
-		throw ERR_NEEDMOREPARAMS();
+		throw errNeedMoreParams();
 	}
 	if (serverPass != msgs[1]) {
 		std::cout << "ERROR: PASSWDMISMATCH\n";
-		throw ERR_PASSWDMISMATCH();
+		throw errPasswdMisMatch();
 	}
 	else {
 		std::cout << "PASS SUCCESS!!\n";
@@ -148,15 +148,44 @@ void Command::invite(std::string nick, std::string channel, ChannelContainer &cc
 	}
 }
 
-std::string Command::topic(Channel &channel, std::string topic) {
+std::string Command::topic(ChannelContainer&cc, Channel &channel, std::string topic, User& user) {
 	// topic set한 사람 저장하기
-	if (topic == "") {
-		return (channel.getTopicRef().getTopic());
+	std::stringstream ss;
+
+	// Channel* joinedChannel = user.getSpecificChannelJoined\
+	// 	(channel.getChannelName(), cc);
+	if (&channel == nullptr) {
+		std::cerr << "no such channel." << std::endl;
+		return "";
+	}
+	Mode& mode = channel.getModeRef();
+	if (mode.checkType(MODE_TOPIC_LIMIT)) {
+		if (user.getIsOperator() == false) {
+			std::cerr << "only operator can change topic." << std::endl;
+			return "";
+		}
+	}
+	ss << "channel :";
+	if (!topic.size()) {
+		std::string returnTopic = channel.getTopicRef().getTopic();
+		if (!returnTopic.size()) {
+			ss << "No topic is set" << std::endl;
+		}
+		else {
+			ss << returnTopic << std::endl;
+		}
+			return (ss.str());
 	}
 	else {
 		channel.getTopicRef().setTopic(topic);
-		return "";
+		ss << channel.getTopicRef().getTopic() << std::endl;
+		return ss.str();
 	}
+	// if (!topic.size())
+	// 	user.topicCommand(cc, channel.getChannelName());
+	// else
+	// 	user.topicCommand(cc, channel.getChannelName(), topic);
+
 }
 
 void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc) { //LSH

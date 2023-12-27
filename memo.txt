@@ -36,7 +36,7 @@ INVITE nickname_ #test
 7. 처음 서버에 들어가면 NICK이 없는 상태로 존재하는데 어떻게 할건지 정해야함. (X)
 8. MODE +l -> channel_capcity 이상한값드감. (O)
 9. MODE +l -> 이것만 뒤에 인자가 올수도있고 안올수도 있음. (O)
-10. TOPIC 명령어 되는지 확인 후 -> MODE +t 옵션일 때 operator만 가능한지 확인해야함. (X)
+10. TOPIC 명령어 되는지 확인 후 -> MODE +t 옵션일 때 operator만 가능한지 확인해야함. (O)
 -> 확인해보니 TOPIC 명령어 안됨.
 -> switch문에 TOPIC은 있으나 실제로 입력하면 COMMAND ERROR로 감.
 11. INVITE 기능 확인해야함. (X)

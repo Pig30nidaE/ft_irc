@@ -87,7 +87,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 				int channel_capacity = (*channel_iter)->getCapacity();
 				if (channel_capacity) {
 					if ((*channel_iter)->getUserList().size() == channel_capacity) {
-						std::cout << "this channel is full." << std::endl;
+						std::cout << "ERROR: FULL CHANNEL." << std::endl;
 						return -1;
 					}
 				}
@@ -306,30 +306,30 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 	}
 }
 
-void User::topicCommand(ChannelContainer& channel_container, std::string channel, ...) {
-	Channel* joinedChannel = getSpecificChannelJoined(channel, channel_container);
-	if (!joinedChannel) {
-		std::cerr << "no such channel." << std::endl;
-		return ;
-	}
-	Mode& mode = joinedChannel->getModeRef();
-	if (mode.checkType(MODE_TOPIC_LIMIT)) {
-		if (getIsOperator() == false) {
-			std::cerr << "only operator can change topic." << std::endl;
-			return ;
-		}
-	}
-	va_list ap;
-	va_start(ap, channel);
-	char *topic_ap = va_arg(ap, char*);
-	std::string newTopic(topic_ap);
-	if (!newTopic.length()) {
-		std::cout << joinedChannel->getTopicRef().getTopic() << std::endl;
-	}
-	else {
-		joinedChannel->getTopicRef().setTopic(newTopic);
-	}
-}
+// void User::topicCommand(ChannelContainer& channel_container, std::string channel, ...) {
+// 	Channel* joinedChannel = getSpecificChannelJoined(channel, channel_container);
+// 	if (!joinedChannel) {
+// 		std::cerr << "no such channel." << std::endl;
+// 		return ;
+// 	}
+// 	Mode& mode = joinedChannel->getModeRef();
+// 	if (mode.checkType(MODE_TOPIC_LIMIT)) {
+// 		if (getIsOperator() == false) {
+// 			std::cerr << "only operator can change topic." << std::endl;
+// 			return ;
+// 		}
+// 	}
+// 	va_list ap;
+// 	va_start(ap, channel);
+// 	char *topic_ap = va_arg(ap, char*);
+// 	std::string newTopic(topic_ap);
+// 	if (!newTopic.length()) {
+// 		std::cout << joinedChannel->getTopicRef().getTopic() << std::endl;
+// 	}
+// 	else {
+// 		joinedChannel->getTopicRef().setTopic(newTopic);
+// 	}
+// }
 
 void User::changeUserName(std::string toChange) {
 	setUserName(toChange);

@@ -2,6 +2,7 @@
 #define COMMAND_HPP
 
 #include <string>
+#include <sstream>
 
 class User;
 class ChannelContainer;
@@ -42,7 +43,7 @@ class Command {
 		// ----client INVITE---
 		void invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
 		// ----topic------------
-		std::string topic(Channel &channel, std::string topic);
+		std::string topic(ChannelContainer& cc, Channel &channel, std::string topic, User& user);
 		// ----mode------------- //LSH
 		//void mode(std::string channel, std::string flag, std::string parm);
 		void mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc);
@@ -55,13 +56,13 @@ class Command {
 		int	checkLogin(User user);
 
 		// PASS ERROR
-		class ERR_NEEDMOREPARAMS : public std::exception {
+		class errNeedMoreParams : public std::exception {
 			public:
 				const char* what(void) const throw() {
 					return "ERR_NEEDMOREPARAMS!!\n";
 				};
 		};
-		class ERR_PASSWDMISMATCH : public std::exception {
+		class errPasswdMisMatch : public std::exception {
 			public:
 				const char* what(void) const throw() {
 					return "ERR_PASSWDMISMATCH!!\n";

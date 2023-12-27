@@ -96,7 +96,7 @@ void Server::newUser(int serverSock) {
 }
 
 void Server::recvMsg(uintptr_t fd) {
-    char buf[MAX_MSG];
+    char buf[MAX_MSG] = { '\0', };
     ssize_t n = recv(static_cast<int>(fd), buf, MAX_MSG, 0);
 
     if (n <= 0)
@@ -112,10 +112,13 @@ void Server::recvMsg(uintptr_t fd) {
         // if (n >= 2) {
         //     std::cout << "buf[n - 2]: " << buf[n - 2] << ", " << (int)buf[n - 2]<< "\n";
         // }
+		std::cout << "NNNNNN" << n << std::endl;
         buf[n] = '\0';
         std::string test = buf;
         std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
         parser(test, *clients[fd]);
+		std::cout << "recvMsg test: " << test << std::endl;
+		test.clear();
         //executeCommand(test, *clients[fd]);
         //std::cout << "NICK: " << (*clients[fd]).getNickName() << std::endl;
 
@@ -192,6 +195,8 @@ void Server::setServerPass(std::string serverPass) { // test용
 }
 
 void Server::executeCommand(std::vector<std::string> msgs, User &user) {
+	std::cout << "msgs size: " << msgs[2].size() << std::endl;
+	std::cout << "msgs[2]: " << msgs[2] << "aaaaa" << std::endl;
 	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
     Channel *tmp;
 	int			flag;
@@ -256,12 +261,16 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 				std::cout << "need channel name." << std::endl;
 				break ;
 			}
+			std::cout << msgs[1] << std::endl;
             tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
 			if (tmp == nullptr) {
 				std::cout << "ERROR" << std::endl;
 				break ;
 			}
-            sendMsg(user, command->topic(*tmp, msgs[1])); // 임시
+			if (msgs.size() > 2)
+            	sendMsg(user, command->topic(*channelContainer, *tmp, msgs[2], user));
+			else
+				sendMsg(user, command->topic(*channelContainer, *tmp, "", user));
             break;
 
         case MODE:
@@ -298,6 +307,8 @@ void Server::parser(std::string msg, User &user) {
     int          i = 0;
     std::string temp;
 
+
+	std::cout << "in parser:" << msg.size() << std::endl;
     if ((cr = msg.find('\r')) == std::string::npos) {
         if ((lf = msg.find('\n', lf)) == std::string::npos) {
             temp = user.getBuf();
@@ -332,13 +343,16 @@ void    Server::splitSpace(std::string msg, User &user) {
         msgs.push_back(str);
     }
     for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) { // tester
-        std::cout << "msg:" << *iter << "\n";
+        std::cout << "msg:" << *iter << "/" << (*iter).size() << "\n";
     }
+	std::cout << "splie: " << msgs.size() << std::endl;
+	std::cout << msgs[2].size() << std::endl;
     executeCommand(msgs, user);
 }
 
 
 void	Server::sendMsg(User user, std::string msg) const {
+	std::cout << "!!!!!" << msg << std::endl;
     if (msg == "")
         return ;
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);

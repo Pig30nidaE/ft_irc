@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <map>
 
+#include "../NumericReplies.hpp"
+
 #define MAXVISITE 10000
 #define PORT 8080
 #define MAX_MSG 512
