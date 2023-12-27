@@ -368,13 +368,13 @@ void    Server::splitSpace(std::string msg, User &user) {
 }
 
 
-void	Server::sendMsg(User &user, std::string msg) const {
+void	Server::sendMsg(User &user, std::string &msg) const {
     if (msg == "")
         return ;
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
-void	Server::broadcastMsg(User user, Channel *channel, std::string msg) const {
+void	Server::broadcastMsg(User &user, Channel *channel, std::string &msg) const {
 	std::vector<User *> userList;
 
     if (channel == nullptr)
@@ -384,4 +384,26 @@ void	Server::broadcastMsg(User user, Channel *channel, std::string msg) const {
         if ((**iter).getUserSock() != user.getUserSock())
             sendMsg(**iter, msg);
 	}
+}
+
+
+int stringToInt(const std::string& str) {
+    int result;
+
+    // std::istringstream 객체를 생성하고 문자열을 넣음
+    std::istringstream iss(str);
+
+    // 정수로 변환
+    if (!(iss >> result)) {
+        // 스트림의 상태 플래그를 확인하여 에러 처리
+        if (iss.eof()) {
+            throw std::runtime_error("Error: Empty string");
+        } else if (iss.fail()) {
+            throw std::runtime_error("Error: Invalid conversion");
+        } else {
+            throw std::runtime_error("Error converting string to int");
+        }
+    }
+
+    return result;
 }

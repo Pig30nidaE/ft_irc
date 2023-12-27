@@ -46,6 +46,7 @@ INVITE nickname_ #test
 못들어가야하는거(다시초대받아야하는) 확인해야함. (X)
 15. User가 여러 채널 join할 수 있으며, 확실히 정해야함. 정한 후 다신 바꾸지 않기. (X)
 16. 채팅방에 들어가고 PASS를 실행시 ":irc.local 462 dong :You may not reregister" 출력(0)
+17. JOIN에서 Ban에 대한 예외처리 해야됨!! (X)
 
 -------------------User의 isPass 플래그 목록 ------------------------------
 0	:	초기값
@@ -53,3 +54,9 @@ INVITE nickname_ #test
 2	:	NEDDMOREPARMS
 3	:	PASSWDMISMATCH
 4	:	login 상태
+5	:	login 완료
+
+------------------joinChannel return값 목록-------------------------------
+1	:	ChannelIsFull
+2	:	BadChannelKey
+3	:	InviteOnlyChan

@@ -22,7 +22,7 @@ class Command {
 		void setServerPass(std::string serverPass); // test용
 
 
-		void sendMsg(User &user, std::string msg) const;
+		void sendMsg(User &user, std::string &msg) const;
 
 		//----server 입장-----
 		// PASS
@@ -52,7 +52,7 @@ class Command {
 		void mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
-		// test
+		// 공통
 		class ErrNotRegistered : public std::invalid_argument {
 			public:
 				ErrNotRegistered(const std::string& client) : std::invalid_argument(client + " :You have not registered\n") {}
@@ -71,17 +71,11 @@ class Command {
 				};
 		};
 
+		// -----PASS and USER-------
 		class ErrAlreadyRegistered : public std::invalid_argument { 
 			public:
 				ErrAlreadyRegistered(const std::string &command) : std::invalid_argument(command + ":You may not reregister\n") {}
 		};
-
-		// 공통
-		class ErrNeedMoreParams : public std::invalid_argument {
-			public:
-				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
-		};
-
 
 		// NICK ERROR
 		class ErrNickNameInUser : public std::invalid_argument {
@@ -90,6 +84,33 @@ class Command {
 		};
 
 		// USER ERROR
+
+		// JOIN ERROR
+		class ErrTooManyChannels : public std::invalid_argument {
+			public:
+				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(channelName + " :You have joined too many channels") {}
+		};
+
+		class ErrChannelIsFull : public std::invalid_argument {
+			public:
+				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+l)") {}
+		};
+
+		class ErrBadChannelKey : public std::invalid_argument {
+			public:
+				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+k)") {}
+		};
+
+		class ErrInviteOnlyChan : public std::invalid_argument {
+			public:
+				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+i)") {}
+		};
+
+		// 공통
+		class ErrNeedMoreParams : public std::invalid_argument {
+			public:
+				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
+		};
 };
 
 #endif

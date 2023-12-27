@@ -88,7 +88,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 				if (channel_capacity) {
 					if ((*channel_iter)->getUserList().size() == channel_capacity) {
 						std::cout << "this channel is full." << std::endl;
-						return -1;
+						return 1; // ChannelIsFull
 					}
 				}
 				Mode& channel_mode = (*channel_iter)->getModeRef();
@@ -96,12 +96,12 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 					if (enterPwd.length()) {
 						if (enterPwd != (*channel_iter)->getPassword()) {
 							std::cout << "wrong password." << std::endl;
-							return -1;
+							return 2; //BadChannelKey
 						}
 					}
-					else {
+					else { // key가 필요한데 제공되지 않은것도 BADCHANNELKEY
 						std::cout << "Need password." << std::endl;
-						return -1;
+						return 2; // BadChannelKey
 					}
 				}
 				if (channel_mode.checkType(MODE_INVITE_ONLY)) {
@@ -110,7 +110,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 					INVITED iv_iter_end = (*channel_iter)->getInvitedUserList().end();
 					if (std::find(iv_iter_begin, iv_iter_end, getUserSock()) == iv_iter_end) {
 						std::cout << "This channel is invite only." << std::endl;
-						return -1;
+						return 3; // InviteOnlyChan
 					}
 				}
 				setUserIndex(channel_contaier.getChannelList().size());

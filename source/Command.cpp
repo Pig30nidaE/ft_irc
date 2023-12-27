@@ -87,25 +87,51 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 }
 
 int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
+	int result;
+	int msgsSize;
 	std::cout << "[ JOIN ]" << std::endl;
-	// msgs[0] == 채널, msgs[1] == 비번 파싱하면 적용
-	
-	//std::cout << "CHECKER1" << std::endl;
-	int status;
-	if (msgs[2].size())
-		status = user.joinChannel(msgs[1], msgs[2], cc); // join 마지막 인자 없앰 (flag)
+	// Ban 당하는 것에 대한 처리 해야됨!!
+	// 입장하면 topic을 알려줘야됨!!
+
+	msgsSize = msgs.size();
+	if (msgsSize < 2) {
+		std::cout << "ERROR: NEDDMOREPARMS\n";
+		throw ErrNeedMoreParams("JOIN");
+	}
+	else if ((user.getJoinedChannelList(cc)).size() >= 1) { // 최대 가입 가능한 채널 수 1
+		throw ErrTooManyChannels(msgs[1]);
+	}
+	if (msgsSize >= 3)
+		result = user.joinChannel(msgs[1], msgs[2], cc); // key가 있을 때
 	else
-		status = user.joinChannel(msgs[1], "", cc);
-	return status;
-	//std::cout << "CHECKER2" << std::endl;
-	//여기서 user는 조인하려는 사람, 그런데 조인도 안했는데 getSpecific을 실행해서 터짐.
-	//std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
-	//typedef std::vector<User*>::iterator iter;
-	//for (iter a = userList.begin();a != userList.end();a++) {
-	//	std::cout << (*a)->getNickName() << std::endl;
-	//	std::cout << "======" << std::endl;
-	//}
-	//std::cout << "CHECKER3" << std::endl;
+		result = user.joinChannel(msgs[1], "", cc); // key가 없을 때
+
+	switch (result)
+	{
+	case 1:
+		throw ErrChannelIsFull(msgs[1]);
+		break;
+	
+	case 2:
+		throw ErrBadChannelKey(msgs[1]);
+		break;
+
+	case 3:
+		throw ErrInviteOnlyChan(msgs[1]);
+		break;
+
+	default:
+		break;
+	}
+	// channel의 현재 인원 확인용
+	std::cout << "------channel user list 확인용-------\n";
+	std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
+	typedef std::vector<User*>::iterator iter;
+	for (iter a = userList.begin();a != userList.end();a++) {
+		std::cout << (*a)->getNickName() << std::endl;
+		std::cout << "======" << std::endl;
+	}
+	return 1;
 }
 
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -261,7 +287,7 @@ void Command::checkLastPassState(User &user) const {
 	}
 }
 
-void	Command::sendMsg(User &user, std::string msg) const {
+void	Command::sendMsg(User &user, std::string &msg) const {
     if (msg == "")
         return ;
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);

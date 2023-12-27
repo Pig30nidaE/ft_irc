@@ -68,10 +68,11 @@ class Server {
 		
 		void disconnectClient(User *user);
 
-		void broadcastMsg(User user, Channel *channel, std::string msg) const;
-		void sendMsg(User &user, std::string msg) const;
+		void broadcastMsg(User &user, Channel *channel, std::string &msg) const;
+		void sendMsg(User &user, std::string &msg) const;
 
 		// --------utils-------
+		int stringToInt(const std::string& str);
 		void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
 		void exitWithPerror(const std::string& msg);
 		Server &operator=(const Server &other);
