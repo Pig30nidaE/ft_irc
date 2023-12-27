@@ -41,7 +41,7 @@ class User {
 		void	topicCommand(ChannelContainer& channel_container, std::string channel, ...);
 
 		std::string							getBuf(void) const;
-		void								setBuf(std::string buf);
+		void								setBuf(const std::string &buf);
 		std::string 						getUserName(void) const;
 		void								setUserName(std::string const username);
 		//std::string						 	getNickName(std::string chName);
