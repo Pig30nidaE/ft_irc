@@ -55,7 +55,7 @@ class Command {
 		// test
 		class ErrNotRegistered : public std::invalid_argument {
 			public:
-				ErrNotRegistered(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
+				ErrNotRegistered(const std::string& client) : std::invalid_argument(client + " :You have not registered\n") {}
 		};
 
 	private:

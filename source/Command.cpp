@@ -34,6 +34,7 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 
 	nickname = user.getNickName();
 	msgsSize = msgs.size();
+	std::cout << msgsSize << std::endl;
 	if (msgsSize < 2) {
 		std::cout << "ERROR: NEDDMOREPARMS\n";
 		throw ErrNeedMoreParams("NICK");
