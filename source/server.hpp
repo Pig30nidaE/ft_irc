@@ -68,8 +68,8 @@ class Server {
 		
 		void disconnectClient(User *user);
 
-		void broadcastMsg(User &user, Channel *channel, std::string &msg) const;
-		void sendMsg(User &user, std::string &msg) const;
+		void broadcastMsg(User &user, Channel *channel, const std::string &msg) const;
+		void sendMsg(User &user, const std::string &msg) const;
 
 		// --------utils-------
 		int stringToInt(const std::string& str);

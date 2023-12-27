@@ -22,7 +22,7 @@ class Command {
 		void setServerPass(std::string serverPass); // test용
 
 
-		void sendMsg(User &user, std::string &msg) const;
+		void sendMsg(User &user, const std::string &msg) const;
 
 		//----server 입장-----
 		// PASS

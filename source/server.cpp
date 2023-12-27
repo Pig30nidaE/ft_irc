@@ -368,13 +368,13 @@ void    Server::splitSpace(std::string msg, User &user) {
 }
 
 
-void	Server::sendMsg(User &user, std::string &msg) const {
+void	Server::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
-void	Server::broadcastMsg(User &user, Channel *channel, std::string &msg) const {
+void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
 	std::vector<User *> userList;
 
     if (channel == nullptr)

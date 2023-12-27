@@ -287,7 +287,7 @@ void Command::checkLastPassState(User &user) const {
 	}
 }
 
-void	Command::sendMsg(User &user, std::string &msg) const {
+void	Command::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
