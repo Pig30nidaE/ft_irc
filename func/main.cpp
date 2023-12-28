@@ -13,10 +13,10 @@ int main() {
 	typedef std::vector<Channel*>::iterator ChannelIterator;
 	std::vector<Channel*>& joinedChannels = test.getJoinedChannelList(Server);
 
-	for (ChannelIterator ch_iter = joinedChannels.begin(); ch_iter != joinedChannels.end(); ++ch_iter) {
-		std::cout << "name : " << (*ch_iter)->getChannelName() << std::endl;
-		std::cout << "topic: " << (*ch_iter)->getTopicRef().getTopic() << std::endl;
-	}
+	//for (ChannelIterator ch_iter = joinedChannels.begin(); ch_iter != joinedChannels.end(); ++ch_iter) {
+	//	std::cout << "name : " << (*ch_iter)->getChannelName() << std::endl;
+	//	std::cout << "topic: " << (*ch_iter)->getTopicRef().getTopic() << std::endl;
+	//}
 
 	test.changeMode(Server, "test", MODE_INVITE_ONLY, true);
 	test.changeMode(Server, "test", MODE_CHANNEL_KEY, true, "password");
@@ -28,9 +28,9 @@ int main() {
 	std::vector<User*>& user_list_in_ch = test.getSpecificChannelJoined("test", Server)->getUserList();
 	for (UserIterator user_iter = user_list_in_ch.begin();user_iter != user_list_in_ch.end();user_iter++) {
 		std::cout << "--------------------" << std::endl;
-		std::cout << "user:nick" << std::endl;
-		std::cout << (*user_iter)->getUserName() <<\
-			":" << (*user_iter)->getNickName() << std::endl;
+		//std::cout << "user:nick" << std::endl;
+		//std::cout << (*user_iter)->getUserName() <<\
+		//	":" << (*user_iter)->getNickName() << std::endl;
 	}
 	User guest2;
 	guest2.setUserName("GUEST2");
