@@ -9,7 +9,7 @@ Server::Server(void) {
     return ;
 }
 
-Server::Server(std::string pass) : channelContainer(new ChannelContainer()), command(new Command(pass)) {
+Server::Server(std::string port, std::string pass) : channelContainer(new ChannelContainer()), command(new Command(pass)) {
     if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) == -1)
         exitWithPerror("socket() error\n" + std::string(strerror(errno)));
 
@@ -22,7 +22,7 @@ Server::Server(std::string pass) : channelContainer(new ChannelContainer()), com
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serverAddr.sin_port = htons(8080);
+    serverAddr.sin_port = htons(std::atoi(port.c_str()));
 
     setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     // 서버 소켓 바인드
@@ -162,12 +162,23 @@ Server::Server(const Server &other)
 void Server::disconnectClient(User *user)
 {
     int fd;
+    std::vector<User *> &userList = channelContainer->getUserList();
 
     fd = user->getUserSock();
     std::cout << "client disconnected: " << fd << std::endl;
+    // channelContainer의 userList에서 해당 요소 삭제
+    std::vector<User*>::iterator iter = userList.begin();
+    while (iter != userList.end()) {
+        if (*iter == user) {
+            iter = userList.erase(iter); // erase 함수는 삭제된 요소의 다음 반복자를 반환
+        } else {
+            ++iter;
+        }
+    }
+    // -end-
     close(fd);
-    // clients.erase(fd);
     delete clients[fd]; // User delete
+    clients.erase(fd);
 }
 
 
@@ -195,9 +206,11 @@ void Server::setServerPass(std::string serverPass) { // test용
 }
 
 void Server::executeCommand(std::vector<std::string> msgs, User &user) {
-	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
-    Channel *tmp;
-	int			flag;
+	std::string arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
+    std::string result;
+    Channel     *tmp;
+	int         flag = -1;
+    int         userPass;
 
 	if (msgs.empty()) { // msgs가 비어있다면
         std::cout << "msgs is empty!!\n";
@@ -207,48 +220,58 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 	for (size_t i = 0; i < 10; i++) // command 개수만큼 반복
 	{
 		//if (msgs[0].compare(0, 4, arr[i]) == 0) 
-        if (msgs[0].c_str() == arr[i])
+        if (msgs[0] == arr[i])
 			flag = i; // 찾은 command 플래그 저장
 	}
-
+    userPass = user.getUserIsPass();
     try
     {
+        // PASS 마지막만 적용하기 위한 코드
+        if ((userPass == 1 || userPass == 2 || userPass == 3) && flag != PASS) { // 마지막으로 남아있는 user의 isPass를 검사하여 pass명령어 진행
+            command->checkLastPassState(user);
+        }
+        // 레지스터 전 다른 명령어 사용에 대한 예외처리
+        else if (userPass != 5 && !(flag >= -1 && flag <= 2)) {
+            throw Command::ErrNotRegistered(arr[flag]);
+        }
+        // PASS 확인 이전에 다른 명령어에 예외처리
+        else if (userPass == 0 && (flag != PASS && flag != -1)) {
+            throw Command::ErrNotRegistered(arr[flag]);
+        }
         switch (flag)
         {
             case PASS:
-                command->pass(msgs);
-                user.setUserIsPass(1);
+                command->pass(msgs, user);
                 break;
-			break;
 		
-		case NICK:
-            command->nick(msgs, *channelContainer, user);
-			break;
+            case NICK:
+                command->nick(msgs, *channelContainer, user);
+                break;
 
-		case USER:
-            sendMsg(user, command->user(msgs, user));
-			break;
+            case USER:
+                command->user(msgs, user);
+                break;
 			
-		case JOIN:
-            if (command->join(msgs, *channelContainer, user) >= 0) {
-                sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
-                tmp = user.getSpecificChannelJoined(msgs[0], *channelContainer);
-                broadcastMsg(user, tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
-            }
-			break;
+            case JOIN:
+                if (command->join(msgs, *channelContainer, user) >= 0) {
+                    sendMsg(user, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + user.getNickName() + " = #test :@" +user.getNickName()+"\n:irc.local 366 " + user.getNickName() + " #test :End of /NAMES list.\n");
+                    tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
+                    broadcastMsg(user, tmp, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n");
+                }
+                break;
 			
-		case PART:
-            command->part(msgs, *channelContainer, user);
-			break;
+            case PART:
+                command->part(msgs, *channelContainer, user);
+                break;
 			
-		case PING:
-            command->ping(msgs[0], user);
-			break;
+            case PING:
+                command->ping(msgs[0], user);
+                break;
 
-        case KICK:
-            command->kick(msgs, *channelContainer, user);
-            break;
-        
+            case KICK:
+                command->kick(msgs, *channelContainer, user);
+                break;
+       
         case INVITE: //LSH
             command->invite(msgs[1].c_str(), msgs[2].c_str(), *channelContainer, user);
             // 추후 수정
@@ -283,15 +306,21 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 			break;
 	}
     }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
+    catch(const std::exception& e) {
+        std::cout << "-- [CATCH]: " << flag << " --\n";
+        if (user.getUserIsPass() == 2 || user.getUserIsPass() == 3) { // 수정 요함
+            std::cout << "disconnect User: " << flag << "\n";
+            disconnectClient(&user);
+        }
+        std::cerr << "[Catch]: " <<  e.what() << '\n';
+        sendMsg(user, e.what());
     }
-	//--------------------------------------
-	std::cout << "-----------------------------\n";
-	// if ((&msg[end])[0] != '\0')
-	// 	parser(&msg[end + 1], user);
+    if ((flag == USER || flag == NICK) && userPass == 4 && user.getNickName() != "" && user.getUserName() != "") {
+        user.setUserIsPass(5); // USER NICK 상관없이 register하는 예외처리
+        sendMsg(user, ":irc.local 001 " + user.getNickName() + ":Welcome to the Localnet IRC Network " + user.getNickName() + "!root@127.0.0.1\n");
+    }
 
+	std::cout << "-----------------------------\n";
 }
 
 
@@ -305,33 +334,32 @@ void Server::parser(std::string msg, User &user) {
     int          i = 0;
     std::string temp;
 
-
-	std::cout << "in parser:" << msg.size() << std::endl;
+    if (msg == "") {
+        std::cout << "[parser] msg == \"\"\n";
+        return ;
+    }
     if ((cr = msg.find('\r')) == std::string::npos) {
         if ((lf = msg.find('\n', lf)) == std::string::npos) {
             temp = user.getBuf();
-            std::cout << "befor: " << temp << "\n";
             temp += msg;
-            std::cout << "after: " << temp << "\n";
             user.setBuf(temp);            
         }
         else {
             temp = user.getBuf();
-            std::cout << "befor: " << temp << "\n";
             temp += msg;
-            std::cout << "after: " << temp << "\n";
             splitSpace(temp, user);
+            user.setBuf("");
         }
     }
     else if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
         splitSpace(msg.substr(0, crlf), user);
         if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
-            parser(&msg[crlf + 1], user);
+            parser(&msg[crlf + 2], user);
         }
     }
 }
 
-void    Server::splitSpace(std::string msg, User &user) {
+void    Server::splitSpace(const std::string &msg, User &user) {
     int i = 0;
     std::stringstream iss(msg);
     std::string str;
@@ -349,21 +377,51 @@ void    Server::splitSpace(std::string msg, User &user) {
 }
 
 
-void	Server::sendMsg(User user, std::string msg) const {
-	std::cout << "!!!!!" << msg << std::endl;
+
+void	Server::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
-void	Server::broadcastMsg(User user, Channel *channel, std::string msg) const {
+void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
 	std::vector<User *> userList;
+    int sock; //test
+    std::cout << "[BroadCastMsg]\n";
 
-    if (channel == nullptr)
+    if (channel == nullptr) {
+        // broadcast하면 여기서 끝나는거같으 ㄹ확인요함
         return ; // err 던지기
+    }
+    std::cout << "user sock: " << user.getUserSock() << "\n";; //test 
 	userList = channel->getUserList();
 	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
-        if ((**iter).getUserSock() != user.getUserSock())
+        sock = (**iter).getUserSock(); // test
+        std::cout << "iter sock: " << sock << "\n";// test
+        if (sock != user.getUserSock()) {
             sendMsg(**iter, msg);
+        }
 	}
+}
+
+
+int stringToInt(const std::string& str) {
+    int result;
+
+    // std::istringstream 객체를 생성하고 문자열을 넣음
+    std::istringstream iss(str);
+
+    // 정수로 변환
+    if (!(iss >> result)) {
+        // 스트림의 상태 플래그를 확인하여 에러 처리
+        if (iss.eof()) {
+            throw std::runtime_error("Error: Empty string");
+        } else if (iss.fail()) {
+            throw std::runtime_error("Error: Invalid conversion");
+        } else {
+            throw std::runtime_error("Error converting string to int");
+        }
+    }
+
+    return result;
 }

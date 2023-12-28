@@ -39,7 +39,20 @@ int main(int argc, char const *argv[]) {
     std::cout << "say: " << say << "\n";
         // send(sock, say, strlen(say) + 1, 0);
         // send(sock, &say, say.length() + 1, 0);
-        send(sock, "PASS 123\r\nNICK donghak\r\nUSER guest tolmoon tolsun :Ronnie Reagan\r\n", say.length() + 1, 0);
+        send(sock, "PASS 123\r\nNICK donghak\r\nUSER guest tolmoon tolsun\r\n", say.length() + 1, 0);
+        std::cout << "to server: " << say << std::endl;
+        // say = "";
+        valread = read(sock, buffer, 1024);
+        std::cout << "read msg: " << buffer << std::endl;
+		// std::cin >> say;
+	// }
+//-----------------------------------23일 마감: 입력에 자유롭게 하는거 만들라했음
+	// while (say != "end")
+	// {
+    std::cout << "say: " << say << "\n";
+        // send(sock, say, strlen(say) + 1, 0);
+        // send(sock, &say, say.length() + 1, 0);
+        send(sock, "PASS 123\r\nNICK donghak\r\nUSER guest tolmoon tolsun\r\n", say.length() + 1, 0);
         std::cout << "to server: " << say << std::endl;
         // say = "";
         valread = read(sock, buffer, 1024);

@@ -4,94 +4,135 @@
 #include "../func/Channel.hpp"
 
 
-void Command::pass(std::vector<std::string> msgs) {
+void Command::pass(std::vector<std::string> msgs, User &user) {
 	size_t msgsSize;
 	std::cout << "[ PASS ]" << std::endl;
 
 	msgsSize = msgs.size();
-	if (msgsSize < 2) {
-		std::cout << "ERROR: NEDDMOREPARAMS\n";
-		throw errNeedMoreParams();
-	}
-	if (serverPass != msgs[1]) {
-		std::cout << "ERROR: PASSWDMISMATCH\n";
-		throw errPasswdMisMatch();
+	if (user.getUserIsPass() != 5 && user.getUserIsPass() != 4) {
+		if (msgsSize < 2) {
+			user.setUserIsPass(2);
+			return ;
+		}
+		if (serverPass != msgs[1]) {
+			user.setUserIsPass(3);
+		}
+		else {
+			std::cout << "PASS SUCCESS!!" << std::endl;
+			user.setUserIsPass(1);
+		}
 	}
 	else {
-		std::cout << "PASS SUCCESS!!\n";
+		throw ErrAlreadyRegistered("PASS");
 	}
 }
 
-void Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user) {
+int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user) {
 	size_t msgsSize;
+	std::string nickname;
 	std::cout << "[ NICK ]" << std::endl;
 
+	nickname = user.getNickName();
 	msgsSize = msgs.size();
+	std::cout << msgsSize << std::endl;
 	if (msgsSize < 2) {
 		std::cout << "ERROR: NEDDMOREPARMS\n";
-		return ;
+		throw ErrNeedMoreParams("NICK");
 	}
-	if (cc.checkNickName(msgs[1])) {
+	if (nickname == msgs[1]) { // 본인 닉넴으로 변경할 때는 그냥 넘김
+		return 1;
+	}
+	else if (cc.checkNickName(msgs[1])) {
 		std::cout << "ERROR: NICK USED\n";
-		return ;
+		throw ErrNickNameInUser(msgs[1]);
 	}
+	if (nickname != "") // 회원가입 할 때는 안보냄
+		sendMsg(user, nickname + " NICK :" + msgs[1] + '\n');
 	user.setNickName(msgs[1]);
 	std::cout << "NICK SUCCESS!!\n";
+	return 1;
 }
 
-std::string Command::user(std::vector<std::string> msgs, User &user) {
+void Command::user(std::vector<std::string> msgs, User &user) {
 	size_t msgsSize;
 	std::string realname;
+	std::string nickname;
 	std::cout << "[ USER ]" << std::endl;
 
-	msgsSize = msgs.size();
-	if (msgsSize < 5) {
-		std::cout << "ERROR: NEED MORE PARMS\n";
-		return "";
-	}
-	if (user.getNickName() == "") { // pass -> nick -> user 순서 준수를 위해 체크
-		std::cout << "ERROR: NEED NICK COMMAND\n";
-		return "";
-	}
-	if (msgs[4][0] == ':') {
-		for(std::vector<std::string>::iterator iter = msgs.begin()+4; iter != msgs.end(); iter++) {
-			realname += *iter;
-			if ((iter + 1) != msgs.end()) {
-				realname += ' ';
-			}
+	if (user.getUserIsPass() != 5) {
+		msgsSize = msgs.size();
+		if (msgsSize < 5) {
+			std::cout << "ERROR: NEDDMOREPARAMS\n";
+			throw ErrNeedMoreParams("USER");
 		}
-		realname = &(realname[1]);
+		nickname = user.getNickName();
+		if (msgs[4][0] == ':') {
+			for(std::vector<std::string>::iterator iter = msgs.begin()+4; iter != msgs.end(); iter++) {
+				realname += *iter;
+				if ((iter + 1) != msgs.end()) {
+					realname += ' ';
+				}
+			}
+			realname = &(realname[1]);
+		}
+		else {
+			realname = msgs[4];
+		}
+		std::cout << "realname:" << realname << "\n";
+		user.setUserName(realname);
 	}
 	else {
-		realname = msgs[4];
+		throw ErrAlreadyRegistered("USER");
 	}
-	std::cout << "realname:" << realname << "\n";
-	//user.setUserName(msg);
-	user.setUserName(realname);
-	std::string say = ":irc.local 001 nickname :Welcome to the Localnet IRC Network nickname!root@127.0.0.1\n";
-	return say;
 }
 
 int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
+	int result;
+	int msgsSize;
 	std::cout << "[ JOIN ]" << std::endl;
-	// msgs[0] == 채널, msgs[1] == 비번 파싱하면 적용
+	// Ban 당하는 것에 대한 처리 해야됨!!
+	// 입장하면 topic을 알려줘야됨!!
+	// 채널명 확인 요함 (ex: #이 붙어있는지)
+
+	msgsSize = msgs.size();
+	if (msgsSize < 2) { // channelName도 없으면 에러
+		std::cout << "ERROR: NEDDMOREPARMS\n";
+		throw ErrNeedMoreParams("JOIN");
+	}
+	else if ((user.getJoinedChannelList(cc)).size() >= 1) { // 최대 가입 가능한 채널 수 1
+		throw ErrTooManyChannels(msgs[1]); //최대 가입 가능한 채널 수 넘으면 에
+	}
+	if (msgsSize >= 3) // Input에 비밀번호까지 있는지, 그 이후는 걍 무시
+		result = user.joinChannel(msgs[1], msgs[2], cc); // key가 있을 때
+	else // 비번 없이 채널 명만 들어왔을 떄
+		result = user.joinChannel(msgs[1], "", cc); // key가 없을 때
+
+	switch (result) // joinChannel의 리턴값 수정함 memo.txt. 밑에 리턴값에 따른 에러 명세 해놓음
+	{
+	case 1:
+		throw ErrChannelIsFull(msgs[1]);
+		break;
 	
-	//std::cout << "CHECKER1" << std::endl;
-	int status;
-	if (msgs[2].size())
-		status = user.joinChannel(msgs[1], msgs[2], cc); // join 마지막 인자 없앰 (flag)
-	else
-		status = user.joinChannel(msgs[1], "", cc);
-	return status;
-	//std::cout << "CHECKER2" << std::endl;
-	//여기서 user는 조인하려는 사람, 그런데 조인도 안했는데 getSpecific을 실행해서 터짐.
-	//std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
-	//typedef std::vector<User*>::iterator iter;
-	//for (iter a = userList.begin();a != userList.end();a++) {
-	//	std::cout << (*a)->getNickName() << std::endl;
-	//	std::cout << "======" << std::endl;
-	//}
-	//std::cout << "CHECKER3" << std::endl;
+	case 2:
+		throw ErrBadChannelKey(msgs[1]);
+		break;
+
+	case 3:
+		throw ErrInviteOnlyChan(msgs[1]);
+		break;
+
+	default:
+		break;
+	}
+	// channel의 현재 인원 확인용
+	std::cout << "------channel user list 확인용-------\n";
+	std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
+	typedef std::vector<User*>::iterator iter;
+	for (iter a = userList.begin();a != userList.end();a++) {
+		std::cout << (*a)->getNickName() << std::endl;
+		std::cout << "======" << std::endl;
+	}
+	return 1;
 }
 
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -261,6 +302,29 @@ Command Command::operator=(Command &other) {
 
 int	checkLogin(User User) {
 	return 1;
+}
+
+void Command::checkLastPassState(User &user) const {
+	int value;
+
+	value = user.getUserIsPass();
+	if (value == 1) {
+		user.setUserIsPass(4);
+	}
+	else if (value == 2) {
+		std::cout << "ERROR: NEDDMOREPARAMS\n";
+		throw ErrNeedMoreParams("PASS");
+	}
+	else if (value == 3) {
+		std::cout << "ERROR: PASSWDMISMATCH\n";
+		throw ErrPasswdMisMatch();
+	}
+}
+
+void	Command::sendMsg(User &user, const std::string &msg) const {
+    if (msg == "")
+        return ;
+	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
 // ---------------test용---------------

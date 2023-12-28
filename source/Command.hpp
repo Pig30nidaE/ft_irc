@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <unistd.h>
 
 class User;
 class ChannelContainer;
@@ -22,15 +23,18 @@ class Command {
 		void setServerPass(std::string serverPass); // test용
 
 
+		void sendMsg(User &user, const std::string &msg) const;
+
 		//----server 입장-----
 		// PASS
-		void pass(std::vector<std::string> msgs);
+		void pass(std::vector<std::string> msgs, User &user);
+		void checkLastPassState(User &user) const;
 
 		// NICK
-		void nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
+		int nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
 
 		// USER
-		std::string user(std::vector<std::string> msgs, User &user);
+		void user(std::vector<std::string> msgs, User &user);
 		
 		// ----channel join-----
 		int	 join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
@@ -49,28 +53,64 @@ class Command {
 		void mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
-
+		// 공통
+		class ErrNotRegistered : public std::invalid_argument {
+			public:
+				ErrNotRegistered(const std::string& client) : std::invalid_argument(client + " :You have not registered\n") {}
+		};
 
 	private:
 		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
 		int	checkLogin(User user);
 
-		// PASS ERROR
-		class errNeedMoreParams : public std::exception {
+		// ---------EXCEPTION--------
+		// ----PASS----
+		class ErrPasswdMisMatch : public std::exception {
 			public:
 				const char* what(void) const throw() {
-					return "ERR_NEEDMOREPARAMS!!\n";
+					return " PASS :Password incorrect\n";
 				};
 		};
-		class errPasswdMisMatch : public std::exception {
+		// -----PASS and USER-------
+		class ErrAlreadyRegistered : public std::invalid_argument { 
 			public:
-				const char* what(void) const throw() {
-					return "ERR_PASSWDMISMATCH!!\n";
-				};
+				ErrAlreadyRegistered(const std::string &command) : std::invalid_argument(command + ":You may not reregister\n") {}
 		};
-		// PASS ERROR
 
+		// NICK ERROR
+		class ErrNickNameInUser : public std::invalid_argument {
+			public:
+				ErrNickNameInUser(const std::string& nickname) : std::invalid_argument(nickname + " :Nickname is already is user\n") {}
+		};
+
+		// USER ERROR
+
+		// JOIN ERROR
+		class ErrTooManyChannels : public std::invalid_argument {
+			public:
+				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(channelName + " :You have joined too many channels") {}
+		};
+
+		class ErrChannelIsFull : public std::invalid_argument {
+			public:
+				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+l)") {}
+		};
+
+		class ErrBadChannelKey : public std::invalid_argument {
+			public:
+				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+k)") {}
+		};
+
+		class ErrInviteOnlyChan : public std::invalid_argument {
+			public:
+				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+i)") {}
+		};
+
+		// 공통
+		class ErrNeedMoreParams : public std::invalid_argument {
+			public:
+				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
+		};
 };
-
 
 #endif
