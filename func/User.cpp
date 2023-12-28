@@ -52,7 +52,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 				setUserIndex(channel_contaier.getChannelList().size());
 				(*channel_iter)->userAdd(*this);
 				getJoinedChannelList(channel_contaier).push_back(*channel_iter);
-				return 0;
+				return JOINCHANNEL;
 			}
 			index++;
 		}
@@ -64,7 +64,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 	channel_contaier.createChannel(*toJoin);
 	getJoinedChannelList(channel_contaier).push_back(toJoin);
 	setUserIndex(0);
-	return 0;
+	return NEWCHANNEL;
 }
 
 void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_container) {

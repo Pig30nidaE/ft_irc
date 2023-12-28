@@ -140,7 +140,6 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		}
 		// ---------------------
 	}
-	return 0;
 }
 
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
