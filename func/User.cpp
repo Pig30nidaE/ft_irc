@@ -6,7 +6,7 @@
 
 
 User::User(void):
-buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {
+sendBuf(""),buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {
 	//userRegister(channel_container);
 	// connectionTime = std::time(nullptr);
 }
@@ -446,4 +446,12 @@ void User::setBuf(const std::string &buf) {
 
 std::string User::getBuf(void) const {
 	return buf;
+}
+
+void User::setSendBuf(const std::string &sendBuf) {
+	this->sendBuf = sendBuf;
+}
+
+std::string User::getSendBuf(void) const {
+	return sendBuf;
 }

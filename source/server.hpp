@@ -21,6 +21,9 @@
 #define MAXVISITE 10000
 #define PORT 8080
 #define MAX_MSG 512
+#define	NEEDMOREPARMS 2
+#define	PASSMISMATCH 3
+#define PASSSUCCESS 1
 
 
 enum {

@@ -62,6 +62,28 @@ void Server::serverStart(void) {
                 errorEventHandler(currEvent->ident);
             else if (currEvent->filter == EVFILT_READ)
                 readEventHandler(currEvent->ident);
+            else if (currEvent->filter == EVFILT_WRITE)
+            {
+                /* send data to client */
+                std::map<uintptr_t, User*>::iterator it = clients.find(currEvent->ident);
+                if (it != clients.end())
+                {
+                    User *user = it->second;
+                    if (user->getSendBuf() != "")
+                    {
+                        int n;
+                        std::cout << "[SERVER]:" << user->getSendBuf() << "\n";
+                        if ((n = write(currEvent->ident, user->getSendBuf().c_str(),
+                                        user->getSendBuf().size()) == -1))
+                        {
+                            std::cerr << "client write error!" << std::endl;
+                            disconnectClient(clients[currEvent->ident]);  
+                        }
+                        else
+                            user->setSendBuf("");
+                    }
+                }
+            }
         }
     }
     return ;
@@ -88,6 +110,7 @@ void Server::newUser(int serverSock) {
     std::cout << "accept new client: " << clientSocket << std::endl; // test
     fcntl(clientSocket, F_SETFL, O_NONBLOCK);
     changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
     
     user = new User();
     user->setUserSock(clientSocket);
@@ -376,7 +399,8 @@ void    Server::splitSpace(const std::string &msg, User &user) {
 void	Server::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
-	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
+    user.setSendBuf(msg);
+	// write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
 void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {

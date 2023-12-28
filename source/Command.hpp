@@ -5,6 +5,10 @@
 #include <sstream>
 #include <unistd.h>
 
+#define	NEEDMOREPARMS 2
+#define	PASSMISMATCH 3
+#define PASSSUCCESS 1
+
 class User;
 class ChannelContainer;
 class Channel;
@@ -89,22 +93,22 @@ class Command {
 		// JOIN ERROR
 		class ErrTooManyChannels : public std::invalid_argument {
 			public:
-				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(channelName + " :You have joined too many channels") {}
+				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(channelName + " :You have joined too many channels\n") {}
 		};
 
 		class ErrChannelIsFull : public std::invalid_argument {
 			public:
-				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+l)") {}
+				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+l)\n") {}
 		};
 
 		class ErrBadChannelKey : public std::invalid_argument {
 			public:
-				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+k)") {}
+				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+k)\n") {}
 		};
 
 		class ErrInviteOnlyChan : public std::invalid_argument {
 			public:
-				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+i)") {}
+				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+i)\n") {}
 		};
 
 		// 공통

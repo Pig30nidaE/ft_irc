@@ -16,6 +16,7 @@ class ChannelContainer;
 class User {
 	private:
 		std::string							buf;
+		std::string							sendBuf;
 		int									userSock;
 		int									isPass;
 		int									userIndex;
@@ -43,6 +44,8 @@ class User {
 
 		std::string							getBuf(void) const;
 		void								setBuf(const std::string &buf);
+		std::string							getSendBuf(void) const;
+		void								setSendBuf(const std::string &buf);
 		std::string 						getUserName(void) const;
 		void								setUserName(std::string const username);
 		//std::string						 	getNickName(std::string chName);

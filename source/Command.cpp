@@ -11,15 +11,15 @@ void Command::pass(std::vector<std::string> msgs, User &user) {
 	msgsSize = msgs.size();
 	if (user.getUserIsPass() != 5 && user.getUserIsPass() != 4) {
 		if (msgsSize < 2) {
-			user.setUserIsPass(2);
+			user.setUserIsPass(NEEDMOREPARMS);
 			return ;
 		}
 		if (serverPass != msgs[1]) {
-			user.setUserIsPass(3);
+			user.setUserIsPass(PASSMISMATCH);
 		}
 		else {
 			std::cout << "PASS SUCCESS!!" << std::endl;
-			user.setUserIsPass(1);
+			user.setUserIsPass(PASSSUCCESS);
 		}
 	}
 	else {
@@ -315,14 +315,14 @@ void Command::checkLastPassState(User &user) const {
 	int value;
 
 	value = user.getUserIsPass();
-	if (value == 1) {
+	if (value == PASSSUCCESS) {
 		user.setUserIsPass(4);
 	}
-	else if (value == 2) {
+	else if (value == NEEDMOREPARMS) {
 		std::cout << "ERROR: NEDDMOREPARAMS\n";
 		throw ErrNeedMoreParams("PASS");
 	}
-	else if (value == 3) {
+	else if (value == PASSMISMATCH) {
 		std::cout << "ERROR: PASSWDMISMATCH\n";
 		throw ErrPasswdMisMatch();
 	}
@@ -331,7 +331,8 @@ void Command::checkLastPassState(User &user) const {
 void	Command::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
-	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
+	user.setSendBuf(msg);
+	// write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
 void	Command::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
