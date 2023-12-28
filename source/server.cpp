@@ -251,9 +251,9 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 			
             case JOIN:
                 if (command->join(msgs, *channelContainer, user) >= 0) {
-                    sendMsg(user, ":nickname!root@127.0.0.1 JOIN :#test\n:irc.local 353 nickname = #test :@nickname\n:irc.local 366 nickname #test :End of /NAMES list.\n");
-                    tmp = user.getSpecificChannelJoined(msgs[0], *channelContainer);
-                    broadcastMsg(user, tmp, ":nickname_!root@127.0.0.1 JOIN :#test\n");
+                    sendMsg(user, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + user.getNickName() + " = #test :@" +user.getNickName()+"\n:irc.local 366 " + user.getNickName() + " #test :End of /NAMES list.\n");
+                    tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
+                    broadcastMsg(user, tmp, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n");
                 }
                 break;
 			
@@ -342,6 +342,7 @@ void Server::parser(std::string msg, User &user) {
             temp = user.getBuf();
             temp += msg;
             splitSpace(temp, user);
+            user.setBuf("");
         }
     }
     else if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
@@ -352,7 +353,7 @@ void Server::parser(std::string msg, User &user) {
     }
 }
 
-void    Server::splitSpace(std::string msg, User &user) {
+void    Server::splitSpace(const std::string &msg, User &user) {
     int i = 0;
     std::stringstream iss(msg);
     std::string str;
@@ -368,20 +369,50 @@ void    Server::splitSpace(std::string msg, User &user) {
 }
 
 
-void	Server::sendMsg(User &user, std::string msg) const {
+void	Server::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
-void	Server::broadcastMsg(User user, Channel *channel, std::string msg) const {
+void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
 	std::vector<User *> userList;
+    int sock; //test
+    std::cout << "[BroadCastMsg]\n";
 
-    if (channel == nullptr)
+    if (channel == nullptr) {
+        // broadcast하면 여기서 끝나는거같으 ㄹ확인요함
         return ; // err 던지기
+    }
+    std::cout << "user sock: " << user.getUserSock() << "\n";; //test 
 	userList = channel->getUserList();
 	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
-        if ((**iter).getUserSock() != user.getUserSock())
+        sock = (**iter).getUserSock(); // test
+        std::cout << "iter sock: " << sock << "\n";// test
+        if (sock != user.getUserSock()) {
             sendMsg(**iter, msg);
+        }
 	}
+}
+
+
+int stringToInt(const std::string& str) {
+    int result;
+
+    // std::istringstream 객체를 생성하고 문자열을 넣음
+    std::istringstream iss(str);
+
+    // 정수로 변환
+    if (!(iss >> result)) {
+        // 스트림의 상태 플래그를 확인하여 에러 처리
+        if (iss.eof()) {
+            throw std::runtime_error("Error: Empty string");
+        } else if (iss.fail()) {
+            throw std::runtime_error("Error: Invalid conversion");
+        } else {
+            throw std::runtime_error("Error converting string to int");
+        }
+    }
+
+    return result;
 }
