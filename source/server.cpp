@@ -223,7 +223,7 @@ void Server::setServerPass(std::string serverPass) { // test용
     command->setServerPass(serverPass);
 }
 
-int Server::executeCommand(std::vector<std::string> msgs, User &user) {
+void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 	std::string arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
     std::string result;
     Channel     *tmp;
@@ -232,8 +232,9 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
 
 	if (msgs.empty()) { // msgs가 비어있다면
         std::cout << "msgs is empty!!\n";
-        return 0;
+        return ;
     }
+
 	for (size_t i = 0; i < 10; i++) // command 개수만큼 반복
 	{
 		//if (msgs[0].compare(0, 4, arr[i]) == 0) 
@@ -282,7 +283,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
 			
             case PING:
-                command->ping(msgs, user);
+                command->ping(msgs[0], user);
                 break;
 
             case KICK:
@@ -331,13 +332,12 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
         }
         std::cerr << "[Catch]: " <<  e.what() << '\n';
         sendMsg(user, e.what());
-        return DISCONNECT;
     }
     if ((flag == USER || flag == NICK) && userPass == 4 && user.getNickName() != "" && user.getUserName() != "") {
         user.setUserIsPass(5); // USER NICK 상관없이 register하는 예외처리
         sendMsg(user, ":irc.local 001 " + user.getNickName() + ":Welcome to the Localnet IRC Network " + user.getNickName() + "!root@127.0.0.1\n");
     }
-    return 0;
+
 	std::cout << "-----------------------------\n";
 }
 
@@ -370,15 +370,14 @@ void Server::parser(std::string msg, User &user) {
         }
     }
     else if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
-        if (splitSpace(msg.substr(0, crlf), user) == DISCONNECT)
-            return ;
+        splitSpace(msg.substr(0, crlf), user);
         if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {
             parser(&msg[crlf + 2], user);
         }
     }
 }
 
-int    Server::splitSpace(const std::string &msg, User &user) {
+void    Server::splitSpace(const std::string &msg, User &user) {
     int i = 0;
     std::stringstream iss(msg);
     std::string str;
@@ -391,9 +390,7 @@ int    Server::splitSpace(const std::string &msg, User &user) {
         std::cout << "[msg]:" << *iter << "/" << (*iter).size() << "\n";
     }
 	std::cout << "[test] splie: " << msgs.size() << std::endl;
-    if (executeCommand(msgs, user) == DISCONNECT)
-        return DISCONNECT;
-    return 0;
+    executeCommand(msgs, user);
 }
 
 

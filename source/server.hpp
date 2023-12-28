@@ -15,6 +15,7 @@
 #include <vector>
 #include <unistd.h>
 #include <map>
+
 #include "../NumericReplies.hpp"
 
 #define MAXVISITE 10000
@@ -23,7 +24,6 @@
 #define	NEEDMOREPARMS 2
 #define	PASSMISMATCH 3
 #define PASSSUCCESS 1
-#define DISCONNECT 1
 
 
 enum {
@@ -62,8 +62,8 @@ class Server {
 		}
 
 	private:
-		int executeCommand(std::vector<std::string> msgs, User &user);
-		int splitSpace(const std::string &msg, User &user);
+		void		executeCommand(std::vector<std::string> msgs, User &user);
+		void splitSpace(const std::string &msg, User &user);
 
 		void readEventHandler(uintptr_t fd);
 		void newUser(int serverSock);
