@@ -7,19 +7,21 @@
 void Command::pass(std::vector<std::string> msgs, User &user) {
 	size_t msgsSize;
 	std::cout << "[ PASS ]" << std::endl;
+	std::cout << msgs[1] << "/size: " << msgs[1].size() << std::endl;
+	std::cout << serverPass << std::endl;
 
 	msgsSize = msgs.size();
 	if (user.getUserIsPass() != 5 && user.getUserIsPass() != 4) {
 		if (msgsSize < 2) {
-			user.setUserIsPass(2);
+			user.setUserIsPass(NEEDMOREPARMS);
 			return ;
 		}
 		if (serverPass != msgs[1]) {
-			user.setUserIsPass(3);
+			user.setUserIsPass(PASSMISMATCH);
 		}
 		else {
 			std::cout << "PASS SUCCESS!!" << std::endl;
-			user.setUserIsPass(1);
+			user.setUserIsPass(PASSSUCCESS);
 		}
 	}
 	else {
@@ -34,7 +36,7 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 
 	nickname = user.getNickName();
 	msgsSize = msgs.size();
-	std::cout << msgsSize << std::endl;
+	//std::cout << msgsSize << std::endl;
 	if (msgsSize < 2) {
 		std::cout << "ERROR: NEDDMOREPARMS\n";
 		throw ErrNeedMoreParams("NICK");
@@ -91,6 +93,8 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 	int msgsSize;
 	Channel *channel;
 	std::string nickName;
+	std::string response;
+
 	std::cout << "[ JOIN ]" << std::endl;
 	// Ban 당하는 것에 대한 처리 해야됨!!
 	// 입장하면 topic을 알려줘야됨!!
@@ -108,38 +112,34 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 		result = user.joinChannel(msgs[1], msgs[2], cc); // key가 있을 때
 	else // 비번 없이 채널 명만 들어왔을 떄
 		result = user.joinChannel(msgs[1], "", cc); // key가 없을 때
-
-	switch (result) // joinChannel의 리턴값 수정함 memo.txt. 밑에 리턴값에 따른 에러 명세 해놓음
-	{
-	case 1:
+	if (result == CHANNELISFULL)
 		throw ErrChannelIsFull(msgs[1]);
-		break;
-	
-	case 2:
+	else if (result == BADCHANNELKEY)
 		throw ErrBadChannelKey(msgs[1]);
-		break;
-
-	case 3:
+	else if (result == INVITEONLYCHAN)
 		throw ErrInviteOnlyChan(msgs[1]);
-		break;
-
-	default:
-		break;
+	else {
+		nickName = user.getNickName();
+		channel = user.getSpecificChannelJoined(msgs[1], cc);
+		std::vector<User *> userList = channel->getUserList();
+		if (result == JOINCHANNEL) { // 기존 채널, 새 채널 분기 나눠야됨
+			sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
+		}
+		else if (result == NEWCHANNEL) {
+			sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
+		}
+		broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
+		// channel의 현재 인원 확인용
+		std::cout << "------channel user list 확인용-------\n";
+		std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
+		typedef std::vector<User*>::iterator iter;
+		for (iter a = userList.begin();a != userList.end();a++) {
+			std::cout << (*a)->getNickName() << std::endl;
+			std::cout << "======" << std::endl;
+		}
+		// ---------------------
 	}
-	nickName = user.getNickName();
-	sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
-	channel = user.getSpecificChannelJoined(msgs[1], cc);
-	// channel의 현재 인원 확인용
-	std::cout << "------channel user list 확인용-------\n";
-	std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
-	typedef std::vector<User*>::iterator iter;
-	for (iter a = userList.begin();a != userList.end();a++) {
-		std::cout << (*a)->getNickName() << std::endl;
-		std::cout << "======" << std::endl;
-	}
-	// ---------------------
-	broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
-	return 1;
+	return 0;
 }
 
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -151,17 +151,24 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		std::cout << "need channel name." << std::endl;
 		return ;
 	}
-	if (msgs.size() > 2)
+	else {
+		// if ()
+		user.exitChannel(msgs[1], cc);//인원이 0되면 채널 지워줌
 		std::cout << user.getNickName() << " is exit by " << msgs[2] << std::endl;
-	user.exitChannel(msgs[1], cc);//인원이 0되면 채널 지워줌
+
+
+	}
 }
 
-std::string Command::ping(std::string msg, User &user) {
+void Command::ping(std::vector<std::string> msgs, User &user) {
 	std::cout << "[ PING ]" << std::endl;
-	std::cout << "content: " << msg << "\n";
-	std::string req = "PONG " + msg;
-	std::cout << "req: " << req << "\n";
-	return req;
+
+	if (msgs.size() < 2) {
+		throw ErrNeedMoreParams("PING");
+	}
+	std::string req = "PONG " + msgs[1];
+	sendMsg(user, req);
+	std::cout << "[PING] req: " << req << "\n";
 }
 
 void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -174,7 +181,7 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	std::string userName = msgs[1];
 	//std::cout << "username: " << userName << "\n";
 	//std::cout << "channelName: " << channelName << "\n";
-	std::cout << user.getUserName() << std::endl;
+	//std::cout << user.getUserName() << std::endl;
 	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
 }
 
@@ -315,14 +322,14 @@ void Command::checkLastPassState(User &user) const {
 	int value;
 
 	value = user.getUserIsPass();
-	if (value == 1) {
+	if (value == PASSSUCCESS) {
 		user.setUserIsPass(4);
 	}
-	else if (value == 2) {
+	else if (value == NEEDMOREPARMS) {
 		std::cout << "ERROR: NEDDMOREPARAMS\n";
 		throw ErrNeedMoreParams("PASS");
 	}
-	else if (value == 3) {
+	else if (value == PASSMISMATCH) {
 		std::cout << "ERROR: PASSWDMISMATCH\n";
 		throw ErrPasswdMisMatch();
 	}
@@ -331,7 +338,8 @@ void Command::checkLastPassState(User &user) const {
 void	Command::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
-	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
+	user.setSendBuf(msg);
+	// write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
 void	Command::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {

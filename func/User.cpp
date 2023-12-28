@@ -6,7 +6,7 @@
 
 
 User::User(void):
-buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {
+sendBuf(""),buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {
 	//userRegister(channel_container);
 	// connectionTime = std::time(nullptr);
 }
@@ -133,6 +133,10 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 
 void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_container) {
     Channel *exitCh = getSpecificChannelJoined(toExitChannel, channel_container);
+	if (exitCh == nullptr) {
+		std::cout << "no such channel." << std::endl;
+		return ;
+	}
     std::vector<Channel*>& JoinedChannels = getJoinedChannelList(channel_container);
 
 	//std::cout << "CHECKER1" << std::endl;
@@ -148,6 +152,12 @@ void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_cont
     }
 	if (exitCh->getUserList().empty())
 		channel_container.deleteChannel(*exitCh);
+	else {
+		if (getIsOperator()) {
+			setIsOperator(false);
+			exitCh->getUserList().at(1)->setIsOperator(true);
+		}
+	}
 }
 
 
@@ -213,7 +223,7 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 		return ;
 	}
 	Mode& channelMode = joinedChannel->getModeRef();
-	std::cout << "type: " << type << std::endl;
+	//std::cout << "type: " << type << std::endl;
 	if (onoff_flag) { // MODE ON
 		if (MODE_CHECK_TYPE(type, MODE_INVITE_ONLY))
 			channelMode.turnOnType(MODE_INVITE_ONLY);
@@ -227,7 +237,7 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			if (passwd_ap == nullptr)
 				return ;
 			std::string passwd(passwd_ap);
-			std::cout << passwd << std::endl;
+			//std::cout << passwd << std::endl;
 			joinedChannel->setPassword(passwd);
 		}
 		if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) {
@@ -446,4 +456,12 @@ void User::setBuf(const std::string &buf) {
 
 std::string User::getBuf(void) const {
 	return buf;
+}
+
+void User::setSendBuf(const std::string &sendBuf) {
+	this->sendBuf = sendBuf;
+}
+
+std::string User::getSendBuf(void) const {
+	return sendBuf;
 }

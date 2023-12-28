@@ -4,6 +4,16 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
+#include "../NumericReplies.hpp"
+
+#define	NEEDMOREPARMS 2
+#define	PASSMISMATCH 3
+#define PASSSUCCESS 1
+#define CHANNELISFULL 1
+#define BADCHANNELKEY 2
+#define INVITEONLYCHAN 3
+#define JOINCHANNEL 4
+#define NEWCHANNEL 5
 
 class User;
 class ChannelContainer;
@@ -44,7 +54,7 @@ class Command {
 		// kick
 		void kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// ----client PING----
-		std::string ping(std::string msg, User &user);
+		void ping(std::vector<std::string> msgs, User &user);
 		// ----client INVITE---
 		void invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
 		// ----topic------------
@@ -89,22 +99,22 @@ class Command {
 		// JOIN ERROR
 		class ErrTooManyChannels : public std::invalid_argument {
 			public:
-				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(channelName + " :You have joined too many channels") {}
+				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(channelName + " :You have joined too many channels\n") {}
 		};
 
 		class ErrChannelIsFull : public std::invalid_argument {
 			public:
-				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+l)") {}
+				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+l)\n") {}
 		};
 
 		class ErrBadChannelKey : public std::invalid_argument {
 			public:
-				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+k)") {}
+				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+k)\n") {}
 		};
 
 		class ErrInviteOnlyChan : public std::invalid_argument {
 			public:
-				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+i)") {}
+				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+i)\n") {}
 		};
 
 		// 공통
