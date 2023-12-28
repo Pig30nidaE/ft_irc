@@ -112,7 +112,7 @@ void Server::recvMsg(uintptr_t fd) {
         // if (n >= 2) {
         //     std::cout << "buf[n - 2]: " << buf[n - 2] << ", " << (int)buf[n - 2]<< "\n";
         // }
-		std::cout << "NNNNNN" << n << std::endl;
+		//std::cout << "NNNNNN" << n << std::endl;
         buf[n] = '\0';
         std::string test = buf;
         std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
@@ -282,7 +282,7 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 				std::cout << "need channel name." << std::endl;
 				break ;
 			}
-			std::cout << msgs[1] << std::endl;
+			//std::cout << msgs[1] << std::endl;
             tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
 			if (tmp == nullptr) {
 				std::cout << "ERROR" << std::endl;
@@ -368,11 +368,11 @@ void    Server::splitSpace(const std::string &msg, User &user) {
     while (iss >> str) {
         msgs.push_back(str);
     }
-    for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) { // tester
-        std::cout << "msg:" << *iter << "/" << (*iter).size() << "\n";
-    }
-	std::cout << "splie: " << msgs.size() << std::endl;
-	std::cout << msgs[2].size() << std::endl;
+    //for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) { // tester
+    //    std::cout << "msg:" << *iter << "/" << (*iter).size() << "\n";
+    //}
+	//std::cout << "splie: " << msgs.size() << std::endl;
+	//std::cout << msgs[2].size() << std::endl;
     executeCommand(msgs, user);
 }
 
@@ -381,7 +381,9 @@ void    Server::splitSpace(const std::string &msg, User &user) {
 void	Server::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
-	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
+	if (write(user.getUserSock(), msg.c_str(), msg.length() + 1)) {
+        std::cout << 1 << std::endl;
+    }
 }
 
 void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
