@@ -93,6 +93,8 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	int msgsSize;
 	Channel *channel;
 	std::string nickName;
+	std::string response;
+
 	std::cout << "[ JOIN ]" << std::endl;
 	// Ban 당하는 것에 대한 처리 해야됨!!
 	// 입장하면 topic을 알려줘야됨!!
@@ -111,35 +113,34 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	else // 비번 없이 채널 명만 들어왔을 떄
 		result = user.joinChannel(msgs[1], "", cc); // key가 없을 때
 
-	switch (result) // joinChannel의 리턴값 수정함 memo.txt. 밑에 리턴값에 따른 에러 명세 해놓음
-	{
-	case ERR_CHANNELISFULL:
+	if (result == ERR_CHANNELISFULL)
 		throw ErrChannelIsFull(msgs[1]);
-		break;
-	
-	case ERR_BADCHANNELKEY:
+	else if (result == ERR_BADCHANNELKEY)
 		throw ErrBadChannelKey(msgs[1]);
-		break;
-
-	case ERR_INVITEONLYCHAN:
+	else if (result == ERR_INVITEONLYCHAN)
 		throw ErrInviteOnlyChan(msgs[1]);
-		break;
-	default:
-		break;
+	else {
+		nickName = user.getNickName();
+		channel = user.getSpecificChannelJoined(msgs[1], cc);
+		std::vector<User *> userList = channel->getUserList();
+		if (result == JOINCHANNEL) { // 기존 채널, 새 채널 분기 나눠야됨
+			sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
+		}
+		else if (result == NEWCHANNEL) {
+			sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
+		}
+		broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
+		// channel의 현재 인원 확인용
+		std::cout << "------channel user list 확인용-------\n";
+		userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
+		typedef std::vector<User*>::iterator iter;
+		for (iter a = userList.begin();a != userList.end();a++) {
+			std::cout << (*a)->getNickName() << std::endl;
+			std::cout << "======" << std::endl;
+		}
+		// ---------------------
 	}
-	nickName = user.getNickName();
-	sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
-	channel = user.getSpecificChannelJoined(msgs[1], cc);
-	// channel의 현재 인원 확인용
-	std::cout << "------channel user list 확인용-------\n";
-	std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
-	typedef std::vector<User*>::iterator iter;
-	for (iter a = userList.begin();a != userList.end();a++) {
-		std::cout << (*a)->getNickName() << std::endl;
-		std::cout << "======" << std::endl;
-	}
-	// ---------------------
-	broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
+	return 0;
 }
 
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -151,17 +152,24 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		std::cout << "need channel name." << std::endl;
 		return ;
 	}
-	if (msgs.size() > 2)
+	else {
+		// if ()
+		user.exitChannel(msgs[1], cc);//인원이 0되면 채널 지워줌
 		std::cout << user.getNickName() << " is exit by " << msgs[2] << std::endl;
-	user.exitChannel(msgs[1], cc);//인원이 0되면 채널 지워줌
+
+
+	}
 }
 
-std::string Command::ping(std::string msg, User &user) {
+void Command::ping(std::vector<std::string> msgs, User &user) {
 	std::cout << "[ PING ]" << std::endl;
-	std::cout << "content: " << msg << "\n";
-	std::string req = "PONG " + msg;
-	std::cout << "req: " << req << "\n";
-	return req;
+
+	if (msgs.size() < 2) {
+		throw ErrNeedMoreParams("PING");
+	}
+	std::string req = "PONG " + msgs[1];
+	sendMsg(user, req);
+	std::cout << "[PING] req: " << req << "\n";
 }
 
 void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
