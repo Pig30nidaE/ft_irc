@@ -182,7 +182,7 @@ void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& 
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
-	if (toInviteUser.getUserName() == (*this).getUserName()) {
+	if (toInviteUser.getNickName() == (*this).getNickName()) {
 		std::cerr << "Can't invite yourself." << std::endl;
 		return ;
 	}
@@ -195,7 +195,7 @@ void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& 
 		}
 	}
 	toChannel.getInvitedUserList().push_back(toInviteUser.getUserSock());
-	std::cout << toInviteUser.getUserName() << " is invited." << std::endl;
+	std::cout << toInviteUser.getNickName() << " is invited." << std::endl;
 	//if (toChannel.getModeRef().checkType(MODE_CHANNEL_KEY))
 	//	toInviteUser.joinChannel(toChannel.getChannelName(), enterPwd, channel_container, true);
 	//else

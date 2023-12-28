@@ -99,9 +99,13 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	// std::cout << "content: " << msg << "\n";
 	// 나갈 채널이랑 채널 사유 분리하기
 	// 채널 사유 출력하고 채널 나가기
-	if (msgs[1].size())
-		std::cout << user.getNickName() << " is exit by " << msgs[1] << std::endl;
-	user.exitChannel(msgs[0], cc);//인원이 0되면 채널 지워줌
+	if (msgs.size() < 2) {
+		std::cout << "need channel name." << std::endl;
+		return ;
+	}
+	if (msgs.size() > 2)
+		std::cout << user.getNickName() << " is exit by " << msgs[2] << std::endl;
+	user.exitChannel(msgs[1], cc);//인원이 0되면 채널 지워줌
 }
 
 std::string Command::ping(std::string msg, User &user) {

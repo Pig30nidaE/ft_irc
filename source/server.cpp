@@ -195,8 +195,6 @@ void Server::setServerPass(std::string serverPass) { // test용
 }
 
 void Server::executeCommand(std::vector<std::string> msgs, User &user) {
-	std::cout << "msgs size: " << msgs[2].size() << std::endl;
-	std::cout << "msgs[2]: " << msgs[2] << "aaaaa" << std::endl;
 	std::string	arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
     Channel *tmp;
 	int			flag;
@@ -251,10 +249,10 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
             command->kick(msgs, *channelContainer, user);
             break;
         
-        //case INVITE: //LSH
-        //    command->invite() // invite 맞춰서 수정해야함.
-        //    // 추후 수정
-        //    break;
+        case INVITE: //LSH
+            command->invite(msgs[1].c_str(), msgs[2].c_str(), *channelContainer, user);
+            // 추후 수정
+            break;
 
         case TOPIC:
 			if (msgs.size() < 2) {

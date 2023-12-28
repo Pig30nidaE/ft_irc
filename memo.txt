@@ -39,9 +39,9 @@ INVITE nickname_ #test
 10. TOPIC 명령어 되는지 확인 후 -> MODE +t 옵션일 때 operator만 가능한지 확인해야함. (O)
 -> 확인해보니 TOPIC 명령어 안됨.
 -> switch문에 TOPIC은 있으나 실제로 입력하면 COMMAND ERROR로 감.
-11. INVITE 기능 확인해야함. (X)
-12. INVITE 확인 후, MODE +i 옵션 준 뒤 INVITE한 친구가 들어올 수 있는지 봐야함. (X)
-13. PART 명령어 시 segfault남. (X)
+11. INVITE 기능 확인해야함. (O)
+12. INVITE 확인 후, MODE +i 옵션 준 뒤 INVITE한 친구가 들어올 수 있는지 봐야함. (O)
+13. PART 명령어 시 segfault남. (O)
 14. PART 해결 후 INVITE_ONLY 채널에서 INVITE->invite 받은 유저 join->PART->다시 join했을 때
-못들어가야하는거(다시초대받아야하는) 확인해야함. (X)
+못들어가야하는거(다시초대받아야하는) 확인해야함. (O)
 15. User가 여러 채널 join할 수 있으며, 확실히 정해야함. 정한 후 다신 바꾸지 않기. (X)
