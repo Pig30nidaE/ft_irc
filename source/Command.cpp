@@ -7,6 +7,8 @@
 void Command::pass(std::vector<std::string> msgs, User &user) {
 	size_t msgsSize;
 	std::cout << "[ PASS ]" << std::endl;
+	std::cout << msgs[1] << "/size: " << msgs[1].size() << std::endl;
+	std::cout << serverPass << std::endl;
 
 	msgsSize = msgs.size();
 	if (user.getUserIsPass() != 5 && user.getUserIsPass() != 4) {
@@ -34,7 +36,7 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 
 	nickname = user.getNickName();
 	msgsSize = msgs.size();
-	std::cout << msgsSize << std::endl;
+	//std::cout << msgsSize << std::endl;
 	if (msgsSize < 2) {
 		std::cout << "ERROR: NEDDMOREPARMS\n";
 		throw ErrNeedMoreParams("NICK");
@@ -174,7 +176,7 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	std::string userName = msgs[1];
 	//std::cout << "username: " << userName << "\n";
 	//std::cout << "channelName: " << channelName << "\n";
-	std::cout << user.getUserName() << std::endl;
+	//std::cout << user.getUserName() << std::endl;
 	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
 }
 

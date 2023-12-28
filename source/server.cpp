@@ -300,7 +300,7 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 				std::cout << "need channel name." << std::endl;
 				break ;
 			}
-			std::cout << msgs[1] << std::endl;
+			//std::cout << msgs[1] << std::endl;
             tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
 			if (tmp == nullptr) {
 				std::cout << "ERROR" << std::endl;
@@ -390,7 +390,6 @@ void    Server::splitSpace(const std::string &msg, User &user) {
         std::cout << "[msg]:" << *iter << "/" << (*iter).size() << "\n";
     }
 	std::cout << "[test] splie: " << msgs.size() << std::endl;
-	// std::cout << msgs[2].size() << std::endl;
     executeCommand(msgs, user);
 }
 

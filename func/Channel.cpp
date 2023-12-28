@@ -2,7 +2,7 @@
 
 
 Channel::Channel(std::string name):
-channelName(name),capacity(0) {
+channelName(name),capacity(0), index(0), password("") {
 	mode = new Mode(ALL_MODES_OFF);
 	topic = new Topic("");
 }
@@ -21,17 +21,17 @@ void Channel::userAdd(User& user) {
 }
 
 void Channel::userDel(User& user) {
-	std::cout << "CHECKER1" << std::endl;
-	std::vector<User*> usrList = getUserList();
-	std::cout << "CHECKER2" << std::endl;
+	//std::cout << "CHECKER1" << std::endl;
+	std::vector<User*> &usrList = getUserList();
+	//std::cout << "CHECKER2" << std::endl;
 	typedef std::vector<User*>::iterator UserIter;
-	std::cout << "CHECKER3" << std::endl;
+	//std::cout << "CHECKER3" << std::endl;
 
 	for (UserIter iter = usrList.begin();iter != usrList.end();iter++) {
 		if ((*iter)->getNickName() == user.getNickName()) {
-			std::cout << "CHECKER4" << std::endl;
+			//std::cout << "CHECKER4" << std::endl;
 			usrList.erase(iter);
-			std::cout << "CHECKER5" << std::endl;
+			//std::cout << "CHECKER5" << std::endl;
 			return ;
 		}
 	}

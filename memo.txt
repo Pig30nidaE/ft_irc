@@ -60,3 +60,10 @@ INVITE nickname_ #test
 1	:	ChannelIsFull
 2	:	BadChannelKey
 3	:	InviteOnlyChan
+
+
+
+1. 없는 채널 PART 시 터짐.
+2. PART 시 채널 유저목록에서 삭제 안됨.
+3. 서버 켜둔 상태에서 재접속시 브로드캐스트안때림.
+4. 채널 운영자가 나갈 시 다음 운영자 선택해야함.
