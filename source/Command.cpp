@@ -13,15 +13,15 @@ void Command::pass(std::vector<std::string> msgs, User &user) {
 	msgsSize = msgs.size();
 	if (user.getUserIsPass() != 5 && user.getUserIsPass() != 4) {
 		if (msgsSize < 2) {
-			user.setUserIsPass(2);
+			user.setUserIsPass(NEEDMOREPARMS);
 			return ;
 		}
 		if (serverPass != msgs[1]) {
-			user.setUserIsPass(3);
+			user.setUserIsPass(PASSMISMATCH);
 		}
 		else {
 			std::cout << "PASS SUCCESS!!" << std::endl;
-			user.setUserIsPass(1);
+			user.setUserIsPass(PASSSUCCESS);
 		}
 	}
 	else {
@@ -91,6 +91,8 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	int result;
 	int msgsSize;
+	Channel *channel;
+	std::string nickName;
 	std::cout << "[ JOIN ]" << std::endl;
 	// Ban 당하는 것에 대한 처리 해야됨!!
 	// 입장하면 topic을 알려줘야됨!!
@@ -126,6 +128,9 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 	default:
 		break;
 	}
+	nickName = user.getNickName();
+	sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
+	channel = user.getSpecificChannelJoined(msgs[1], cc);
 	// channel의 현재 인원 확인용
 	std::cout << "------channel user list 확인용-------\n";
 	std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
@@ -134,6 +139,8 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 		std::cout << (*a)->getNickName() << std::endl;
 		std::cout << "======" << std::endl;
 	}
+	// ---------------------
+	broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
 	return 1;
 }
 
@@ -310,14 +317,14 @@ void Command::checkLastPassState(User &user) const {
 	int value;
 
 	value = user.getUserIsPass();
-	if (value == 1) {
+	if (value == PASSSUCCESS) {
 		user.setUserIsPass(4);
 	}
-	else if (value == 2) {
+	else if (value == NEEDMOREPARMS) {
 		std::cout << "ERROR: NEDDMOREPARAMS\n";
 		throw ErrNeedMoreParams("PASS");
 	}
-	else if (value == 3) {
+	else if (value == PASSMISMATCH) {
 		std::cout << "ERROR: PASSWDMISMATCH\n";
 		throw ErrPasswdMisMatch();
 	}
@@ -326,7 +333,28 @@ void Command::checkLastPassState(User &user) const {
 void	Command::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
-	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
+	user.setSendBuf(msg);
+	// write(user.getUserSock(), msg.c_str(), msg.length() + 1);
+}
+
+void	Command::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
+	std::vector<User *> userList;
+    int sock; //test
+    std::cout << "[BroadCastMsg]\n";
+
+    if (channel == nullptr) {
+        std::cout << "channel is NULL\n";
+        return ; // err 던지기
+    }
+    std::cout << "user sock: " << user.getUserSock() << "\n";; //test 
+	userList = channel->getUserList();
+	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
+        sock = (**iter).getUserSock(); // test
+        std::cout << "iter sock: " << sock << "\n";// test
+        if (sock != user.getUserSock()) {
+            sendMsg(**iter, msg);
+        }
+	}
 }
 
 // ---------------test용---------------

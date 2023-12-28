@@ -62,6 +62,28 @@ void Server::serverStart(void) {
                 errorEventHandler(currEvent->ident);
             else if (currEvent->filter == EVFILT_READ)
                 readEventHandler(currEvent->ident);
+            else if (currEvent->filter == EVFILT_WRITE)
+            {
+                /* send data to client */
+                std::map<uintptr_t, User*>::iterator it = clients.find(currEvent->ident);
+                if (it != clients.end())
+                {
+                    User *user = it->second;
+                    if (user->getSendBuf() != "")
+                    {
+                        int n;
+                        std::cout << "[SERVER]:" << user->getSendBuf() << "\n";
+                        if ((n = write(currEvent->ident, user->getSendBuf().c_str(),
+                                        user->getSendBuf().size()) == -1))
+                        {
+                            std::cerr << "client write error!" << std::endl;
+                            disconnectClient(clients[currEvent->ident]);  
+                        }
+                        else
+                            user->setSendBuf("");
+                    }
+                }
+            }
         }
     }
     return ;
@@ -88,6 +110,7 @@ void Server::newUser(int serverSock) {
     std::cout << "accept new client: " << clientSocket << std::endl; // test
     fcntl(clientSocket, F_SETFL, O_NONBLOCK);
     changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
     
     user = new User();
     user->setUserSock(clientSocket);
@@ -96,9 +119,13 @@ void Server::newUser(int serverSock) {
 }
 
 void Server::recvMsg(uintptr_t fd) {
-    char buf[MAX_MSG] = { '\0', };
-    ssize_t n = recv(static_cast<int>(fd), buf, MAX_MSG, 0);
+    char buf[MAX_MSG];
+    std::string sBuf;
+    ssize_t n;
 
+
+    memset(buf, 0, MAX_MSG);
+    n = recv(static_cast<int>(fd), buf, MAX_MSG, 0);
     if (n <= 0)
     {
         std::cerr << "client read error!" << std::endl;
@@ -106,22 +133,13 @@ void Server::recvMsg(uintptr_t fd) {
     }
     else
     {
-        // std::cout << "n: " << n << "\n";
-        // std::cout << "buf[n]: " << buf[n] << ", " << (int)buf[n]<< "\n";
-        // std::cout << "buf[n - 1]: " << buf[n - 1] << ", " << (int)buf[n - 1]<< "\n";
-        // if (n >= 2) {
-        //     std::cout << "buf[n - 2]: " << buf[n - 2] << ", " << (int)buf[n - 2]<< "\n";
-        // }
-		//std::cout << "NNNNNN" << n << std::endl;
         buf[n] = '\0';
-        std::string test = buf;
-        std::cout << "--------------------------\nrecv: " << test << "--------------------------\n";
-        parser(test, *clients[fd]);
-		std::cout << "recvMsg test: " << test << std::endl;
-		test.clear();
-        //executeCommand(test, *clients[fd]);
-        //std::cout << "NICK: " << (*clients[fd]).getNickName() << std::endl;
-
+        sBuf.clear();
+        sBuf = buf;
+        std::cout << "--------------------------\nrecv: " << sBuf << "--------------------------\n";
+        parser(sBuf, *clients[fd]);
+		// std::cout << "recvMsg test: " << test << std::endl;
+		// test.clear();
     }
 }
 
@@ -254,9 +272,9 @@ void Server::executeCommand(std::vector<std::string> msgs, User &user) {
 			
             case JOIN:
                 if (command->join(msgs, *channelContainer, user) >= 0) {
-                    sendMsg(user, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + user.getNickName() + " = #test :@" +user.getNickName()+"\n:irc.local 366 " + user.getNickName() + " #test :End of /NAMES list.\n");
-                    tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
-                    broadcastMsg(user, tmp, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n");
+                    // sendMsg(user, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + user.getNickName() + " = #test :@" +user.getNickName()+"\n:irc.local 366 " + user.getNickName() + " #test :End of /NAMES list.\n");
+                    // tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
+                    // broadcastMsg(user, tmp, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n");
                 }
                 break;
 			
@@ -368,11 +386,10 @@ void    Server::splitSpace(const std::string &msg, User &user) {
     while (iss >> str) {
         msgs.push_back(str);
     }
-    //for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) { // tester
-    //    std::cout << "msg:" << *iter << "/" << (*iter).size() << "\n";
-    //}
-	//std::cout << "splie: " << msgs.size() << std::endl;
-	//std::cout << msgs[2].size() << std::endl;
+    for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) { // tester
+        std::cout << "[msg]:" << *iter << "/" << (*iter).size() << "\n";
+    }
+	std::cout << "[test] splie: " << msgs.size() << std::endl;
     executeCommand(msgs, user);
 }
 
@@ -381,9 +398,8 @@ void    Server::splitSpace(const std::string &msg, User &user) {
 void	Server::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
-	if (write(user.getUserSock(), msg.c_str(), msg.length() + 1)) {
-        std::cout << 1 << std::endl;
-    }
+    user.setSendBuf(msg);
+	// write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
 void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
@@ -392,7 +408,7 @@ void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) 
     std::cout << "[BroadCastMsg]\n";
 
     if (channel == nullptr) {
-        // broadcast하면 여기서 끝나는거같으 ㄹ확인요함
+        std::cout << "channel is NULL\n";
         return ; // err 던지기
     }
     std::cout << "user sock: " << user.getUserSock() << "\n";; //test 
