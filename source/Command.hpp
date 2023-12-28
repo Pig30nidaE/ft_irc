@@ -4,10 +4,16 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
+#include "../NumericReplies.hpp"
 
 #define	NEEDMOREPARMS 2
 #define	PASSMISMATCH 3
 #define PASSSUCCESS 1
+#define CHANNELISFULL 1
+#define BADCHANNELKEY 2
+#define INVITEONLYCHAN 3
+#define JOINCHANNEL 4
+#define NEWCHANNEL 5
 
 class User;
 class ChannelContainer;
@@ -48,7 +54,7 @@ class Command {
 		// kick
 		void kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// ----client PING----
-		std::string ping(std::string msg, User &user);
+		void ping(std::vector<std::string> msgs, User &user);
 		// ----client INVITE---
 		void invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
 		// ----topic------------
