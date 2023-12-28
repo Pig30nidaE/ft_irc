@@ -8,6 +8,7 @@
 #include <cstdarg>
 #include "Channel.hpp"
 #include "ChannelContainer.hpp"
+#include "../NumericReplies.hpp"
 
 class Channel;
 class ChannelContainer;

@@ -140,9 +140,13 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	// std::cout << "content: " << msg << "\n";
 	// 나갈 채널이랑 채널 사유 분리하기
 	// 채널 사유 출력하고 채널 나가기
-	if (msgs[1].size())
-		std::cout << user.getNickName() << " is exit by " << msgs[1] << std::endl;
-	user.exitChannel(msgs[0], cc);//인원이 0되면 채널 지워줌
+	if (msgs.size() < 2) {
+		std::cout << "need channel name." << std::endl;
+		return ;
+	}
+	if (msgs.size() > 2)
+		std::cout << user.getNickName() << " is exit by " << msgs[2] << std::endl;
+	user.exitChannel(msgs[1], cc);//인원이 0되면 채널 지워줌
 }
 
 std::string Command::ping(std::string msg, User &user) {
@@ -189,15 +193,44 @@ void Command::invite(std::string nick, std::string channel, ChannelContainer &cc
 	}
 }
 
-std::string Command::topic(Channel &channel, std::string topic) {
+std::string Command::topic(ChannelContainer&cc, Channel &channel, std::string topic, User& user) {
 	// topic set한 사람 저장하기
-	if (topic == "") {
-		return (channel.getTopicRef().getTopic());
+	std::stringstream ss;
+
+	// Channel* joinedChannel = user.getSpecificChannelJoined\
+	// 	(channel.getChannelName(), cc);
+	if (&channel == nullptr) {
+		std::cerr << "no such channel." << std::endl;
+		return "";
+	}
+	Mode& mode = channel.getModeRef();
+	if (mode.checkType(MODE_TOPIC_LIMIT)) {
+		if (user.getIsOperator() == false) {
+			std::cerr << "only operator can change topic." << std::endl;
+			return "";
+		}
+	}
+	ss << "channel :";
+	if (!topic.size()) {
+		std::string returnTopic = channel.getTopicRef().getTopic();
+		if (!returnTopic.size()) {
+			ss << "No topic is set" << std::endl;
+		}
+		else {
+			ss << returnTopic << std::endl;
+		}
+			return (ss.str());
 	}
 	else {
 		channel.getTopicRef().setTopic(topic);
-		return "";
+		ss << channel.getTopicRef().getTopic() << std::endl;
+		return ss.str();
 	}
+	// if (!topic.size())
+	// 	user.topicCommand(cc, channel.getChannelName());
+	// else
+	// 	user.topicCommand(cc, channel.getChannelName(), topic);
+
 }
 
 void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc) { //LSH
