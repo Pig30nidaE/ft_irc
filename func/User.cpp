@@ -87,8 +87,8 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 				int channel_capacity = (*channel_iter)->getCapacity();
 				if (channel_capacity) {
 					if ((*channel_iter)->getUserList().size() == channel_capacity) {
-						std::cout << "this channel is full." << std::endl;
-						return 1; // ChannelIsFull
+						std::cout << "ERROR: FULL CHANNEL." << std::endl;
+						return -1;
 					}
 				}
 				Mode& channel_mode = (*channel_iter)->getModeRef();
@@ -182,7 +182,7 @@ void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& 
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
-	if (toInviteUser.getUserName() == (*this).getUserName()) {
+	if (toInviteUser.getNickName() == (*this).getNickName()) {
 		std::cerr << "Can't invite yourself." << std::endl;
 		return ;
 	}
@@ -195,7 +195,7 @@ void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& 
 		}
 	}
 	toChannel.getInvitedUserList().push_back(toInviteUser.getUserSock());
-	std::cout << toInviteUser.getUserName() << " is invited." << std::endl;
+	std::cout << toInviteUser.getNickName() << " is invited." << std::endl;
 	//if (toChannel.getModeRef().checkType(MODE_CHANNEL_KEY))
 	//	toInviteUser.joinChannel(toChannel.getChannelName(), enterPwd, channel_container, true);
 	//else
@@ -306,30 +306,30 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 	}
 }
 
-void User::topicCommand(ChannelContainer& channel_container, std::string channel, ...) {
-	Channel* joinedChannel = getSpecificChannelJoined(channel, channel_container);
-	if (!joinedChannel) {
-		std::cerr << "no such channel." << std::endl;
-		return ;
-	}
-	Mode& mode = joinedChannel->getModeRef();
-	if (mode.checkType(MODE_TOPIC_LIMIT)) {
-		if (getIsOperator() == false) {
-			std::cerr << "only operator can change topic." << std::endl;
-			return ;
-		}
-	}
-	va_list ap;
-	va_start(ap, channel);
-	char *topic_ap = va_arg(ap, char*);
-	std::string newTopic(topic_ap);
-	if (!newTopic.length()) {
-		std::cout << joinedChannel->getTopicRef().getTopic() << std::endl;
-	}
-	else {
-		joinedChannel->getTopicRef().setTopic(newTopic);
-	}
-}
+// void User::topicCommand(ChannelContainer& channel_container, std::string channel, ...) {
+// 	Channel* joinedChannel = getSpecificChannelJoined(channel, channel_container);
+// 	if (!joinedChannel) {
+// 		std::cerr << "no such channel." << std::endl;
+// 		return ;
+// 	}
+// 	Mode& mode = joinedChannel->getModeRef();
+// 	if (mode.checkType(MODE_TOPIC_LIMIT)) {
+// 		if (getIsOperator() == false) {
+// 			std::cerr << "only operator can change topic." << std::endl;
+// 			return ;
+// 		}
+// 	}
+// 	va_list ap;
+// 	va_start(ap, channel);
+// 	char *topic_ap = va_arg(ap, char*);
+// 	std::string newTopic(topic_ap);
+// 	if (!newTopic.length()) {
+// 		std::cout << joinedChannel->getTopicRef().getTopic() << std::endl;
+// 	}
+// 	else {
+// 		joinedChannel->getTopicRef().setTopic(newTopic);
+// 	}
+// }
 
 void User::changeUserName(std::string toChange) {
 	setUserName(toChange);

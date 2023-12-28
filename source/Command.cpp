@@ -89,6 +89,8 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	int result;
 	int msgsSize;
+	Channel *channel;
+	std::string nickName;
 	std::cout << "[ JOIN ]" << std::endl;
 	// Ban 당하는 것에 대한 처리 해야됨!!
 	// 입장하면 topic을 알려줘야됨!!
@@ -124,6 +126,9 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 	default:
 		break;
 	}
+	nickName = user.getNickName();
+	sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
+	channel = user.getSpecificChannelJoined(msgs[1], cc);
 	// channel의 현재 인원 확인용
 	std::cout << "------channel user list 확인용-------\n";
 	std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
@@ -132,6 +137,8 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 		std::cout << (*a)->getNickName() << std::endl;
 		std::cout << "======" << std::endl;
 	}
+	// ---------------------
+	broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
 	return 1;
 }
 
@@ -140,9 +147,13 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	// std::cout << "content: " << msg << "\n";
 	// 나갈 채널이랑 채널 사유 분리하기
 	// 채널 사유 출력하고 채널 나가기
-	if (msgs[1].size())
-		std::cout << user.getNickName() << " is exit by " << msgs[1] << std::endl;
-	user.exitChannel(msgs[0], cc);//인원이 0되면 채널 지워줌
+	if (msgs.size() < 2) {
+		std::cout << "need channel name." << std::endl;
+		return ;
+	}
+	if (msgs.size() > 2)
+		std::cout << user.getNickName() << " is exit by " << msgs[2] << std::endl;
+	user.exitChannel(msgs[1], cc);//인원이 0되면 채널 지워줌
 }
 
 std::string Command::ping(std::string msg, User &user) {
@@ -189,15 +200,44 @@ void Command::invite(std::string nick, std::string channel, ChannelContainer &cc
 	}
 }
 
-std::string Command::topic(Channel &channel, std::string topic) {
+std::string Command::topic(ChannelContainer&cc, Channel &channel, std::string topic, User& user) {
 	// topic set한 사람 저장하기
-	if (topic == "") {
-		return (channel.getTopicRef().getTopic());
+	std::stringstream ss;
+
+	// Channel* joinedChannel = user.getSpecificChannelJoined\
+	// 	(channel.getChannelName(), cc);
+	if (&channel == nullptr) {
+		std::cerr << "no such channel." << std::endl;
+		return "";
+	}
+	Mode& mode = channel.getModeRef();
+	if (mode.checkType(MODE_TOPIC_LIMIT)) {
+		if (user.getIsOperator() == false) {
+			std::cerr << "only operator can change topic." << std::endl;
+			return "";
+		}
+	}
+	ss << "channel :";
+	if (!topic.size()) {
+		std::string returnTopic = channel.getTopicRef().getTopic();
+		if (!returnTopic.size()) {
+			ss << "No topic is set" << std::endl;
+		}
+		else {
+			ss << returnTopic << std::endl;
+		}
+			return (ss.str());
 	}
 	else {
 		channel.getTopicRef().setTopic(topic);
-		return "";
+		ss << channel.getTopicRef().getTopic() << std::endl;
+		return ss.str();
 	}
+	// if (!topic.size())
+	// 	user.topicCommand(cc, channel.getChannelName());
+	// else
+	// 	user.topicCommand(cc, channel.getChannelName(), topic);
+
 }
 
 void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc) { //LSH
@@ -292,6 +332,26 @@ void	Command::sendMsg(User &user, const std::string &msg) const {
     if (msg == "")
         return ;
 	write(user.getUserSock(), msg.c_str(), msg.length() + 1);
+}
+
+void	Command::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
+	std::vector<User *> userList;
+    int sock; //test
+    std::cout << "[BroadCastMsg]\n";
+
+    if (channel == nullptr) {
+        std::cout << "channel is NULL\n";
+        return ; // err 던지기
+    }
+    std::cout << "user sock: " << user.getUserSock() << "\n";; //test 
+	userList = channel->getUserList();
+	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
+        sock = (**iter).getUserSock(); // test
+        std::cout << "iter sock: " << sock << "\n";// test
+        if (sock != user.getUserSock()) {
+            sendMsg(**iter, msg);
+        }
+	}
 }
 
 // ---------------test용---------------
