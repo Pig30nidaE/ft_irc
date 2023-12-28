@@ -88,7 +88,7 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 	}
 }
 
-int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
+void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	int result;
 	int msgsSize;
 	Channel *channel;
@@ -113,18 +113,17 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 
 	switch (result) // joinChannel의 리턴값 수정함 memo.txt. 밑에 리턴값에 따른 에러 명세 해놓음
 	{
-	case 1:
+	case ERR_CHANNELISFULL:
 		throw ErrChannelIsFull(msgs[1]);
 		break;
 	
-	case 2:
+	case ERR_BADCHANNELKEY:
 		throw ErrBadChannelKey(msgs[1]);
 		break;
 
-	case 3:
+	case ERR_INVITEONLYCHAN:
 		throw ErrInviteOnlyChan(msgs[1]);
 		break;
-
 	default:
 		break;
 	}
@@ -141,7 +140,6 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 	}
 	// ---------------------
 	broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
-	return 1;
 }
 
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {

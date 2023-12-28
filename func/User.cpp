@@ -1,71 +1,11 @@
 #include "User.hpp"
 
-//ToDo: feat invite
-//ToDo: JOIN ~ 모든 명령어 검사
-//ToDo: 미구현한 명령어 확인
-
 
 User::User(void):
-sendBuf(""),buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {
-	//userRegister(channel_container);
-	// connectionTime = std::time(nullptr);
-}
+sendBuf(""),buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {}
 
 User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
 
-//void User::userRegister(ChannelContainer &channel_container, std::string enteredUserName, std::string enteredNickName) {
-//	typedef std::vector<User*>::iterator UserIterator;
-//	UserIterator user_iter;
-//	std::vector<User*> user_list = channel_container.getUserList();
-
-//	while (true) {
-//		bool flag = true;
-//		for (user_iter = user_list.begin();user_iter != user_list.end();user_iter++) {
-//			if ((*user_iter)->getUserName() == enteredUserName) {
-//				std::cout << "Already exist. Please enter another user name." << std::endl;
-//				flag = false;
-//				break ;
-//			}
-//		}
-//		if (flag)
-//			break ;
-//	}
-//	setUserName(enteredUserName);
-//	while (true) {
-//		bool flag = true;
-//		for (user_iter = user_list.begin();user_iter != user_list.end();user_iter++) {
-//			if ((*user_iter)->getNickName() == enteredNickName) {
-//				std::cout << "Already exist. Please enter another user name." << std::endl;
-//				flag = false;
-//				break;
-//			}
-//		}
-//		if (flag)
-//			break;
-//	}
-//	setNickName(enteredNickName);
-//}
-
-//void User::nickRegister(Channel& channel, ChannelContainer& channel_container) {
-//	typedef std::vector<User*>::iterator UserIterator;
-//	std::vector<User*> user_list = channel.getUserList();
-//	std::string to_set_nick;
-//	while (true) {
-//		bool flag = true;
-//		std::cout << "Enter nickname: ";
-//		std::getline(std::cin, to_set_nick);
-//		for (UserIterator user_iter = user_list.begin();user_iter != user_list.end();user_iter++) {
-//			if ((*user_iter)->getNickName(channel.getChannelName()) == to_set_nick) {
-//				std::cout << "Already exist." << std::endl;
-//				flag = false;
-//				break ;
-//			}
-//		}
-//		if (flag)
-//			break ;
-//	}
-//	setNickName(channel.getChannelName(), to_set_nick);
-//}
 
 void User::userInfoErase(User& user) {
 	user.setUserName("");
@@ -87,21 +27,18 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 				int channel_capacity = (*channel_iter)->getCapacity();
 				if (channel_capacity) {
 					if ((*channel_iter)->getUserList().size() == channel_capacity) {
-						std::cout << "ERROR: FULL CHANNEL." << std::endl;
-						return -1;
+						return ERR_CHANNELISFULL;
 					}
 				}
 				Mode& channel_mode = (*channel_iter)->getModeRef();
 				if (channel_mode.checkType(MODE_CHANNEL_KEY)) {
 					if (enterPwd.length()) {
 						if (enterPwd != (*channel_iter)->getPassword()) {
-							std::cout << "wrong password." << std::endl;
-							return 2; //BadChannelKey
+							return ERR_BADCHANNELKEY; //BadChannelKey
 						}
 					}
 					else { // key가 필요한데 제공되지 않은것도 BADCHANNELKEY
-						std::cout << "Need password." << std::endl;
-						return 2; // BadChannelKey
+						return ERR_BADCHANNELKEY; // BadChannelKey
 					}
 				}
 				if (channel_mode.checkType(MODE_INVITE_ONLY)) {
@@ -109,8 +46,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 					INVITED iv_iter_begin = (*channel_iter)->getInvitedUserList().begin();
 					INVITED iv_iter_end = (*channel_iter)->getInvitedUserList().end();
 					if (std::find(iv_iter_begin, iv_iter_end, getUserSock()) == iv_iter_end) {
-						std::cout << "This channel is invite only." << std::endl;
-						return 3; // InviteOnlyChan
+						return ERR_INVITEONLYCHAN; // InviteOnlyChan
 					}
 				}
 				setUserIndex(channel_contaier.getChannelList().size());
@@ -121,7 +57,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 			index++;
 		}
 	}
-	std::cout << "no such channel. new channel generate." << std::endl;
+	//std::cout << "no such channel. new channel generate." << std::endl;
 	Channel *toJoin = new Channel(toJoinChannel);
 	setIsOperator(true);
 	toJoin->userAdd(*this);
@@ -180,7 +116,6 @@ void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContain
 	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
 		if ((*user_iter)->getNickName() == toKickUser) {
 			(*user_iter)->exitChannel(fromChannel.getChannelName(), channel_container);
-			std::cout << toKickUser << " is kicked from this channel." << std::endl;
 			return ;
 		}
 	}
@@ -205,7 +140,7 @@ void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& 
 		}
 	}
 	toChannel.getInvitedUserList().push_back(toInviteUser.getUserSock());
-	std::cout << toInviteUser.getNickName() << " is invited." << std::endl;
+	//std::cout << toInviteUser.getNickName() << " is invited." << std::endl;
 	//if (toChannel.getModeRef().checkType(MODE_CHANNEL_KEY))
 	//	toInviteUser.joinChannel(toChannel.getChannelName(), enterPwd, channel_container, true);
 	//else
