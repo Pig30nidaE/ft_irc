@@ -24,6 +24,7 @@ class Command {
 
 
 		void sendMsg(User &user, const std::string &msg) const;
+		void broadcastMsg(User &user, Channel *channel, const std::string &msg) const;
 
 		//----server 입장-----
 		// PASS
