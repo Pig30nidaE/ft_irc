@@ -60,9 +60,11 @@ INVITE nickname_ #test
 1	:	ChannelIsFull
 2	:	BadChannelKey
 3	:	InviteOnlyChan
+4	:	joinchannel 
+5	:	newchannel
 
-
-
+PART replise
+SERVER -> CLIENTS: ":hello!dong@localhost PART :#test"
 1. 없는 채널 PART 시 터짐.
 2. PART 시 채널 유저목록에서 삭제 안됨.
 3. 서버 켜둔 상태에서 재접속시 브로드캐스트안때림.
