@@ -12,8 +12,6 @@
 #define CHANNELISFULL 1
 #define BADCHANNELKEY 2
 #define INVITEONLYCHAN 3
-#define JOINCHANNEL 4
-#define NEWCHANNEL 5
 
 class User;
 class ChannelContainer;
