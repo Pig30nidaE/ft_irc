@@ -241,6 +241,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
 			flag = i; // 찾은 command 플래그 저장
 	}
     userPass = user.getUserIsPass();
+    int status = 0;
     try
     {
         // PASS 마지막만 적용하기 위한 코드
@@ -270,11 +271,10 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
 			
             case JOIN:
-                if (command->join(msgs, *channelContainer, user) >= 0) {
+                command->join(msgs, *channelContainer, user);
                     // sendMsg(user, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + user.getNickName() + " = #test :@" +user.getNickName()+"\n:irc.local 366 " + user.getNickName() + " #test :End of /NAMES list.\n");
                     // tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
                     // broadcastMsg(user, tmp, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n");
-                }
                 break;
 			
             case PART:
@@ -287,6 +287,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
 
             case KICK:
                 command->kick(msgs, *channelContainer, user);
+                
                 break;
        
         case INVITE: //LSH

@@ -48,7 +48,7 @@ class Command {
 		void user(std::vector<std::string> msgs, User &user);
 		
 		// ----channel join-----
-		int	 join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+		void join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// ----channel 나감-----
 		void part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// kick
@@ -69,10 +69,6 @@ class Command {
 			public:
 				ErrNotRegistered(const std::string& client) : std::invalid_argument(client + " :You have not registered\n") {}
 		};
-
-	private:
-		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
-		int	checkLogin(User user);
 
 		// ---------EXCEPTION--------
 		// ----PASS----
@@ -122,6 +118,11 @@ class Command {
 			public:
 				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
 		};
+
+	private:
+		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
+		int	checkLogin(User user);
+
 };
 
 #endif

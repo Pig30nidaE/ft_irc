@@ -88,7 +88,7 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 	}
 }
 
-int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
+void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	int result;
 	int msgsSize;
 	Channel *channel;
@@ -112,11 +112,12 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 		result = user.joinChannel(msgs[1], msgs[2], cc); // key가 있을 때
 	else // 비번 없이 채널 명만 들어왔을 떄
 		result = user.joinChannel(msgs[1], "", cc); // key가 없을 때
-	if (result == CHANNELISFULL)
+
+	if (result == ERR_CHANNELISFULL)
 		throw ErrChannelIsFull(msgs[1]);
-	else if (result == BADCHANNELKEY)
+	else if (result == ERR_BADCHANNELKEY)
 		throw ErrBadChannelKey(msgs[1]);
-	else if (result == INVITEONLYCHAN)
+	else if (result == ERR_INVITEONLYCHAN)
 		throw ErrInviteOnlyChan(msgs[1]);
 	else {
 		nickName = user.getNickName();
@@ -131,7 +132,7 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 		broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
 		// channel의 현재 인원 확인용
 		std::cout << "------channel user list 확인용-------\n";
-		std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
+		userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
 		typedef std::vector<User*>::iterator iter;
 		for (iter a = userList.begin();a != userList.end();a++) {
 			std::cout << (*a)->getNickName() << std::endl;
