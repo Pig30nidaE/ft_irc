@@ -113,10 +113,21 @@ class Command {
 				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+i)\n") {}
 		};
 
+		// PART
+		class ErrNotonChannel : public std::invalid_argument {
+			public:
+				ErrNotonChannel(const std::string & channel) : std::invalid_argument(ERR_NOTONCHANNEL(channel)) {}
+		};
+
 		// 공통
+		class ErrNoSuchChannel : public std::invalid_argument {
+			public:
+				ErrNoSuchChannel(const std::string & channel) : std::invalid_argument(ERR_NOSUCHCHANNEL(channel)) {}
+		};
+
 		class ErrNeedMoreParams : public std::invalid_argument {
 			public:
-				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
+				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(ERR_NEEDMOREPARAMS(command)) {}
 		};
 
 	private:

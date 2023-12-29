@@ -144,21 +144,15 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	}
 }
 
-// 아직 미완성 - 속해있지 않은 채널에 대한 예외처리 안함 ERR_NOTONCHANNEL (442) 
-// 속해있지않은 채널에 PART하면 segfault 뜸
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	std::vector<std::string> targets;
 	Channel *channel = NULL;
 	std::string nickname;
 	std::string username;
 	std::string channelname;
-	std::string response;
+	std::string response = "";
 	int msgsSize;
-	int result;
 	std::cout << "[ PART ]" << std::endl;
-	// std::cout << "content: " << msg << "\n";
-	// 나갈 채널이랑 채널 사유 분리하기
-	// 채널 사유 출력하고 채널 나가기
 
 	nickname = user.getNickName();
 	username = user.getUserName();
@@ -169,7 +163,7 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	else {
 		if ((targets = splitComma(msgs[1])).size() != 0) {
 			if (msgsSize > 2) {
-				if (msgs[2][0] == ':') // 보낼 메시지 가공
+				if (msgs[2].length() != 0 && msgs[2][0] == ':') // 보낼 메시지 가공
 					response = &(msgs[2][1]);
 				else 
 					response = msgs[2];
@@ -178,16 +172,17 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 				}
 			}
 			for (std::vector<std::string>::iterator iter = targets.begin(); iter != targets.end(); iter++) {
-				std::cout << "[TEST]" + user.getNickName() << " is exit by " << *iter << std::endl;
-				channel = user.getSpecificChannelJoined((*iter), cc);
-				channelname = channel->getChannelName();
-				if (user.exitChannel(*iter, cc)) { //인원이 0되면 채널 지워줌
-					// nosochchannel
-					sendMsg(user, ERR_NOSUCHCHANNEL(channelname));
-					return ;
+				if (user.checkChannelInList((*iter), cc)) {
+					throw ErrNoSuchChannel(ERR_NOSUCHCHANNEL(*iter));
 				}
+				if ((channel = user.getSpecificChannelJoined((*iter), cc)) == nullptr) {
+					throw ErrNotonChannel(*iter);
+				}
+				channelname = channel->getChannelName();
+				if (user.exitChannel(*iter, cc) == ERR_NOSUCHCHANNEL_NUM) //인원이 0되면 채널 지워줌
+					throw ErrNoSuchChannel(ERR_NOSUCHCHANNEL(*iter));
 				else {
-					if (msgsSize > 2) { // 떠나는 이유가 있을 때
+					if (response != "") { // 떠나는 이유가 있을 때
 						broadcastMsg(user, channel, PART_REASON_REPLISE(nickname, username, channelname, response));
 						sendMsg(user, PART_REASON_REPLISE(nickname, username, channelname, response));
 					}
@@ -197,6 +192,9 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 					}
 				}
 			}
+		}
+		else {
+			throw ErrNoSuchChannel(msgs[1]);
 		}
 	}
 }

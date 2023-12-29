@@ -42,6 +42,8 @@ class User {
 		void	inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container);
 		void	changeMode(ChannelContainer& channel_container, std::string channel, bool onoff_flag, int type, ...);
 		void	topicCommand(ChannelContainer& channel_container, std::string channel, ...);
+		// -----donghak----=
+		int		checkChannelInList(const std::string &channelName, ChannelContainer& cc);
 
 		std::string							getBuf(void) const;
 		void								setBuf(const std::string &buf);
