@@ -64,12 +64,20 @@ INVITE nickname_ #test
 5	:	newchannel
 
 ------------------PART--------------------------------
-PART replise
-SERVER -> CLIENTS: ":hello!dong@localhost PART :#test"
 1. 없는 채널 PART 시 터짐.
 2. PART 시 채널 유저목록에서 삭제 안됨.
 3. 서버 켜둔 상태에서 재접속시 브로드캐스트안때림.
 4. 채널 운영자가 나갈 시 다음 운영자 선택해야함.
+
+-------PART replise-----------
+"PART"
+":idonghag-ui-MacBookPro-2.local 461 test1 PART :Not enough parameters."
+
+
+"PART #test"
+":test1!1@localhost PART :#test"
+
+
 
 -----------PRIVMSG------------------------
 client private msg

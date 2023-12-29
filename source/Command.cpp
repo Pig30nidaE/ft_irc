@@ -144,21 +144,60 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	}
 }
 
+// 아직 미완성 - 속해있지 않은 채널에 대한 예외처리 안함 ERR_NOTONCHANNEL (442) 
+// 속해있지않은 채널에 PART하면 segfault 뜸
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
+	std::vector<std::string> targets;
+	Channel *channel = NULL;
+	std::string nickname;
+	std::string username;
+	std::string channelname;
+	std::string response;
+	int msgsSize;
+	int result;
 	std::cout << "[ PART ]" << std::endl;
 	// std::cout << "content: " << msg << "\n";
 	// 나갈 채널이랑 채널 사유 분리하기
 	// 채널 사유 출력하고 채널 나가기
-	if (msgs.size() < 2) {
-		std::cout << "need channel name." << std::endl;
-		return ;
+
+	nickname = user.getNickName();
+	username = user.getUserName();
+	msgsSize = msgs.size();
+	if (msgsSize < 2) {
+		throw ErrNeedMoreParams("PART");
 	}
 	else {
-		// if ()
-		user.exitChannel(msgs[1], cc);//인원이 0되면 채널 지워줌
-		std::cout << user.getNickName() << " is exit by " << msgs[2] << std::endl;
-
-
+		if ((targets = splitComma(msgs[1])).size() != 0) {
+			if (msgsSize > 2) {
+				if (msgs[2][0] == ':') // 보낼 메시지 가공
+					response = &(msgs[2][1]);
+				else 
+					response = msgs[2];
+				for (int i = 3; i < msgsSize; i++) {
+					response += (" " + msgs[i]); // 공백으로 쪼개진 문자열 붙여줌
+				}
+			}
+			for (std::vector<std::string>::iterator iter = targets.begin(); iter != targets.end(); iter++) {
+				std::cout << "[TEST]" + user.getNickName() << " is exit by " << *iter << std::endl;
+				channel = user.getSpecificChannelJoined((*iter), cc);
+				channelname = channel->getChannelName();
+				if (user.exitChannel(*iter, cc)) { //인원이 0되면 채널 지워줌
+					// nosochchannel
+					sendMsg(user, ERR_NOSUCHCHANNEL(channelname));
+					return ;
+				}
+				else {
+					if (msgsSize > 2) { // 떠나는 이유가 있을 때
+						broadcastMsg(user, channel, PART_REASON_REPLISE(nickname, username, channelname, response));
+						sendMsg(user, PART_REASON_REPLISE(nickname, username, channelname, response));
+					}
+					else {
+						broadcastMsg(user, channel, PART_REPLISE(nickname, username, channelname));
+						sendMsg(user, PART_REPLISE(nickname, username, channelname));
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -305,13 +344,10 @@ void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& 
 void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc) {
 	std::vector<std::string> targets;
 	std::vector<User *> userList;
-	std::string temp;
 	std::string nickName;
 	std::string tempUser;
 	std::string response = "";
 	size_t msgsSize = 0;
-    size_t start = 0;
-    size_t commaPos = 0;
 	int flag = 0;
 	Channel *channel;
 	std::cout << "[PRIVMSG]\n";
@@ -324,15 +360,9 @@ void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContaine
 			sendMsg(user, ERR_NOTEXTTOSEND(user.getNickName()));
 		throw ErrNeedMoreParams("PRIVMSG"); // 임시 에러
 	}
-    while ((commaPos = msgs[1].find(',', start))!= std::string::npos) { // ',' 기준으로 나
-		temp = msgs[1].substr(start, commaPos - start);
-		if (temp != "")
-			targets.push_back(temp);
-        start = commaPos + 1;
-    }
-	temp = msgs[1].substr(start);
-	if (temp != "")
-		targets.push_back(temp);
+    targets = splitComma(msgs[1]);
+	if (targets.size() < 1)
+		sendMsg(user, ERR_NOTEXTTOSEND(user.getNickName())); // ",,,," 이렇게 들어오면 size()가 0임
 	if (msgs[2][0] == ':') // 보낼 메시지 가공
 		response = &(msgs[2][1]);
 	else 
@@ -388,6 +418,24 @@ Command Command::operator=(Command &other) {
 
 int	checkLogin(User User) {
 	return 1;
+}
+
+std::vector<std::string> Command::splitComma(std::string msg) {
+	std::vector<std::string> targets;
+	size_t start = 0;
+    size_t commaPos = 0;
+	std::string temp;
+
+	 while ((commaPos = msg.find(',', start))!= std::string::npos) { // ',' 기준으로 나
+		temp = msg.substr(start, commaPos - start);
+		if (temp != "")
+			targets.push_back(temp);
+        start = commaPos + 1;
+    }
+	temp = msg.substr(start);
+	if (temp != "")
+		targets.push_back(temp);
+	return targets;
 }
 
 void Command::checkLastPassState(User &user) const {

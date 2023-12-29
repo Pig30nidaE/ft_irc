@@ -67,12 +67,10 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 	return NEWCHANNEL;
 }
 
-void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_container) {
+int User::exitChannel(std::string toExitChannel, ChannelContainer& channel_container) {
     Channel *exitCh = getSpecificChannelJoined(toExitChannel, channel_container);
-	if (exitCh == nullptr) {
-		std::cout << "no such channel." << std::endl;
-		return ;
-	}
+	if (exitCh == nullptr)
+		return ERR_NOSUCHCHANNEL_NUM;
     std::vector<Channel*>& JoinedChannels = getJoinedChannelList(channel_container);
 
 	//std::cout << "CHECKER1" << std::endl;
@@ -94,6 +92,7 @@ void User::exitChannel(std::string toExitChannel, ChannelContainer& channel_cont
 			exitCh->getUserList().at(1)->setIsOperator(true);
 		}
 	}
+	return 0;
 }
 
 

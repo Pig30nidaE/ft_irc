@@ -37,7 +37,7 @@ class User {
 		void	changeUserName(std::string toChange);
 		//void	changeNickName(std::string toChange);
 		int		joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_container);
-		void	exitChannel(std::string toExitChannel, ChannelContainer& channel_container);
+		int		exitChannel(std::string toExitChannel, ChannelContainer& channel_container);
 		void	kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container);
 		void	inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container);
 		void	changeMode(ChannelContainer& channel_container, std::string channel, bool onoff_flag, int type, ...);
