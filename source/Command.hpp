@@ -9,11 +9,9 @@
 #define	NEEDMOREPARMS 2
 #define	PASSMISMATCH 3
 #define PASSSUCCESS 1
-#define CHANNELISFULL 1
-#define BADCHANNELKEY 2
-#define INVITEONLYCHAN 3
-#define JOINCHANNEL 4
-#define NEWCHANNEL 5
+// #define CHANNELISFULL 1
+// #define BADCHANNELKEY 2
+// #define INVITEONLYCHAN 3
 
 class User;
 class ChannelContainer;
@@ -48,7 +46,7 @@ class Command {
 		void user(std::vector<std::string> msgs, User &user);
 		
 		// ----channel join-----
-		int	 join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+		void join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// ----channel 나감-----
 		void part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		// kick
@@ -64,15 +62,13 @@ class Command {
 		void mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
+		void privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
+
 		// 공통
 		class ErrNotRegistered : public std::invalid_argument {
 			public:
 				ErrNotRegistered(const std::string& client) : std::invalid_argument(client + " :You have not registered\n") {}
 		};
-
-	private:
-		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
-		int	checkLogin(User user);
 
 		// ---------EXCEPTION--------
 		// ----PASS----
@@ -122,6 +118,11 @@ class Command {
 			public:
 				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(command + " :Not enough parameter\n") {}
 		};
+
+	private:
+		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
+		int	checkLogin(User user);
+
 };
 
 #endif

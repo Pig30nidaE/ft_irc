@@ -69,18 +69,19 @@ void Server::serverStart(void) {
                 if (it != clients.end())
                 {
                     User *user = it->second;
-                    if (user->getSendBuf() != "")
+                    std::vector<std::string> sendBuf = user->getSendBuf();
+                    if (sendBuf.size() > 0)
                     {
                         int n;
-                        std::cout << "[SERVER]:" << user->getSendBuf() << "\n";
-                        if ((n = write(currEvent->ident, user->getSendBuf().c_str(),
-                                        user->getSendBuf().size()) == -1))
-                        {
-                            std::cerr << "client write error!" << std::endl;
-                            disconnectClient(clients[currEvent->ident]);  
+                        for (std::vector<std::string>::iterator iter = sendBuf.begin(); iter != sendBuf.end(); iter++) {
+                            std::cout << "[SERVER]:" << *iter;
+                            if ((n = write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
+                            {
+                                std::cerr << "client write error!" << std::endl;
+                                disconnectClient(clients[currEvent->ident]);  
+                            }
                         }
-                        else
-                            user->setSendBuf("");
+                        user->initSendBuf();
                     }
                 }
             }
@@ -224,7 +225,7 @@ void Server::setServerPass(std::string serverPass) { // test용
 }
 
 int Server::executeCommand(std::vector<std::string> msgs, User &user) {
-	std::string arr[10] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE"};
+	std::string arr[NUMCOMMANDS] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE", "PRIVMSG"};
     std::string result;
     Channel     *tmp;
 	int         flag = -1;
@@ -234,13 +235,14 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
         std::cout << "msgs is empty!!\n";
         return 0;
     }
-	for (size_t i = 0; i < 10; i++) // command 개수만큼 반복
+	for (size_t i = 0; i < NUMCOMMANDS; i++) // command 개수만큼 반복
 	{
 		//if (msgs[0].compare(0, 4, arr[i]) == 0) 
         if (msgs[0] == arr[i])
 			flag = i; // 찾은 command 플래그 저장
 	}
     userPass = user.getUserIsPass();
+    int status = 0;
     try
     {
         // PASS 마지막만 적용하기 위한 코드
@@ -248,7 +250,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
             command->checkLastPassState(user);
         }
         // 레지스터 전 다른 명령어 사용에 대한 예외처리
-        else if (userPass != 5 && !(flag >= -1 && flag <= 2)) {
+        if (userPass != 5 && !(flag >= -1 && flag <= 2)) {
             throw Command::ErrNotRegistered(arr[flag]);
         }
         // PASS 확인 이전에 다른 명령어에 예외처리
@@ -270,11 +272,10 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
 			
             case JOIN:
-                if (command->join(msgs, *channelContainer, user) >= 0) {
+                command->join(msgs, *channelContainer, user);
                     // sendMsg(user, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + user.getNickName() + " = #test :@" +user.getNickName()+"\n:irc.local 366 " + user.getNickName() + " #test :End of /NAMES list.\n");
                     // tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
                     // broadcastMsg(user, tmp, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n");
-                }
                 break;
 			
             case PART:
@@ -287,41 +288,47 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
 
             case KICK:
                 command->kick(msgs, *channelContainer, user);
+                
                 break;
        
-        case INVITE: //LSH
-            command->invite(msgs[1].c_str(), msgs[2].c_str(), *channelContainer, user);
-            // 추후 수정
-            break;
+            case INVITE: //LSH
+                command->invite(msgs[1].c_str(), msgs[2].c_str(), *channelContainer, user);
+                // 추후 수정
+                break;
 
-        case TOPIC:
-			if (msgs.size() < 2) {
-				std::cout << "need channel name." << std::endl;
-				break ;
-			}
-			//std::cout << msgs[1] << std::endl;
-            tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
-			if (tmp == nullptr) {
-				std::cout << "ERROR" << std::endl;
-				break ;
-			}
-			if (msgs.size() > 2)
-            	sendMsg(user, command->topic(*channelContainer, *tmp, msgs[2], user));
-			else
-				sendMsg(user, command->topic(*channelContainer, *tmp, "", user));
-            break;
+            case TOPIC:
+                if (msgs.size() < 2) {
+                    std::cout << "need channel name." << std::endl;
+                    break ;
+                }
+                //std::cout << msgs[1] << std::endl;
+                tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
+                if (tmp == nullptr) {
+                    std::cout << "ERROR" << std::endl;
+                    break ;
+                }
+                if (msgs.size() > 2)
+                    sendMsg(user, command->topic(*channelContainer, *tmp, msgs[2], user));
+                else
+                    sendMsg(user, command->topic(*channelContainer, *tmp, "", user));
+                break;
 
-        case MODE:
-            //command->mode(content, content, content);
-            /* test용 */
-            //testCmd.push_back("test");
-            //testCmd.push_back("+");
-            command->mode(msgs, user, *channelContainer);
-            break;
-		default:
-			std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
-			break;
-	}
+            case MODE:
+                //command->mode(content, content, content);
+                /* test용 */
+                //testCmd.push_back("test");
+                //testCmd.push_back("+");
+                command->mode(msgs, user, *channelContainer);
+                break;
+
+            case PRIVMSG:
+                command->privmsg(msgs, user, *channelContainer);
+                break;
+
+            default:
+                std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
+                break;
+        }
     }
     catch(const std::exception& e) {
         std::cout << "-- [CATCH]: " << flag << " --\n";
@@ -329,7 +336,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
             std::cout << "disconnect User: " << flag << "\n";
             disconnectClient(&user);
         }
-        std::cerr << "[Catch]: " <<  e.what() << '\n';
+        std::cerr << "[Catch]: " <<  e.what();
         sendMsg(user, e.what());
         return DISCONNECT;
     }
@@ -344,12 +351,9 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
 
 
 void Server::parser(std::string msg, User &user) {
-	int			end;
     int         cr = 0;
     int         lf = 0;
     int         crlf = 0;
-    int         lfcr = 0;
-    int          i = 0;
     std::string temp;
 
     if (msg == "") {
@@ -390,7 +394,6 @@ int    Server::splitSpace(const std::string &msg, User &user) {
     for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) { // tester
         std::cout << "[msg]:" << *iter << "/" << (*iter).size() << "\n";
     }
-	std::cout << "[test] splie: " << msgs.size() << std::endl;
     if (executeCommand(msgs, user) == DISCONNECT)
         return DISCONNECT;
     return 0;
@@ -414,12 +417,11 @@ void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) 
         std::cout << "channel is NULL\n";
         return ; // err 던지기
     }
-    std::cout << "user sock: " << user.getUserSock() << "\n";; //test 
 	userList = channel->getUserList();
 	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
         sock = (**iter).getUserSock(); // test
-        std::cout << "iter sock: " << sock << "\n";// test
         if (sock != user.getUserSock()) {
+            std::cout << "[BROAD] send to " << sock << "\n";// test
             sendMsg(**iter, msg);
         }
 	}

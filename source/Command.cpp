@@ -80,20 +80,22 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 		else {
 			realname = msgs[4];
 		}
+		std::cout << "username:" << msgs[1] << "\n";
 		std::cout << "realname:" << realname << "\n";
-		user.setUserName(realname);
+		user.setUserName(msgs[1]);
+		user.setRealName(realname);
 	}
 	else {
 		throw ErrAlreadyRegistered("USER");
 	}
 }
 
-int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
+void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	int result;
 	int msgsSize;
 	Channel *channel;
 	std::string nickName;
-	std::string response;
+	std::string rplEndofnames;
 
 	std::cout << "[ JOIN ]" << std::endl;
 	// Ban 당하는 것에 대한 처리 해야됨!!
@@ -106,32 +108,33 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 		throw ErrNeedMoreParams("JOIN");
 	}
 	else if ((user.getJoinedChannelList(cc)).size() >= 1) { // 최대 가입 가능한 채널 수 1
-		throw ErrTooManyChannels(msgs[1]); //최대 가입 가능한 채널 수 넘으면 에
+		throw ErrTooManyChannels(msgs[0]); //최대 가입 가능한 채널 수 넘으면 에
 	}
 	if (msgsSize >= 3) // Input에 비밀번호까지 있는지, 그 이후는 걍 무시
 		result = user.joinChannel(msgs[1], msgs[2], cc); // key가 있을 때
 	else // 비번 없이 채널 명만 들어왔을 떄
 		result = user.joinChannel(msgs[1], "", cc); // key가 없을 때
-	if (result == CHANNELISFULL)
-		throw ErrChannelIsFull(msgs[1]);
-	else if (result == BADCHANNELKEY)
-		throw ErrBadChannelKey(msgs[1]);
-	else if (result == INVITEONLYCHAN)
-		throw ErrInviteOnlyChan(msgs[1]);
+
+	if (result == ERR_CHANNELISFULL)
+		throw ErrChannelIsFull(msgs[0]);
+	else if (result == ERR_BADCHANNELKEY)
+		throw ErrBadChannelKey(msgs[0]);
+	else if (result == ERR_INVITEONLYCHAN)
+		throw ErrInviteOnlyChan(msgs[0]);
 	else {
 		nickName = user.getNickName();
 		channel = user.getSpecificChannelJoined(msgs[1], cc);
+		rplEndofnames = RPL_NAMREPLY(nickName, msgs[1]);
 		std::vector<User *> userList = channel->getUserList();
-		if (result == JOINCHANNEL) { // 기존 채널, 새 채널 분기 나눠야됨
-			sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
+		for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
+			rplEndofnames += ((*iter)->getNickName() + " ");
 		}
-		else if (result == NEWCHANNEL) {
-			sendMsg(user, ":" + nickName + "!root@127.0.0.1 JOIN :#test\n:irc.local 353 " + nickName + " = #test :@" +nickName+"\n:irc.local 366 " + nickName + " #test :End of /NAMES list.\n");
-		}
-		broadcastMsg(user, channel, ":" + nickName + "!root@127.0.0.1 JOIN :" + msgs[1] + "\n");
+		rplEndofnames += "\n";
+		sendMsg(user, JOIN_REPLISE(nickName,user.getUserName(), msgs[1]) + rplEndofnames + RPL_ENDOFNAMES(nickName, msgs[1]));
+		broadcastMsg(user, channel, ":" + nickName + " JOIN :" + msgs[1] + "\n");
 		// channel의 현재 인원 확인용
 		std::cout << "------channel user list 확인용-------\n";
-		std::vector<User*> userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
+		userList = user.getSpecificChannelJoined(msgs[1], cc)->getUserList(); //이밑에서 터짐.
 		typedef std::vector<User*>::iterator iter;
 		for (iter a = userList.begin();a != userList.end();a++) {
 			std::cout << (*a)->getNickName() << std::endl;
@@ -139,7 +142,6 @@ int Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &use
 		}
 		// ---------------------
 	}
-	return 0;
 }
 
 void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -166,9 +168,7 @@ void Command::ping(std::vector<std::string> msgs, User &user) {
 	if (msgs.size() < 2) {
 		throw ErrNeedMoreParams("PING");
 	}
-	std::string req = "PONG " + msgs[1];
-	sendMsg(user, req);
-	std::cout << "[PING] req: " << req << "\n";
+	sendMsg(user, "PONG " + msgs[1]);
 }
 
 void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -302,6 +302,79 @@ void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& 
 	//	onoff_flag, )
 }
 
+// privmsg 대부분 한거같은데 err throw 수정 필요
+void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc) {
+	std::vector<std::string> targets;
+	std::vector<User *> userList;
+	std::string temp;
+	std::string nickName;
+	std::string tempUser;
+	std::string response = "";
+	size_t msgsSize = 0;
+    size_t start = 0;
+    size_t commaPos = 0;
+	int flag = 0;
+	Channel *channel;
+	std::cout << "[PRIVMSG]\n";
+
+	msgsSize = msgs.size();
+	if (msgsSize < 3) {
+		if (msgsSize < 2) // 수신자가 없는지
+			sendMsg(user, ERR_NORECIPIENT(user.getNickName()));
+		else
+			sendMsg(user, ERR_NOTEXTTOSEND(user.getNickName()));
+		throw ErrNeedMoreParams("PRIVMSG"); // 임시 에러
+	}
+    while ((commaPos = msgs[1].find(',', start))!= std::string::npos) { // ',' 기준으로 나
+		temp = msgs[1].substr(start, commaPos - start);
+		if (temp != "")
+			targets.push_back(temp);
+        start = commaPos + 1;
+    }
+	temp = msgs[1].substr(start);
+	if (temp != "")
+		targets.push_back(temp);
+	if (msgs[2][0] == ':') // 보낼 메시지 가공
+		response = &(msgs[2][1]);
+	else 
+		response = msgs[2];
+	for (int i = 3; i < msgsSize; i++) {
+		response += (" " + msgs[i]); // 공백으로 쪼개진 문자열 붙여줌
+	}
+	nickName = user.getNickName();
+	for (std::vector<std::string>::iterator target = targets.begin(); target != targets.end(); target++) {
+		std::cout << "[TARGET]: \"" << *target << "\"\n";
+		if ((*target)[0] == '#') { // 채널에게 보낼때
+			channel = user.getSpecificChannelJoined(*target, cc);
+			if (channel != nullptr) {// 채널 있는지?
+				broadcastMsg(user, channel, PRIVMSG_REPLISE(nickName, user.getUserName(), *target, response));
+			}
+			else {
+				std::cout << "not suchChannel\n";
+				sendMsg(user, ERR_CANNOTSENDTOCHAN(nickName, *target));
+				// 채널 못찾음 NOSUCHCHANNEL
+				// 같은 채널에 있는 유저와 채널로 메시지 보내면 하나만 감, ㅈ됨
+			}
+		}
+		else { // 유저에게 보낼때
+			userList = cc.getUserList();
+			for (std::vector<User*>::iterator Uiter = userList.begin(); Uiter != userList.end(); Uiter++) {
+				tempUser = (*Uiter)->getNickName();
+				if (tempUser == (*target)) { // 타겟인 유저한테 문자열 보냄
+					flag = 1;
+					sendMsg(**Uiter, PRIVMSG_REPLISE(nickName, user.getUserName(), *target, response));
+				}
+			}
+			if (flag == 0) {
+				std::cout << "not suchUser\n";
+				sendMsg(user, ERR_NOSUCHNICK(nickName));
+				// NOSUCHUSER
+			}
+		}
+		
+	}
+}
+
 Command::Command(void) {}
 
 Command::~Command() {}
@@ -351,12 +424,11 @@ void	Command::broadcastMsg(User &user, Channel *channel, const std::string &msg)
         std::cout << "channel is NULL\n";
         return ; // err 던지기
     }
-    std::cout << "user sock: " << user.getUserSock() << "\n";; //test 
 	userList = channel->getUserList();
 	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
         sock = (**iter).getUserSock(); // test
-        std::cout << "iter sock: " << sock << "\n";// test
         if (sock != user.getUserSock()) {
+			std::cout << "[BROAD] send to " << sock << "\n";// test
             sendMsg(**iter, msg);
         }
 	}

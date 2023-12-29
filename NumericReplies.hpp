@@ -1,6 +1,8 @@
 #ifndef NUMERICREPLIES_HPP
 #define NUMERICREPLIES_HPP
 
+#define JOINCHANNEL 4
+#define NEWCHANNEL 5
 #define RPL_WELCOME 1
 #define RPL_YOURHOST 2
 #define RPL_CREATED 3
@@ -58,10 +60,10 @@
 #define RPL_ENDOFEXCEPTLIST 349
 #define RPL_VERSION 351
 #define RPL_WHOREPLY 352
-#define RPL_NAMREPLY 353
+// #define RPL_NAMREPLY 353
 #define RPL_LINKS 364
 #define RPL_ENDOFLINKS 365
-#define RPL_ENDOFNAMES 366
+// #define RPL_ENDOFNAMES 366
 #define RPL_BANLIST 367
 #define RPL_ENDOFBANLIST 368
 #define RPL_ENDOFWHOWAS 369
@@ -76,15 +78,15 @@
 #define RPL_REHASHING 382
 #define RPL_TIME 391
 #define ERR_UNKNOWNERROR 400
-#define ERR_NOSUCHNICK 401
+// #define ERR_NOSUCHNICK 401
 #define ERR_NOSUCHSERVER 402
 #define ERR_NOSUCHCHANNEL 403
-#define ERR_CANNOTSENDTOCHAN 404
+// #define ERR_CANNOTSENDTOCHAN 404
 #define ERR_TOOMANYCHANNELS 405
 #define ERR_WASNOSUCHNICK 406
 #define ERR_NOORIGIN 409
-#define ERR_NORECIPIENT 411
-#define ERR_NOTEXTTOSEND 412
+// #define ERR_NORECIPIENT 411
+// #define ERR_NOTEXTTOSEND 412
 #define ERR_INPUTTOOLONG 417
 #define ERR_UNKNOWNCOMMAND 421
 #define ERR_NOMOTD 422
@@ -131,5 +133,20 @@
 #define ERR_SASLABORTED 906
 #define ERR_SASLALREADY 907
 #define RPL_SASLMECHS 908
+
+// -------command replise list--------
+
+// -----------JOIN------------
+#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@127.0.0.1 JOIN :" + channel + "\n")
+#define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")
+#define RPL_ENDOFNAMES(nickname, channel) (":irc.local 366 " + nickname + " " + channel + " :End of /NAMES list.\n")
+
+// ----------PRIVMSG----------
+#define PRIVMSG_REPLISE(nickname, username, target, response) (":" + nickname + "!" + username + "@localhost PRIVMSG " + target + " :" + response + "\n")
+#define ERR_NOSUCHNICK(nickname) (":irc.local 401 " + nickname + " :No such nick/channel\n")
+#define ERR_NOTEXTTOSEND(nickname) (":irc.local 412 " + nickname + " :No text to send\n")
+#define ERR_NORECIPIENT(nickname) (":irc.local 411 " + nickname + " :No recipient given PRIVMSG\n")
+#define ERR_CANNOTSENDTOCHAN(nickname, channel) (":irc.local 404 " + nickname + " " + channel + " :Cannot send to channel\n")
+
 
 #endif
