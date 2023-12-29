@@ -69,18 +69,19 @@ void Server::serverStart(void) {
                 if (it != clients.end())
                 {
                     User *user = it->second;
-                    if (user->getSendBuf() != "")
+                    std::vector<std::string> sendBuf = user->getSendBuf();
+                    if (sendBuf.size() > 0)
                     {
                         int n;
-                        std::cout << "[SERVER]:" << user->getSendBuf();
-                        if ((n = write(currEvent->ident, user->getSendBuf().c_str(),
-                                        user->getSendBuf().size()) == -1))
-                        {
-                            std::cerr << "client write error!" << std::endl;
-                            disconnectClient(clients[currEvent->ident]);  
+                        for (std::vector<std::string>::iterator iter = sendBuf.begin(); iter != sendBuf.end(); iter++) {
+                            std::cout << "[SERVER]:" << *iter;
+                            if ((n = write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
+                            {
+                                std::cerr << "client write error!" << std::endl;
+                                disconnectClient(clients[currEvent->ident]);  
+                            }
                         }
-                        else
-                            user->setSendBuf("");
+                        user->initSendBuf();
                     }
                 }
             }
