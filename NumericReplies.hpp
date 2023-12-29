@@ -80,7 +80,7 @@
 #define ERR_UNKNOWNERROR 400
 // #define ERR_NOSUCHNICK 401
 #define ERR_NOSUCHSERVER 402
-#define ERR_NOSUCHCHANNEL 403
+#define ERR_NOSUCHCHANNEL_NUM 403
 // #define ERR_CANNOTSENDTOCHAN 404
 #define ERR_TOOMANYCHANNELS 405
 #define ERR_WASNOSUCHNICK 406
@@ -136,8 +136,11 @@
 
 // -------command replise list--------
 
+// ------공통------
+#define ERR_NOSUCHCHANNEL(channel) (":irc.local 403 " + channel + " :No such channel\n")
+
 // -----------JOIN------------
-#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@127.0.0.1 JOIN :" + channel + "\n")
+#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\n")
 #define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")
 #define RPL_ENDOFNAMES(nickname, channel) (":irc.local 366 " + nickname + " " + channel + " :End of /NAMES list.\n")
 
@@ -148,5 +151,8 @@
 #define ERR_NORECIPIENT(nickname) (":irc.local 411 " + nickname + " :No recipient given PRIVMSG\n")
 #define ERR_CANNOTSENDTOCHAN(nickname, channel) (":irc.local 404 " + nickname + " " + channel + " :Cannot send to channel\n")
 
+// ---------PART------------
+#define PART_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost PART :" + channel + "\n")
+#define PART_REASON_REPLISE(nickname, username, channel, reason) (":" + nickname + "!" + username + "@localhost PART " + channel + " :" + reason + "\n")
 
 #endif

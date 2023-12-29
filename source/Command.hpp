@@ -122,6 +122,7 @@ class Command {
 	private:
 		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
 		int	checkLogin(User user);
+		std::vector<std::string> splitComma(std::string msg);
 
 };
 
