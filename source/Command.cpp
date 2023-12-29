@@ -341,6 +341,7 @@ void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& 
 	//	onoff_flag, )
 }
 
+// privmsg 대부분 한거같은데 err throw 수정 필요
 void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc) {
 	std::vector<std::string> targets;
 	std::vector<User *> userList;
