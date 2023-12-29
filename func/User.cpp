@@ -302,7 +302,7 @@ void User::setUserName(std::string const username) {
 //	return "";
 //}
 
-std::string User::getNickName(void) {
+std::string User::getNickName(void) const {
 	return nickName;
 }
 
@@ -317,6 +317,14 @@ void User::setNickName(std::string toChangeNick){//, ChannelContainer& channel_c
 	//	}
 	//}
 	nickName = toChangeNick;
+}
+
+std::string User::getRealkName(void) const {
+	return realName;
+}
+
+void User::setRealName(std::string realname) {
+	realName = realname;
 }
 
 bool User::getIsOperator(void) const {

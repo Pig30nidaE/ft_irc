@@ -63,9 +63,24 @@ INVITE nickname_ #test
 4	:	joinchannel 
 5	:	newchannel
 
+------------------PART--------------------------------
 PART replise
 SERVER -> CLIENTS: ":hello!dong@localhost PART :#test"
 1. 없는 채널 PART 시 터짐.
 2. PART 시 채널 유저목록에서 삭제 안됨.
 3. 서버 켜둔 상태에서 재접속시 브로드캐스트안때림.
 4. 채널 운영자가 나갈 시 다음 운영자 선택해야함.
+
+-----------PRIVMSG------------------------
+client private msg
+[to server] "PRIVMSG donghak_ hello"
+[to client] ":donghak_!donghak@localhost PRIVMSG donghakl :hi"
+
+in channel msg
+[c to server] "PRIVMSG #test hello"
+[s to client] ":donghak__!donghak@localhost PRIVMSG #test :hello"
+
+multi msg
+[to channel, client] "PRIVMSG #test,donghak_ aaaaaaaaaaaa"
+[client to client] ":donghak_!donghak@localhost PRIVMSG dong :b"
+[channel to client] ":donghak__!donghak@localhost PRIVMSG #test :b"

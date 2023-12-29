@@ -24,6 +24,7 @@
 #define	PASSMISMATCH 3
 #define PASSSUCCESS 1
 #define DISCONNECT 1
+#define NUMCOMMANDS 11
 
 
 enum {
@@ -37,6 +38,7 @@ enum {
 	INVITE,
 	TOPIC,
 	MODE,
+	PRIVMSG,
 };
 
 class User;
