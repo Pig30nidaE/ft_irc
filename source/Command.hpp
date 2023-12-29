@@ -9,9 +9,9 @@
 #define	NEEDMOREPARMS 2
 #define	PASSMISMATCH 3
 #define PASSSUCCESS 1
-#define CHANNELISFULL 1
-#define BADCHANNELKEY 2
-#define INVITEONLYCHAN 3
+// #define CHANNELISFULL 1
+// #define BADCHANNELKEY 2
+// #define INVITEONLYCHAN 3
 
 class User;
 class ChannelContainer;
@@ -61,6 +61,8 @@ class Command {
 		//void mode(std::string channel, std::string flag, std::string parm);
 		void mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
+
+		void privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
 
 		// 공통
 		class ErrNotRegistered : public std::invalid_argument {
