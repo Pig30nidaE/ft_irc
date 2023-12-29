@@ -2,7 +2,7 @@
 
 
 User::User(void):
-sendBuf(""),buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {}
+buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {}
 
 User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
 
@@ -402,9 +402,13 @@ std::string User::getBuf(void) const {
 }
 
 void User::setSendBuf(const std::string &sendBuf) {
-	this->sendBuf = sendBuf;
+	(this->sendBuf).push_back(sendBuf);
 }
 
-std::string User::getSendBuf(void) const {
+std::vector<std::string> User::getSendBuf(void) const {
 	return sendBuf;
+}
+
+void User::initSendBuf(void) {
+	sendBuf.clear();
 }
