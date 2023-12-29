@@ -367,6 +367,16 @@ Channel* User::getSpecificChannelJoined(std::string toGet, ChannelContainer& cha
 	return nullptr;
 }
 
+int	User::checkChannelInList(const std::string &channelName, ChannelContainer& cc) {
+	std::vector<Channel *> &channelList = cc.getChannelList();
+	for (std::vector<Channel *>::iterator iter = channelList.begin(); iter != channelList.end(); iter++) {
+		if ((*iter)->getChannelName() == channelName) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 int	User::getUserIndex(void) const {
 	return userIndex;
 }

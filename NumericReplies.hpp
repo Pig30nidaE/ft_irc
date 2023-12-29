@@ -95,10 +95,10 @@
 #define ERR_NICKNAMEINUSE 433
 #define ERR_NICKCOLLISION 436
 #define ERR_USERNOTINCHANNEL 441
-#define ERR_NOTONCHANNEL 442
+// #define ERR_NOTONCHANNEL 442
 #define ERR_USERONCHANNEL 443
 #define ERR_NOTREGISTERED 451
-#define ERR_NEEDMOREPARAMS 461
+// #define ERR_NEEDMOREPARAMS 461
 #define ERR_ALREADYREGISTERED 462
 #define ERR_PASSWDMISMATCH 464
 #define ERR_YOUREBANNEDCREEP 465
@@ -138,6 +138,7 @@
 
 // ------공통------
 #define ERR_NOSUCHCHANNEL(channel) (":irc.local 403 " + channel + " :No such channel\n")
+#define ERR_NEEDMOREPARAMS(command) (":irc.local 461 " + command + " :Not enough parameters\n")
 
 // -----------JOIN------------
 #define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\n")
@@ -154,5 +155,6 @@
 // ---------PART------------
 #define PART_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost PART :" + channel + "\n")
 #define PART_REASON_REPLISE(nickname, username, channel, reason) (":" + nickname + "!" + username + "@localhost PART " + channel + " :" + reason + "\n")
+#define ERR_NOTONCHANNEL(channel) (":irc.local 442 " + channel + " :You're not on that channel\n")
 
 #endif
