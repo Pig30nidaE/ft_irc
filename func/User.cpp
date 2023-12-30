@@ -27,18 +27,18 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 				int channel_capacity = (*channel_iter)->getCapacity();
 				if (channel_capacity) {
 					if ((*channel_iter)->getUserList().size() == channel_capacity) {
-						return ERR_CHANNELISFULL;
+						return ERR_CHANNELISFULL_NUM;
 					}
 				}
 				Mode& channel_mode = (*channel_iter)->getModeRef();
 				if (channel_mode.checkType(MODE_CHANNEL_KEY)) {
 					if (enterPwd.length()) {
 						if (enterPwd != (*channel_iter)->getPassword()) {
-							return ERR_BADCHANNELKEY; //BadChannelKey
+							return ERR_BADCHANNELKEY_NUM; //BadChannelKey
 						}
 					}
 					else { // key가 필요한데 제공되지 않은것도 BADCHANNELKEY
-						return ERR_BADCHANNELKEY; // BadChannelKey
+						return ERR_BADCHANNELKEY_NUM; // BadChannelKey
 					}
 				}
 				if (channel_mode.checkType(MODE_INVITE_ONLY)) {
@@ -46,7 +46,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 					INVITED iv_iter_begin = (*channel_iter)->getInvitedUserList().begin();
 					INVITED iv_iter_end = (*channel_iter)->getInvitedUserList().end();
 					if (std::find(iv_iter_begin, iv_iter_end, getUserSock()) == iv_iter_end) {
-						return ERR_INVITEONLYCHAN; // InviteOnlyChan
+						return ERR_INVITEONLYCHAN_NUM; // InviteOnlyChan
 					}
 				}
 				setUserIndex(channel_contaier.getChannelList().size());
@@ -69,8 +69,8 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 
 int User::exitChannel(std::string toExitChannel, ChannelContainer& channel_container) {
     Channel *exitCh = getSpecificChannelJoined(toExitChannel, channel_container);
-	if (exitCh == nullptr)
-		return ERR_NOSUCHCHANNEL_NUM;
+	if (exitCh == nullptr) //내가 가입한 채널 중에 없음
+		return ERR_NOTONCHANNEL_NUM;
     std::vector<Channel*>& JoinedChannels = getJoinedChannelList(channel_container);
 
 	//std::cout << "CHECKER1" << std::endl;
@@ -374,7 +374,7 @@ int	User::checkChannelInList(const std::string &channelName, ChannelContainer& c
 			return 0;
 		}
 	}
-	return 1;
+	return ERR_NOSUCHCHANNEL_NUM;
 }
 
 int	User::getUserIndex(void) const {

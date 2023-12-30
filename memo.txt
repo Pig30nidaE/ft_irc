@@ -70,25 +70,59 @@ INVITE nickname_ #test
 4. 채널 운영자가 나갈 시 다음 운영자 선택해야함.
 
 -------PART replise-----------
-"PART"
-":idonghag-ui-MacBookPro-2.local 461 test1 PART :Not enough parameters."
+---예외 사항---
+--여러개 들어가고 여러개 나갈 때
+JOIN #test1,#test2,#test3,#test4
 
+PART #test1,,#test3,#test4                    
+":dong!1@localhost PART :#test1"
+":idonghag-ui-MacBookPro-2.local 403 dong # :No such channel"
+":dong!1@localhost PART :#test3"
+":dong!1@localhost PART :#test4"
 
-"PART #test"
-":test1!1@localhost PART :#test"
-
+--# 없어도 그대로 진행하면서 못찾으면 NOSUCHCHANNEL 임
 
 
 -----------PRIVMSG------------------------
-client private msg
+---예외 사항---
+"PRIVMSG test1,,test2 hello" --> 보내져야됨
+
+---예시---
+--클라이언트 한명한테 보낼때--
 [to server] "PRIVMSG donghak_ hello"
 [to client] ":donghak_!donghak@localhost PRIVMSG donghakl :hi"
 
-in channel msg
+--채널에 보낼때--
 [c to server] "PRIVMSG #test hello"
 [s to client] ":donghak__!donghak@localhost PRIVMSG #test :hello"
 
-multi msg
+--채널, 클라한테 보낼때--
 [to channel, client] "PRIVMSG #test,donghak_ aaaaaaaaaaaa"
 [client to client] ":donghak_!donghak@localhost PRIVMSG dong :b"
 [channel to client] ":donghak__!donghak@localhost PRIVMSG #test :b"
+
+--없는 것에 보낼때(유저, 채널)--
+PRIVMSG 12,123,,#test,, hello
+:idonghag-ui-MacBookPro-2.local 401 dong 12 :No such nick
+:idonghag-ui-MacBookPro-2.local 401 dong 123 :No such nick
+:idonghag-ui-MacBookPro-2.local 403 dong #test :No such channel
+
+-----------JOIN COMMAND-----------
+JOIN #test1,,#test3,#test4
+:dong1!1@localhost JOIN :#test1
+:idonghag-ui-MacBookPro-2.local 353 dong1 = #test1 :dong1 donghak @donghak_
+:idonghag-ui-MacBookPro-2.local 366 dong1 #test1 :End of /NAMES list.
+:dong1!1@localhost JOIN :#test3
+:idonghag-ui-MacBookPro-2.local 353 dong1 = #test3 :dong1 @donghak
+:idonghag-ui-MacBookPro-2.local 366 dong1 #test3 :End of /NAMES list.
+:dong1!1@localhost JOIN :#test4
+:idonghag-ui-MacBookPro-2.local 353 dong1 = #test4 :dong1 @donghak donghak_
+:idonghag-ui-MacBookPro-2.local 366 dong1 #test4 :End of /NAMES list.
+
+--',' 만 있어도 파라미터 부족 안 잡힘--
+JOIN
+:idonghag-ui-MacBookPro-2.local 461 dong1 JOIN :Not enough parameters.
+
+JOIN ,,
+
+JOIN ,
