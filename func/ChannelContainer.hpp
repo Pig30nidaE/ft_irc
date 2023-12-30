@@ -24,6 +24,9 @@ class ChannelContainer {
 		std::vector<User*>		&getUserList(void);
 		int						getCurrentChIdx(void);
 		void					setCurrentChIdx(int idx);
+		// donghak
+		int						checkClientInList(const std::string &nickname);
+		User					*getUser(const std::string &nickname);
 };
 
 #endif

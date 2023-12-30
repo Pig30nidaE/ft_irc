@@ -78,6 +78,7 @@ class Command {
 					return " PASS :Password incorrect\n";
 				};
 		};
+
 		// -----PASS and USER-------
 		class ErrAlreadyRegistered : public std::invalid_argument { 
 			public:
@@ -95,28 +96,44 @@ class Command {
 		// JOIN ERROR
 		class ErrTooManyChannels : public std::invalid_argument {
 			public:
-				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(channelName + " :You have joined too many channels\n") {}
+				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(ERR_TOOMANYCHANNELS(channelName)) {}
 		};
 
 		class ErrChannelIsFull : public std::invalid_argument {
 			public:
-				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+l)\n") {}
+				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(ERR_CHANNELISFULL(channelName)) {}
 		};
 
 		class ErrBadChannelKey : public std::invalid_argument {
 			public:
-				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+k)\n") {}
+				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(ERR_BADCHANNELKEY(channelName)) {}
 		};
 
 		class ErrInviteOnlyChan : public std::invalid_argument {
 			public:
-				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(channelName + " :Cannot join channel (+i)\n") {}
+				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(ERR_INVITEONLYCHAN(channelName)) {}
+		};
+
+		class ErrBadChanMask :public std::invalid_argument {
+			public:
+				ErrBadChanMask(const std::string &channelName) : std::invalid_argument(ERR_BADCHANMASK(channelName)) {}
 		};
 
 		// PART
 		class ErrNotonChannel : public std::invalid_argument {
 			public:
 				ErrNotonChannel(const std::string & channel) : std::invalid_argument(ERR_NOTONCHANNEL(channel)) {}
+		};
+
+		//PRIVMSG
+		class ErrCannotSendToChan : public std::invalid_argument {
+			public:
+				ErrCannotSendToChan(const std::string & nickname, const std::string & channel) : std::invalid_argument(ERR_CANNOTSENDTOCHAN(nickname, channel)) {}
+		};
+
+		class ErrNoSuchNick : public std::invalid_argument {
+			public:
+				ErrNoSuchNick(const std::string & nickname) : std::invalid_argument(ERR_NOSUCHNICK(nickname)) {}
 		};
 
 		// 공통

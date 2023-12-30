@@ -47,3 +47,22 @@ int	ChannelContainer::getCurrentChIdx(void) {
 void ChannelContainer::setCurrentChIdx(int idx) {
 	channelIndex = idx;
 }
+
+// 동학
+int ChannelContainer::checkClientInList(const std::string &nickname) {
+	for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
+		if ((*iter)->getNickName() == nickname) {
+			return 0;
+		}
+	}
+	return ERR_NOSUCHNICK_NUM;
+}
+
+User *ChannelContainer::getUser(const std::string &nickname) {
+	for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
+		if ((*iter)->getNickName() == nickname) {
+			return (*iter);
+		}
+	}
+	return nullptr;
+}
