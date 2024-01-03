@@ -55,6 +55,7 @@ class Channel {
 		std::string 				channelName;
 		std::vector<User*>			userList;
 		std::vector<int>			invitedUserList;
+		//std::vector<int>			bannedUserList;
 		std::string					password;
 		int							capacity;
 		Topic						*topic;

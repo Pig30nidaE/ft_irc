@@ -342,7 +342,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
     }
     if ((flag == USER || flag == NICK) && userPass == 4 && user.getNickName() != "" && user.getUserName() != "") {
         user.setUserIsPass(5); // USER NICK 상관없이 register하는 예외처리
-        sendMsg(user, ":irc.local 001 " + user.getNickName() + ":Welcome to the Localnet IRC Network " + user.getNickName() + "!root@127.0.0.1\n");
+        sendMsg(user, ":irc.local 001 " + user.getNickName() + " :Welcome to the Localnet IRC Network " + user.getNickName() + "!root@127.0.0.1\n");
     }
     return 0;
 	std::cout << "-----------------------------\n";
