@@ -4,7 +4,9 @@
 User::User(void):
 buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {}
 
-User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
+User::~User() {
+	//std::cout << "[USER] destroyed user: " << userSock << "\n";
+}
 
 
 void User::userInfoErase(User& user) {

@@ -1,0 +1,9 @@
+1. +i 설정한 채널에 JOIN 하면 접속은 안되나 클라이언트 창에 reply 확인해야 할듯.
+2. 최초 channel join 시 인원이 2명 있다고 뜸.
+3. 중간에 갑자기 연결 끊김
+-- [CATCH]: 1 --
+disconnect User: 1
+client disconnected: 7
+[USER] destroyed user: 7
+[Catch]:  PASS :Password incorrect
+[1]    8346 segmentation fault  ./ircserver 6667 pass

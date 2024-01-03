@@ -74,7 +74,7 @@ void Server::serverStart(void) {
                     {
                         int n;
                         for (std::vector<std::string>::iterator iter = sendBuf.begin(); iter != sendBuf.end(); iter++) {
-                            std::cout << "[SERVER]:" << *iter;
+                            //std::cout << "[SERVER]:" << *iter;
                             if ((n = write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
                             {
                                 std::cerr << "client write error!" << std::endl;
@@ -108,7 +108,7 @@ void Server::newUser(int serverSock) {
 
     if ((clientSocket = accept(serverSock,(struct sockaddr*)&clientAddr, &clientLen)) == -1)
         exitWithPerror("accept() error\n" + std::string(strerror(errno)));
-    std::cout << "accept new client: " << clientSocket << std::endl; // test
+    //std::cout << "accept new client: " << clientSocket << std::endl; // test
     fcntl(clientSocket, F_SETFL, O_NONBLOCK);
     changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
     changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
@@ -137,7 +137,7 @@ void Server::recvMsg(uintptr_t fd) {
         buf[n] = '\0';
         sBuf.clear();
         sBuf = buf;
-        std::cout << "--------------------------\nrecv: " << sBuf << "--------------------------\n";
+        //std::cout << "--------------------------\nrecv: " << sBuf << "--------------------------\n";
         parser(sBuf, *clients[fd]);
 		// std::cout << "recvMsg test: " << test << std::endl;
 		// test.clear();
@@ -304,7 +304,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 //std::cout << msgs[1] << std::endl;
                 tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
                 if (tmp == nullptr) {
-                    std::cout << "ERROR" << std::endl;
+                    //std::cout << "ERROR" << std::endl;
                     break ;
                 }
                 if (msgs.size() > 2)
@@ -331,9 +331,9 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
         }
     }
     catch(const std::exception& e) {
-        std::cout << "-- [CATCH]: " << flag << " --\n";
+        //std::cout << "-- [CATCH]: " << flag << " --\n";
         if (user.getUserIsPass() == 2 || user.getUserIsPass() == 3) { // 수정 요함
-            std::cout << "disconnect User: " << flag << "\n";
+            //std::cout << "disconnect User: " << flag << "\n";
             disconnectClient(&user);
         }
         std::cerr << "[Catch]: " <<  e.what();
@@ -345,7 +345,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
         sendMsg(user, ":irc.local 001 " + user.getNickName() + ":Welcome to the Localnet IRC Network " + user.getNickName() + "!root@127.0.0.1\n");
     }
     return 0;
-	std::cout << "-----------------------------\n";
+	//std::cout << "-----------------------------\n";
 }
 
 
@@ -357,7 +357,7 @@ void Server::parser(std::string msg, User &user) {
     std::string temp;
 
     if (msg == "") {
-        std::cout << "[parser] msg == \"\"\n";
+        //std::cout << "[parser] msg == \"\"\n";
         return ;
     }
     if ((cr = msg.find('\r')) == std::string::npos) {
@@ -392,7 +392,7 @@ int    Server::splitSpace(const std::string &msg, User &user) {
         msgs.push_back(str);
     }
     for (std::vector<std::string>::iterator iter = msgs.begin(); iter != msgs.end(); iter++) { // tester
-        std::cout << "[msg]:" << *iter << "/" << (*iter).size() << "\n";
+        //std::cout << "[msg]:" << *iter << "/" << (*iter).size() << "\n";
     }
     if (executeCommand(msgs, user) == DISCONNECT)
         return DISCONNECT;
@@ -411,7 +411,7 @@ void	Server::sendMsg(User &user, const std::string &msg) const {
 void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
 	std::vector<User *> userList;
     int sock; //test
-    std::cout << "[BroadCastMsg]\n";
+    //std::cout << "[BroadCastMsg]\n";
 
     if (channel == nullptr) {
         std::cout << "channel is NULL\n";
@@ -421,7 +421,7 @@ void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) 
 	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
         sock = (**iter).getUserSock(); // test
         if (sock != user.getUserSock()) {
-            std::cout << "[BROAD] send to " << sock << "\n";// test
+            //std::cout << "[BROAD] send to " << sock << "\n";// test
             sendMsg(**iter, msg);
         }
 	}

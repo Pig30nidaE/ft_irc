@@ -44,7 +44,8 @@
 #define RPL_LISTSTART 321
 #define RPL_LIST 322
 #define RPL_LISTEND 323
-#define RPL_CHANNELMODEIS 324
+//#define RPL_CHANNELMODEIS 324
+#define RPL_CHANNLMODEIS(nick, channel, mode) (":irc.local 324 " + nick + " " + channel + " " + mode)
 #define RPL_CREATIONTIME 329
 #define RPL_WHOISACCOUNT 330
 #define RPL_NOTOPIC 331
@@ -141,8 +142,9 @@
 #define ERR_NEEDMOREPARAMS(command) (":irc.local 461 " + command + " :Not enough parameters\r\n")
 
 // -----------JOIN------------
-#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n")
-#define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")
+#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n") //FIXME: JOIN reply changed.
+//#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + " JOIN " + channel + "\r\n")
+#define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :") //FIXME: prefix 바꿔야함.
 #define RPL_ENDOFNAMES(nickname, channel) (":irc.local 366 " + nickname + " " + channel + " :End of /NAMES list.\r\n")
 #define ERR_TOOMANYCHANNELS(channel) (":irc.local 405 " + channel + " :You have joined too many channels\r\n")
 #define ERR_CHANNELISFULL(channel) (":irc.local 471 " + channel + " :Cannot join channel (+l)\r\n")

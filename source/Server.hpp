@@ -39,6 +39,7 @@ enum {
 	TOPIC,
 	MODE,
 	PRIVMSG,
+	WHO,
 };
 
 class User;

@@ -7,8 +7,8 @@
 void Command::pass(std::vector<std::string> msgs, User &user) {
 	size_t msgsSize;
 	std::cout << "[ PASS ]" << std::endl;
-	std::cout << msgs[1] << "/size: " << msgs[1].size() << std::endl;
-	std::cout << serverPass << std::endl;
+	//std::cout << msgs[1] << "/size: " << msgs[1].size() << std::endl;
+	//std::cout << serverPass << std::endl;
 
 	msgsSize = msgs.size();
 	if (user.getUserIsPass() != 5 && user.getUserIsPass() != 4) {
@@ -20,7 +20,7 @@ void Command::pass(std::vector<std::string> msgs, User &user) {
 			user.setUserIsPass(PASSMISMATCH);
 		}
 		else {
-			std::cout << "PASS SUCCESS!!" << std::endl;
+			//std::cout << "PASS SUCCESS!!" << std::endl;
 			user.setUserIsPass(PASSSUCCESS);
 		}
 	}
@@ -38,20 +38,20 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 	msgsSize = msgs.size();
 	//std::cout << msgsSize << std::endl;
 	if (msgsSize < 2) {
-		std::cout << "ERROR: NEDDMOREPARMS\n";
+		//std::cout << "ERROR: NEDDMOREPARMS\n";
 		throw ErrNeedMoreParams("NICK");
 	}
 	if (nickname == msgs[1]) { // 본인 닉넴으로 변경할 때는 그냥 넘김
 		return 1;
 	}
 	else if (cc.checkNickName(msgs[1])) {
-		std::cout << "ERROR: NICK USED\n";
+		//std::cout << "ERROR: NICK USED\n";
 		throw ErrNickNameInUser(msgs[1]);
 	}
 	if (nickname != "") // 회원가입 할 때는 안보냄
 		sendMsg(user, nickname + " NICK :" + msgs[1] + '\n');
 	user.setNickName(msgs[1]);
-	std::cout << "NICK SUCCESS!!\n";
+	//std::cout << "NICK SUCCESS!!\n";
 	return 1;
 }
 
@@ -64,7 +64,7 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 	if (user.getUserIsPass() != 5) {
 		msgsSize = msgs.size();
 		if (msgsSize < 5) {
-			std::cout << "ERROR: NEDDMOREPARAMS\n";
+			//std::cout << "ERROR: NEDDMOREPARAMS\n";
 			throw ErrNeedMoreParams("USER");
 		}
 		nickname = user.getNickName();
@@ -80,8 +80,8 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 		else {
 			realname = msgs[4];
 		}
-		std::cout << "username:" << msgs[1] << "\n";
-		std::cout << "realname:" << realname << "\n";
+		//std::cout << "username:" << msgs[1] << "\n";
+		//std::cout << "realname:" << realname << "\n";
 		user.setUserName(msgs[1]);
 		user.setRealName(realname);
 	}
@@ -109,7 +109,7 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 
 	msgsSize = msgs.size();
 	if (msgsSize < 2) { // channelName도 없으면 에러
-		std::cout << "ERROR: NEDDMOREPARMS\n";
+		//std::cout << "ERROR: NEDDMOREPARMS\n";
 		throw ErrNeedMoreParams("JOIN");
 	}
 	channelnames = splitComma(msgs[1]);
@@ -118,7 +118,7 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	for (std::vector<std::string>::iterator iter = channelnames.begin(); iter != channelnames.end(); iter++) {
 		try
 		{
-			std::cout << "[" << index << "]" << " " << *iter << "\n";
+			//std::cout << "[" << index << "]" << " " << *iter << "\n";
 			if (*iter == "")
 				continue;
 			else if ((*iter)[0] != '#')
@@ -137,16 +137,36 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 			else if ((user.getJoinedChannelList(cc)).size() >= 5) { // 유저 최대 입장 제한 5
 				throw ErrTooManyChannels((*iter)); //최대 가입 가능한 채널 수 넘으면 에러
 			}
-			else {
+			else { // 정상 채널 조인
+				//std::string mode_type = "+nt"; // 채널외부에서 메세지 x, operator 아닌 사람 topic 변경 x
+				if (result == NEWCHANNEL) {
+					if (msgs.size() == 3) {
+						channel = user.getSpecificChannelJoined((*iter), cc);
+						channel->getModeRef().turnOnType(MODE_CHANNEL_KEY);
+						channel->setPassword(msgs.at(2));
+					}
+				}
 				channel = user.getSpecificChannelJoined((*iter), cc);
 				nickName = user.getNickName();
+				//sendMsg(user, RPL_CHANNLMODEIS(nickName, channel->getChannelName(), mode_type));
 				rplEndofnames = RPL_NAMREPLY(nickName, (*iter));
 				std::vector<User *> userList = channel->getUserList();
 				for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
-					rplEndofnames += ((*iter)->getNickName() + " ");
+					if ((*iter)->getIsOperator())
+						rplEndofnames += "@" + ((*iter)->getNickName() + " ");
+					else
+						rplEndofnames += ((*iter)->getNickName() + " ");
 				}
 				rplEndofnames += "\n";
-				sendMsg(user, JOIN_REPLISE(nickName,user.getUserName(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
+				// +n 이 표준모드, 
+				// : 이 채널 모드는 채널에 가입하지 않은 사용자가 메시지를 보낼 수 있는지 여부를 제어하며 아무런 값도 갖지 않습니다.
+				//std::cout << JOIN_REPLISE(nickName,user.getUserName(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)) << std::endl;
+				//sendMsg(user, JOIN_REPLISE(nickName,user.getUserName(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
+				//sendMsg(user, JOIN_REPLISE(nickName,user.getUserName(), (*iter)));
+				std::cout << rplEndofnames << std::endl;
+				std::cout << RPL_ENDOFNAMES(nickName, (*iter)) << std::endl;
+				//sendMsg(user, rplEndofnames);
+				sendMsg(user, RPL_ENDOFNAMES(nickName, (*iter)));
 				broadcastMsg(user, channel, ":" + nickName + " JOIN :" + (*iter) + "\n");
 			}
 		}
@@ -189,7 +209,7 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	for (std::vector<std::string>::iterator iter = targets.begin(); iter != targets.end(); iter++) {
 		try
 		{
-			std::cout << " [" << *iter << "]\n";
+			//std::cout << " [" << *iter << "]\n";
 			if ((*iter) == "")
 				continue;
 			if (msgsSize > 2) { // reason이 있다면
@@ -246,13 +266,14 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 
 void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
 	//std::vector<User*> usrList = (cc).getUserList();
+	std::cout << "[ INVITE ]" << std::endl;
 	typedef std::vector<User*>::iterator UserIter;
 	std::vector<User*> usrList = cc.getUserList();
 	//std::string toFind;
 	UserIter toFind;
-	for (UserIter user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
-		if ((*user_iter)->getNickName() == nick) {
-			toFind = user_iter;
+	for (toFind = usrList.begin();toFind != usrList.end();toFind++) {
+		if ((*toFind)->getNickName() == nick) {
+			//toFind = user_iter;
 			break ;
 		}
 	}
@@ -261,8 +282,9 @@ void Command::invite(std::string nick, std::string channel, ChannelContainer &cc
 		return ;
 	}
 	else {
-		User* toInvite = *toFind;
-		user.inviteUser(*toInvite, *user.getSpecificChannelJoined(channel, cc), cc);
+		//User* toInvite = *toFind;
+		//user.inviteUser(*toInvite, *user.getSpecificChannelJoined(channel, cc), cc);
+		user.inviteUser(**toFind, *user.getSpecificChannelJoined(channel, cc), cc);
 	}
 }
 
@@ -272,6 +294,7 @@ std::string Command::topic(ChannelContainer&cc, Channel &channel, std::string to
 
 	// Channel* joinedChannel = user.getSpecificChannelJoined\
 	// 	(channel.getChannelName(), cc);
+	std::cout << "[ TOPIC ]" << std::endl;
 	if (&channel == nullptr) {
 		std::cerr << "no such channel." << std::endl;
 		return "";
@@ -326,7 +349,7 @@ void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& 
 				user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY, msgs.at(3).c_str());	
 			}
 			else {
-				std::cout << "ERROR" << std::endl;
+				//std::cout << "ERROR" << std::endl;
 			}
 		}
 		//if (flag && msgs.size() == 4) { // 나중에 확인하기. == 4가 맞는가?
@@ -341,7 +364,7 @@ void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& 
 		if (msgs.size() > 3)
 			user.changeMode(cc, msgs.at(1), flag, MODE_OPERATOR_GRANTED, msgs.at(3).c_str());
 		else {
-			std::cout << "ERROR" << std::endl;
+			//std::cout << "ERROR" << std::endl;
 		}
 	}
 	else if (type == "l") {
@@ -349,7 +372,7 @@ void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& 
 			if (msgs.size() > 3)
 				user.changeMode(cc, msgs.at(1), flag, MODE_CAPACITY_LIMIT, std::atoi(msgs.at(3).c_str()));
 			else {
-				std::cout << "ERROR" << std::endl;
+				//std::cout << "ERROR" << std::endl;
 			}
 		}
 		else
@@ -455,11 +478,11 @@ void Command::checkLastPassState(User &user) const {
 		user.setUserIsPass(4);
 	}
 	else if (value == NEEDMOREPARMS) {
-		std::cout << "ERROR: NEDDMOREPARAMS\n";
+		//std::cout << "ERROR: NEDDMOREPARAMS\n";
 		throw ErrNeedMoreParams("PASS");
 	}
 	else if (value == PASSMISMATCH) {
-		std::cout << "ERROR: PASSWDMISMATCH\n";
+		//std::cout << "ERROR: PASSWDMISMATCH\n";
 		throw ErrPasswdMisMatch();
 	}
 }
@@ -474,17 +497,17 @@ void	Command::sendMsg(User &user, const std::string &msg) const {
 void	Command::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
 	std::vector<User *> userList;
     int sock; //test
-    std::cout << "[BroadCastMsg]\n";
+    //std::cout << "[BroadCastMsg]\n";
 
     if (channel == nullptr) {
-        std::cout << "channel is NULL\n";
+        //std::cout << "channel is NULL\n";
         return ; // err 던지기
     }
 	userList = channel->getUserList();
 	for (std::vector<User*>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
         sock = (**iter).getUserSock(); // test
         if (sock != user.getUserSock()) {
-			std::cout << "[BROAD] send to " << sock << "\n";// test
+			//std::cout << "[BROAD] send to " << sock << "\n";// test
             sendMsg(**iter, msg);
         }
 	}
