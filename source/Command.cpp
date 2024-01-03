@@ -333,7 +333,7 @@ std::string Command::topic(ChannelContainer&cc, Channel &channel, std::string to
 	}
 	Mode& mode = channel.getModeRef();
 	if (mode.checkType(MODE_TOPIC_LIMIT)) {
-		if (user.getIsOperator() == false) {
+		if (channel.isOperator(user) == false) {
 			std::cerr << "only operator can change topic." << std::endl;
 			return "";
 		}

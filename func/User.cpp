@@ -10,7 +10,7 @@ User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
 void User::userInfoErase(User& user) {
 	user.setUserName("");
 	//user.setIsChannelJoined(false);
-	user.setIsOperator(false);
+	//user.setIsOperator(false);
 	user.setUserIndex(-1);
 	//user.setJoinedChannelIndex(-1);
 }
@@ -59,8 +59,9 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 	}
 	//std::cout << "no such channel. new channel generate." << std::endl;
 	Channel *toJoin = new Channel(toJoinChannel);
-	setIsOperator(true);
 	toJoin->userAdd(*this);
+	toJoin->operatorAdd(*this);
+	//setIsOperator(true);
 	channel_contaier.createChannel(*toJoin);
 	getJoinedChannelList(channel_contaier).push_back(toJoin);
 	setUserIndex(0);
@@ -87,9 +88,9 @@ int User::exitChannel(std::string toExitChannel, ChannelContainer& channel_conta
 	if (exitCh->getUserList().empty())
 		channel_container.deleteChannel(*exitCh);
 	else {
-		if (getIsOperator()) {
-			setIsOperator(false);
-			exitCh->getUserList().at(1)->setIsOperator(true);
+		std::vector<int>& OpList = exitCh->getChannelOpList();
+		if (OpList.empty()) {
+			OpList.push_back(exitCh->getUserList().at(0)->getUserSock());
 		}
 	}
 	return 0;
@@ -187,7 +188,8 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
 				if ((*user_iter)->getNickName() == targetNick) {
 					channelMode.turnOnType(MODE_OPERATOR_GRANTED);
-					(*user_iter)->setIsOperator(true);
+					(*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList().\
+						push_back((*user_iter)->getUserSock());
 					return ;
 				}
 			}
@@ -231,7 +233,16 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
 				if ((*user_iter)->getNickName() == targetNick) {
 					channelMode.turnOffType(MODE_OPERATOR_GRANTED);
-					(*user_iter)->setIsOperator(false);
+					std::vector<int>& OpList = (*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList();
+					typedef std::vector<int>::iterator OpIter;
+					for (OpIter iter = OpList.begin();iter != OpList.end();iter++) {
+						if (*iter == (*user_iter)->getUserSock()) {
+							OpList.erase(iter);
+							return ;
+						}
+					}
+					//(*user_iter)->setIsOperator(false);
+					//(*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList().erase(user_iter);
 					return ;
 				}
 			}
@@ -326,13 +337,13 @@ void User::setRealName(std::string realname) {
 	realName = realname;
 }
 
-bool User::getIsOperator(void) const {
-	return isOperator;
-}
+//bool User::getIsOperator(void) const {
+//	return isOperator;
+//}
 
-void User::setIsOperator(bool flag) {
-	isOperator = flag;
-}
+//void User::setIsOperator(bool flag) {
+//	isOperator = flag;
+//}
 
 //bool User::getIsChannelJoined(void) const {
 //	return isChannelJoined;

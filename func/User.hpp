@@ -57,8 +57,8 @@ class User {
 		void								setNickName(std::string nickname);
 		std::string							getRealkName(void) const;
 		void								setRealName(std::string realname);
-		bool								getIsOperator(void) const;
-		void								setIsOperator(bool flag);
+		//bool								getIsOperator(void) const;
+		//void								setIsOperator(bool flag);
 		//bool								getIsChannelJoined(void) const;
 		//void								setIsChannelJoined(bool flag);
 		//int								getJoinedChannelIndex(void) const;
