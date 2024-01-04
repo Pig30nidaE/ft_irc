@@ -3,7 +3,7 @@
 
 #define JOINCHANNEL 4
 #define NEWCHANNEL 5
-#define RPL_WELCOME 1
+#define RPL_WELCOME_NUM 1
 #define RPL_YOURHOST 2
 #define RPL_CREATED 3
 #define RPL_MYINFO 4
@@ -44,7 +44,7 @@
 #define RPL_LISTSTART 321
 #define RPL_LIST 322
 #define RPL_LISTEND 323
-#define RPL_CHANNELMODEIS 324
+#define RPL_CHANNELMODEIS_NUM 324
 #define RPL_CREATIONTIME 329
 #define RPL_WHOISACCOUNT 330
 #define RPL_NOTOPIC 331
@@ -103,7 +103,7 @@
 #define ERR_PASSWDMISMATCH 464
 #define ERR_YOUREBANNEDCREEP 465
 #define ERR_CHANNELISFULL_NUM 471
-#define ERR_UNKNOWNMODE 472
+#define ERR_UNKNOWNMODE_NUM 472
 #define ERR_INVITEONLYCHAN_NUM 473
 #define ERR_BANNEDFROMCHAN 474
 #define ERR_BADCHANNELKEY_NUM 475
@@ -137,8 +137,9 @@
 // -------command replise list--------
 
 // ------공통------
-#define ERR_NOSUCHCHANNEL(channel) (":irc.local 403 " + channel + " :No such channel\r\n")
-#define ERR_NEEDMOREPARAMS(command) (":irc.local 461 " + command + " :Not enough parameters\r\n")
+#define ERR_NOSUCHCHANNEL(nickname, channel) (":irc.local 403 " + nickname + " " + channel + " :No such channel\r\n")
+#define ERR_NEEDMOREPARAMS(nickname, command) (":irc.local 461 " + nickname + " " + command + " :Not enough parameters\r\n")
+#define ERR_NOSUCHNICK(nickname, target) (":irc.local 401 " + nickname + " " + target + " :No such nick\r\n")
 
 // -----------JOIN------------
 #define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n")
@@ -152,7 +153,6 @@
 
 // ----------PRIVMSG----------
 #define PRIVMSG_REPLISE(nickname, username, target, response) (":" + nickname + "!" + username + "@localhost PRIVMSG " + target + " :" + response + "\r\n")
-#define ERR_NOSUCHNICK(nickname) (":irc.local 401 " + nickname + " :No such nick/channel\r\n")
 #define ERR_NOTEXTTOSEND(nickname) (":irc.local 412 " + nickname + " :No text to send\r\n")
 #define ERR_NORECIPIENT(nickname) (":irc.local 411 " + nickname + " :No recipient given PRIVMSG\r\n")
 #define ERR_CANNOTSENDTOCHAN(nickname, channel) (":irc.local 404 " + nickname + " " + channel + " :Cannot send to channel\r\n")
@@ -161,5 +161,9 @@
 #define PART_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost PART :" + channel + "\r\n")
 #define PART_REASON_REPLISE(nickname, username, channel, reason) (":" + nickname + "!" + username + "@localhost PART " + channel + " :" + reason + "\r\n")
 #define ERR_NOTONCHANNEL(channel) (":irc.local 442 " + channel + " :You're not on that channel\r\n")
+
+// ----------MODE-----------
+#define RPL_CHANNELMODEIS(nickname, channel, mode) (":irc.local 324 " + nickname + " " + channel + " :" + mode + "\r\n")
+#define ERR_UNKNOWNMODE(nickname, flag) (":irc.local 472 " + nickname + " " + flag + " :is not a  recognised channel mode.\r\n")
 
 #endif
