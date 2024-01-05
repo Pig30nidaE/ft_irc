@@ -217,7 +217,7 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	std::vector<std::string> targets;
 	std::string response = "";
 	size_t msgsSize;
-	Channel *channel = nullptr;
+	Channel *channel = NULL;
 	std::string channelname;
 	std::string nickname;
 	std::string username;
@@ -252,10 +252,13 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 			if (user.checkChannelInList((*iter), cc) == ERR_NOSUCHCHANNEL_NUM) {
 				throw ErrNoSuchChannel(*iter);
 			}
-			else if ((channel = user.getSpecificChannelJoined((*iter), cc)) == nullptr) {
+			else if (!(channel = user.getSpecificChannelJoined((*iter), cc))) {
 				throw ErrNotonChannel(*iter);
 			}
 			channelname = channel->getChannelName();
+			broadcastMsg(user, channel, PART_REPLISE(nickname, username, channelname));
+			sendMsg(user, PART_REPLISE(nickname, username, channelname));
+
 			if (user.exitChannel(*iter, cc) == ERR_NOTONCHANNEL_NUM) //인원이 0되면 채널 지워줌
 				throw ErrNotonChannel(*iter); //내가 가입한 채널 중에 없음
 			else {
@@ -290,13 +293,26 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	//std::cout << "msg: " << msg << "\n";
 	//int spaceIndex = msg.find(' ');
 	//std::string channelName = msg.substr(0, spaceIndex);
-	std::string channelName = msgs[0];
+	if (msgs.size() < 3)
+		throw ErrNeedMoreParams(msgs.at(0));
+	std::string channelName = msgs.at(1);
+	Channel* joinedChannel = user.getSpecificChannelJoined(channelName, cc);
+	
+	if (!joinedChannel)
+		throw ErrNoSuchChannel(channelName);
+	if (!(joinedChannel->isOnTheChan(user)))
+		throw ErrNotonChannel(channelName);
+	if (!(joinedChannel->isOperator(user)))
+		throw ErrChanOPrivsNeeded(channelName);
 	//std::string userName = msg.substr(spaceIndex + 1, msg.length());
-	std::string userName = msgs[1];
+	std::string toKick = msgs.at(2);
+	if (!(joinedChannel->getSpecficUser(toKick)))
+		throw ErrNoSuchNick(toKick);
 	//std::cout << "username: " << userName << "\n";
 	//std::cout << "channelName: " << channelName << "\n";
 	//std::cout << user.getUserName() << std::endl;
-	user.kickUser(userName, *user.getSpecificChannelJoined(channelName, cc), cc);
+	user.kickUser(toKick, *user.getSpecificChannelJoined(channelName, cc), cc);
+	sendMsg(user, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick));
 }
 
 void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
@@ -305,9 +321,9 @@ void Command::invite(std::string nick, std::string channel, ChannelContainer &cc
 	std::vector<User*> usrList = cc.getUserList();
 	//std::string toFind;
 	UserIter toFind;
-	for (UserIter user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
-		if ((*user_iter)->getNickName() == nick) {
-			toFind = user_iter;
+	for (toFind = usrList.begin();toFind != usrList.end();toFind++) {
+		if ((*toFind)->getNickName() == nick) {
+			toFind = toFind;
 			break ;
 		}
 	}
@@ -327,10 +343,10 @@ std::string Command::topic(ChannelContainer&cc, Channel &channel, std::string to
 
 	// Channel* joinedChannel = user.getSpecificChannelJoined\
 	// 	(channel.getChannelName(), cc);
-	if (&channel == nullptr) {
-		std::cerr << "no such channel." << std::endl;
-		return "";
-	}
+	//if (!channel) {
+	//	std::cerr << "no such channel." << std::endl;
+	//	return "";
+	//}
 	Mode& mode = channel.getModeRef();
 	if (mode.checkType(MODE_TOPIC_LIMIT)) {
 		if (channel.isOperator(user) == false) {
@@ -452,7 +468,7 @@ void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContaine
 					throw ErrNoSuchChannel((*iter));
 				}
 				channel = user.getSpecificChannelJoined((*iter), cc);
-				if (channel == nullptr)
+				if (!channel)
 					throw ErrCannotSendToChan(nickName, (*iter));
 				broadcastMsg(user, channel, PRIVMSG_REPLISE(nickName, user.getUserName(), (*iter), response));
 			}
@@ -531,7 +547,7 @@ void	Command::broadcastMsg(User &user, Channel *channel, const std::string &msg)
     int sock; //test
     std::cout << "[BroadCastMsg]\n";
 
-    if (channel == nullptr) {
+    if (!channel) {
         std::cout << "channel is NULL\n";
         return ; // err 던지기
     }

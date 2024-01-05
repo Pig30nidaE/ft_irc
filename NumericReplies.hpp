@@ -109,7 +109,7 @@
 #define ERR_BADCHANNELKEY_NUM 475
 #define ERR_BADCHANMASK_NUM 476
 #define ERR_NOPRIVILEGES 481
-#define ERR_CHANOPRIVSNEEDED 482
+#define ERR_CHANOPRIVSNEEDED_NUM 482
 #define ERR_CANTKILLSERVER 483
 #define ERR_NOOPERHOST 491
 #define ERR_UMODEUNKNOWNFLAG 501
@@ -139,9 +139,11 @@
 // ------공통------
 #define ERR_NOSUCHCHANNEL(channel) (":irc.local 403 " + channel + " :No such channel\r\n")
 #define ERR_NEEDMOREPARAMS(command) (":irc.local 461 " + command + " :Not enough parameters\r\n")
+#define ERR_CHANOPRIVSNEEDED(channel) (":irc.local 482 " + channel + " :You're not channel operator\r\n")
 
 // -----------JOIN------------
 #define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n")
+#define KICK_REPLY(nickname, username, channel, toKick) (":" + nickname + "!" + username + "@localhost KICK " + channel + " " + toKick)
 //#define RPL_NAMREPLY(nickname, nickname_list, channel) (":irc.local 353 " + nickname + " @ " + channel + " :" + nickname_list + "\r\n")
 #define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")
 #define RPL_ENDOFNAMES(nickname, channel) (":irc.local 366 " + nickname + " " + channel + " :End of /NAMES list.\r\n")
@@ -160,7 +162,7 @@
 #define ERR_CANNOTSENDTOCHAN(nickname, channel) (":irc.local 404 " + nickname + " " + channel + " :Cannot send to channel\r\n")
 
 // ---------PART------------
-#define PART_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost PART :" + channel + "\r\n")
+#define PART_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@127.0.0.1 PART " + channel + "\r\n")
 #define PART_REASON_REPLISE(nickname, username, channel, reason) (":" + nickname + "!" + username + "@localhost PART " + channel + " :" + reason + "\r\n")
 #define ERR_NOTONCHANNEL(channel) (":irc.local 442 " + channel + " :You're not on that channel\r\n")
 

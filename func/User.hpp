@@ -24,7 +24,6 @@ class User {
 		std::string						 	nickName;
 		std::string							realName;
 		// std::time_t 			connectionTime;
-		bool								isOperator;
 		//bool					isChannelJoined;
 		std::vector<Channel*>				joinedChannelList;
 	public:

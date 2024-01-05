@@ -68,10 +68,12 @@ class Channel {
 		void	userDel(User& user);
 		void	operatorAdd(User& user);
 		bool	isOperator(User& user);
+		bool 	isOnTheChan(User& user);
 
 		std::string					getChannelName(void) const;
 		void						setChannelName(std::string const channelname);
 		std::vector<User*>	 		&getUserList(void);
+		User*						getSpecficUser(std::string nickname);
 		std::vector<int>			&getInvitedUserList(void);
 		std::string					getPassword(void) const;
 		void						setPassword(std::string pwd);

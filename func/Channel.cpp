@@ -53,12 +53,30 @@ bool Channel::isOperator(User& user) {
 	return false;
 } 
 
+bool Channel::isOnTheChan(User& user) {
+	typedef std::vector<User*>::iterator UserIter;
+	for (UserIter iter = userList.begin();iter != userList.end();iter++) {
+		if ((*iter)->getNickName() == user.getNickName())
+			return true;
+	}
+	return false;
+}
+
 void Channel::setChannelName(std::string const channelname) {
 	channelName = channelname;
 }
 
 std::vector<User*>& Channel::getUserList(void) {
     return userList;
+}
+
+User* Channel::getSpecficUser(std::string nickname) {
+	typedef std::vector<User*>::iterator UserIter;
+	for (UserIter iter = userList.begin();iter != userList.end();iter++) {
+		if ((*iter)->getNickName() == nickname)
+			return *iter;
+	}
+	return NULL;
 }
 
 
