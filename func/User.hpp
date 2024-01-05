@@ -23,6 +23,9 @@ class User {
 		std::string							userName;
 		std::string						 	nickName;
 		std::string							realName;
+		std::string							hostName;
+		std::string							client;
+		
 		// std::time_t 			connectionTime;
 		//bool					isChannelJoined;
 		std::vector<Channel*>				joinedChannelList;
@@ -54,10 +57,12 @@ class User {
 		//std::string						 	getNickName(std::string chName);
 		std::string							getNickName(void) const;
 		void								setNickName(std::string nickname);
-		std::string							getRealkName(void) const;
+		std::string							getHostName(void) const;
+		void								setHostName(std::string hostname);
+		std::string							getRealName(void) const;
 		void								setRealName(std::string realname);
-		//bool								getIsOperator(void) const;
-		//void								setIsOperator(bool flag);
+		void								setClient(const std::string &nick, const std::string &user, const std::string &host);
+		std::string							getClient(void) const;
 		//bool								getIsChannelJoined(void) const;
 		//void								setIsChannelJoined(bool flag);
 		//int								getJoinedChannelIndex(void) const;
