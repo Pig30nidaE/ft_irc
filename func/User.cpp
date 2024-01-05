@@ -2,7 +2,7 @@
 
 
 User::User(void):
-buf(""),userSock(-1),isPass(0),userName(""),nickName(""),hostName(""),client(""),isOperator(false),userIndex(-1) {}
+buf(""),userSock(-1),isPass(0),userName(""),nickName(""),hostName(""),client(""),userIndex(-1) {}
 
 User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
 
@@ -10,7 +10,7 @@ User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
 void User::userInfoErase(User& user) {
 	user.setUserName("");
 	//user.setIsChannelJoined(false);
-	user.setIsOperator(false);
+	//user.setIsOperator(false);
 	user.setUserIndex(-1);
 	//user.setJoinedChannelIndex(-1);
 }
@@ -59,8 +59,9 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 	}
 	//std::cout << "no such channel. new channel generate." << std::endl;
 	Channel *toJoin = new Channel(toJoinChannel);
-	setIsOperator(true);
 	toJoin->userAdd(*this);
+	toJoin->operatorAdd(*this);
+	//setIsOperator(true);
 	channel_contaier.createChannel(*toJoin);
 	getJoinedChannelList(channel_contaier).push_back(toJoin);
 	setUserIndex(0);
@@ -69,7 +70,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 
 int User::exitChannel(std::string toExitChannel, ChannelContainer& channel_container) {
     Channel *exitCh = getSpecificChannelJoined(toExitChannel, channel_container);
-	if (exitCh == nullptr) //내가 가입한 채널 중에 없음
+	if (!exitCh) //내가 가입한 채널 중에 없음
 		return ERR_NOTONCHANNEL_NUM;
     std::vector<Channel*>& JoinedChannels = getJoinedChannelList(channel_container);
 
@@ -87,9 +88,9 @@ int User::exitChannel(std::string toExitChannel, ChannelContainer& channel_conta
 	if (exitCh->getUserList().empty())
 		channel_container.deleteChannel(*exitCh);
 	else {
-		if (getIsOperator()) {
-			setIsOperator(false);
-			exitCh->getUserList().at(1)->setIsOperator(true);
+		std::vector<int>& OpList = exitCh->getChannelOpList();
+		if (OpList.empty()) {
+			OpList.push_back(exitCh->getUserList().at(0)->getUserSock());
 		}
 	}
 	return 0;
@@ -99,30 +100,31 @@ int User::exitChannel(std::string toExitChannel, ChannelContainer& channel_conta
 void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container) {
 	//std::cout << toKickUser << std::endl;
 	//std::cout << this->getUserName() << std::endl;
-	if (!isOperator) {
-		std::cerr << "Not permitted." << std::endl;
-		return ;
-	}
+	//if (!fromChannel.isOperator(*this)) {
+	//	std::cerr << "Not permitted." << std::endl;
+	//	return ;
+	//}
 	if (toKickUser == getNickName()) {
 		std::cerr << "Can't kick yourself." << std::endl;
 		return ;
 	}
-	if (&fromChannel == nullptr) {
-		return ; // fromChannel없을때
-	}
-	typedef std::vector<User*>::iterator UserIterator;
-	std::vector <User*> toChUsrList = fromChannel.getUserList();
-	for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
-		if ((*user_iter)->getNickName() == toKickUser) {
-			(*user_iter)->exitChannel(fromChannel.getChannelName(), channel_container);
-			return ;
-		}
-	}
-	std::cerr << "No such user." << std::endl;
+	//if (fromChannel == NULL) {
+	//	return ; // fromChannel없을때
+	//}
+	//typedef std::vector<User*>::iterator UserIterator;
+	//std::vector <User*> toChUsrList = fromChannel.getUserList();
+	//for (UserIterator user_iter = toChUsrList.begin();user_iter != toChUsrList.end();user_iter++) {
+	//	if ((*user_iter)->getNickName() == toKickUser) {
+	//		(*user_iter)->exitChannel(fromChannel.getChannelName(), channel_container);
+	//		return ;
+	//	}
+	//}
+	fromChannel.getSpecficUser(toKickUser)->exitChannel(fromChannel.getChannelName(), channel_container);
+	//std::cerr << "No such user." << std::endl;
 }
 
 void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container) {
-	if (!isOperator) {
+	if (!toChannel.isOperator(*this)) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
@@ -152,7 +154,7 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 		std::cerr << "no such channel." << std::endl;
 		return ;
 	}
-	if (!isOperator) {
+	if (!(this->getSpecificChannelJoined(channel, channel_container)->isOperator(*this))) {
 		std::cerr << "Not permitted." << std::endl;
 		return ;
 	}
@@ -168,7 +170,7 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			va_list ap;
 			va_start(ap, type);
 			char *passwd_ap = va_arg(ap, char*);
-			if (passwd_ap == nullptr)
+			if (!passwd_ap)
 				return ;
 			std::string passwd(passwd_ap);
 			//std::cout << passwd << std::endl;
@@ -178,7 +180,7 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			va_list ap;
 			va_start(ap, type);
 			char *target_ap = va_arg(ap, char*);
-			if (target_ap == nullptr)
+			if (!target_ap)
 				return ;
 			std::string targetNick(target_ap);
 			//std::string targetNick(va_arg(ap, char *));
@@ -187,7 +189,8 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
 				if ((*user_iter)->getNickName() == targetNick) {
 					channelMode.turnOnType(MODE_OPERATOR_GRANTED);
-					(*user_iter)->setIsOperator(true);
+					(*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList().\
+						push_back((*user_iter)->getUserSock());
 					return ;
 				}
 			}
@@ -211,7 +214,7 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			va_list ap;
 			va_start(ap, type);
 			char* passwd_ap = va_arg(ap, char*);
-			if (passwd_ap == nullptr)
+			if (!passwd_ap)
 				return ;
 			std::string passwd(passwd_ap);
 			if (passwd == joinedChannel->getPassword()) {
@@ -231,7 +234,16 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
 				if ((*user_iter)->getNickName() == targetNick) {
 					channelMode.turnOffType(MODE_OPERATOR_GRANTED);
-					(*user_iter)->setIsOperator(false);
+					std::vector<int>& OpList = (*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList();
+					typedef std::vector<int>::iterator OpIter;
+					for (OpIter iter = OpList.begin();iter != OpList.end();iter++) {
+						if (*iter == (*user_iter)->getUserSock()) {
+							OpList.erase(iter);
+							return ;
+						}
+					}
+					//(*user_iter)->setIsOperator(false);
+					//(*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList().erase(user_iter);
 					return ;
 				}
 			}
@@ -342,13 +354,13 @@ void User::setClient(const std::string &nick, const std::string &user, const std
 	client = nick + '!' + user + '@' + host;
 }
 
-bool User::getIsOperator(void) const {
-	return isOperator;
-}
+//bool User::getIsOperator(void) const {
+//	return isOperator;
+//}
 
-void User::setIsOperator(bool flag) {
-	isOperator = flag;
-}
+//void User::setIsOperator(bool flag) {
+//	isOperator = flag;
+//}
 
 //bool User::getIsChannelJoined(void) const {
 //	return isChannelJoined;
@@ -380,7 +392,7 @@ Channel* User::getSpecificChannelJoined(std::string toGet, ChannelContainer& cha
 			if ((*ch_iter)->getChannelName() == toGet)
 				return *ch_iter;
 		}
-	return nullptr;
+	return NULL;
 }
 
 int	User::checkChannelInList(const std::string &channelName, ChannelContainer& cc) {

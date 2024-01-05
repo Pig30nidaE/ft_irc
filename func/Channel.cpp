@@ -33,12 +33,50 @@ void Channel::userDel(User& user) {
 	std::cerr << "no such user." << std::endl;
 }
 
+void Channel::operatorAdd(User& user) {
+	std::vector<int>& opList = getChannelOpList();
+	typedef std::vector<int>::iterator OpIter;
+	int user_sock = user.getUserSock();
+	for (OpIter iter = opList.begin();iter != opList.end();iter++) {
+		if (*iter == user_sock)
+			return ;
+	}
+	opList.push_back(user.getUserSock());
+}
+
+bool Channel::isOperator(User& user) {
+	typedef std::vector<int>::iterator OpIter;
+	for (OpIter iter = channelOpList.begin();iter != channelOpList.end();iter++) {
+		if (*iter == user.getUserSock())
+			return true;
+	}
+	return false;
+} 
+
+bool Channel::isOnTheChan(User& user) {
+	typedef std::vector<User*>::iterator UserIter;
+	for (UserIter iter = userList.begin();iter != userList.end();iter++) {
+		if ((*iter)->getNickName() == user.getNickName())
+			return true;
+	}
+	return false;
+}
+
 void Channel::setChannelName(std::string const channelname) {
 	channelName = channelname;
 }
 
 std::vector<User*>& Channel::getUserList(void) {
     return userList;
+}
+
+User* Channel::getSpecficUser(std::string nickname) {
+	typedef std::vector<User*>::iterator UserIter;
+	for (UserIter iter = userList.begin();iter != userList.end();iter++) {
+		if ((*iter)->getNickName() == nickname)
+			return *iter;
+	}
+	return NULL;
 }
 
 
@@ -77,4 +115,8 @@ int	Channel::getCapacity(void) {
 
 void Channel::setCapacity(int size) {
 	capacity = size;
+}
+
+std::vector<int>& Channel::getChannelOpList(void) {
+	return channelOpList;
 }

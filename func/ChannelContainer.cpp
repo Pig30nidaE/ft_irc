@@ -72,5 +72,5 @@ User *ChannelContainer::getUser(const std::string &nickname) {
 			return (*iter);
 		}
 	}
-	return nullptr;
+	return NULL;
 }

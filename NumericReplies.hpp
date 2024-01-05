@@ -109,7 +109,7 @@
 #define ERR_BADCHANNELKEY_NUM 475
 #define ERR_BADCHANMASK_NUM 476
 #define ERR_NOPRIVILEGES 481
-#define ERR_CHANOPRIVSNEEDED 482
+#define ERR_CHANOPRIVSNEEDED_NUM 482
 #define ERR_CANTKILLSERVER 483
 #define ERR_NOOPERHOST 491
 #define ERR_UMODEUNKNOWNFLAG 501
@@ -146,7 +146,9 @@
 
 
 // -----------JOIN------------
+//#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n")
 #define JOIN_REPLISE(client, channel) (":" + client + " JOIN :" + channel + "\r\n")
+#define KICK_REPLY(nickname, username, channel, toKick) (":" + nickname + "!" + username + "@localhost KICK " + channel + " " + toKick)
 // #define RPL_NAMREPLY(nickname, nickname_list, channel) (":irc.local 353 " + nickname + " @ " + channel + " :" + nickname_list + "\r\n")
 #define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")
 #define RPL_ENDOFNAMES(nickname, channel) (":irc.local 366 " + nickname + " " + channel + " :End of /NAMES list.\r\n")

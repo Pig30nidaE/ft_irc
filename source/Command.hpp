@@ -167,6 +167,11 @@ class Command {
 				ErrNeedMoreParams(const std::string &nickname, const std::string &command) : std::invalid_argument(ERR_NEEDMOREPARAMS(nickname, command)) {}
 		};
 
+		class ErrChanOPrivsNeeded : public std::invalid_argument {
+			public:
+				ErrChanOPrivsNeeded(const std::string& channel) : std::invalid_argument(ERR_CHANOPRIVSNEEDED(channel)) {}
+		};
+
 	private:
 		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
 		int	checkLogin(User user);
