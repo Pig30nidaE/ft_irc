@@ -17,7 +17,7 @@ void ChannelContainer::deleteChannel(Channel& toDeleteChannel) {
 		std::cerr << "no such channel." << std::endl;
 		return ;
 	}
-	int to_del_idx = *to_del_cha - *(getChannelList().begin());
+	int to_del_idx = (*to_del_cha)->getIndex() - getChannelList().at(0)->getIndex();
 	getChannelList().erase(getChannelList().begin() + to_del_idx);
 }
 

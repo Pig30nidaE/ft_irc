@@ -33,8 +33,8 @@ class Command {
 		void setServerPass(std::string serverPass); // test용
 
 
-		void sendMsg(User &user, const std::string &msg) const;
-		void broadcastMsg(User &user, Channel *channel, const std::string &msg) const;
+		void sendMsg(User &user, const std::string msg) const;
+		void broadcastMsg(User &user, Channel *channel, const std::string msg) const;
 
 		//----server 입장-----
 		// PASS
@@ -154,7 +154,7 @@ class Command {
 		// 공통
 		class ErrNoSuchChannel : public std::invalid_argument {
 			public:
-				ErrNoSuchChannel(const std::string &nickname, const std::string & channel) : std::invalid_argument(ERR_NOSUCHCHANNEL(nickname, channel)) {}
+				ErrNoSuchChannel(const std::string &nickname, const std::string &channel) : std::invalid_argument(ERR_NOSUCHCHANNEL(nickname, channel)) {}
 		};
 
 		class ErrNoSuchNick : public std::invalid_argument {

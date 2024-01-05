@@ -140,6 +140,7 @@
 #define ERR_NOSUCHCHANNEL(nickname, channel) (":irc.local 403 " + nickname + " " + channel + " :No such channel\r\n")
 #define ERR_NEEDMOREPARAMS(nickname, command) (":irc.local 461 " + nickname + " " + command + " :Not enough parameters\r\n")
 #define ERR_NOSUCHNICK(nickname, target) (":irc.local 401 " + nickname + " " + target + " :No such nick\r\n")
+#define ERR_CHANOPRIVSNEEDED(channel) (":irc.local 482 " + channel + " :You're not channel operator\r\n")
 
 // ------WELCOME-------
 #define RPL_WELCOME(nickname, client) (":irc.local 001 " + nickname + " :Welcome to the TEST IRC Network " + client + "\r\n")
@@ -161,7 +162,7 @@
 
 // ----------PRIVMSG----------
 #define PRIVMSG_REPLISE(client, target, response) (":" + client + " PRIVMSG " + target + " :" + response + "\r\n")
-#define ERR_NOSUCHNICK(nickname) (":irc.local 401 " + nickname + " :No such nick/channel\r\n")
+//#define ERR_NOSUCHNICK(nickname) (":irc.local 401 " + nickname + " :No such nick/channel\r\n")
 #define ERR_NOTEXTTOSEND(nickname) (":irc.local 412 " + nickname + " :No text to send\r\n")
 #define ERR_NORECIPIENT(nickname) (":irc.local 411 " + nickname + " :No recipient given PRIVMSG\r\n")
 #define ERR_CANNOTSENDTOCHAN(nickname, channel) (":irc.local 404 " + nickname + " " + channel + " :Cannot send to channel\r\n")
