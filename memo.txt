@@ -132,6 +132,7 @@ MODE - Change the channel’s mode:
 · i: Set/remove Invite-only channel
 · t: Set/remove the restrictions of the TOPIC command to channel operators
 · k: Set/remove the channel key (password)
+비밀번호 인수 필요, "MODE #channel k 123"
 · o: Give/take channel operator privilege
 · l: Set/remove the user limit to channel
 
@@ -155,3 +156,10 @@ MODE #testchannel +b=b-b-i_i+i-t+t+t
 :idonghag-ui-MacBookPro-2.local 472 dong = :is not a recognised channel mode.
 :idonghag-ui-MacBookPro-2.local 472 dong _ :is not a recognised channel mode.
 :dong!1@localhost MODE #testchannel :-i+i-t+t
+
+--'o' flag--
+MODE #test o
+:idonghag-ui-MacBookPro-2.local 696 dong #test o * :You must specify a parameter for the op mode. Syntax: <nick>.
+
+MODE #test -o dong
+:dong!1@localhost MODE #test -o :dong
