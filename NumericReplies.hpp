@@ -44,7 +44,7 @@
 #define RPL_LISTSTART 321
 #define RPL_LIST 322
 #define RPL_LISTEND 323
-#define RPL_CHANNELMODEIS 324
+#define RPL_CHANNELMODEIS_NUM 324
 #define RPL_CREATIONTIME 329
 #define RPL_WHOISACCOUNT 330
 #define RPL_NOTOPIC 331
@@ -103,7 +103,7 @@
 #define ERR_PASSWDMISMATCH 464
 #define ERR_YOUREBANNEDCREEP 465
 #define ERR_CHANNELISFULL_NUM 471
-#define ERR_UNKNOWNMODE 472
+#define ERR_UNKNOWNMODE_NUM 472
 #define ERR_INVITEONLYCHAN_NUM 473
 #define ERR_BANNEDFROMCHAN 474
 #define ERR_BADCHANNELKEY_NUM 475
@@ -137,8 +137,9 @@
 // -------command replise list--------
 
 // ------공통------
-#define ERR_NOSUCHCHANNEL(channel) (":irc.local 403 " + channel + " :No such channel\r\n")
-#define ERR_NEEDMOREPARAMS(command) (":irc.local 461 " + command + " :Not enough parameters\r\n")
+#define ERR_NOSUCHCHANNEL(nickname, channel) (":irc.local 403 " + nickname + " " + channel + " :No such channel\r\n")
+#define ERR_NEEDMOREPARAMS(nickname, command) (":irc.local 461 " + nickname + " " + command + " :Not enough parameters\r\n")
+#define ERR_NOSUCHNICK(nickname, target) (":irc.local 401 " + nickname + " " + target + " :No such nick\r\n")
 
 // ------WELCOME-------
 #define RPL_WELCOME(nickname, client) (":irc.local 001 " + nickname + " :Welcome to the TEST IRC Network " + client + "\r\n")
@@ -167,5 +168,9 @@
 #define PART_REPLISE(client, channel) (":" + client + " PART :" + channel + "\r\n")
 #define PART_REASON_REPLISE(client, channel, reason) (":" + client + " PART " + channel + " :" + reason + "\r\n")
 #define ERR_NOTONCHANNEL(channel) (":irc.local 442 " + channel + " :You're not on that channel\r\n")
+
+// ----------MODE-----------
+#define RPL_CHANNELMODEIS(nickname, channel, mode) (":irc.local 324 " + nickname + " " + channel + " :" + mode + "\r\n")
+#define ERR_UNKNOWNMODE(nickname, flag) (":irc.local 472 " + nickname + " " + flag + " :is not a  recognised channel mode.\r\n")
 
 #endif
