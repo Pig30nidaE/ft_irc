@@ -39,7 +39,7 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 	//std::cout << msgsSize << std::endl;
 	if (msgsSize < 2) {
 		std::cout << "ERROR: NEDDMOREPARMS\n";
-		throw ErrNeedMoreParams("NICK");
+		throw ErrNeedMoreParams(user.getNickName(), "NICK");
 	}
 	if (nickname == msgs[1]) { // 본인 닉넴으로 변경할 때는 그냥 넘김
 		return 1;
@@ -65,7 +65,7 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 		msgsSize = msgs.size();
 		if (msgsSize < 5) {
 			std::cout << "ERROR: NEDDMOREPARAMS\n";
-			throw ErrNeedMoreParams("USER");
+			throw ErrNeedMoreParams(user.getNickName(), "USER");
 		}
 		nickname = user.getNickName();
 		if (msgs[4][0] == ':') {
@@ -162,7 +162,7 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	msgsSize = msgs.size();
 	if (msgsSize < 2) { // channelName도 없으면 에러
 		std::cout << "ERROR: NEDDMOREPARMS\n";
-		throw ErrNeedMoreParams("JOIN");
+		throw ErrNeedMoreParams(user.getNickName(), "JOIN");
 	}
 	channelnames = splitComma(msgs[1]);
 	keys = splitComma(msgs[2]);
@@ -227,7 +227,7 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 
 	msgsSize = msgs.size();
 	if (msgsSize < 2) {
-		throw ErrNeedMoreParams("PART");
+		throw ErrNeedMoreParams(user.getNickName(), "PART");
 	}
 	targets = splitComma(msgs[1]);
 	nickname = user.getNickName();
@@ -252,7 +252,7 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 			if (msgsSize > 2) { // reason이 있다면
 			}
 			if (user.checkChannelInList((*iter), cc) == ERR_NOSUCHCHANNEL_NUM) {
-				throw ErrNoSuchChannel(*iter);
+				throw ErrNoSuchChannel(user.getNickName(), *iter);
 			}
 			else if (!(channel = user.getSpecificChannelJoined((*iter), cc))) {
 				throw ErrNotonChannel(*iter);
@@ -376,62 +376,201 @@ std::string Command::topic(ChannelContainer&cc, Channel &channel, std::string to
 	// 	user.topicCommand(cc, channel.getChannelName());
 	// else
 	// 	user.topicCommand(cc, channel.getChannelName(), topic);
-
 }
 
-void Command::mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc) { //LSH
+static int checkMode(char c) {
+	if (c == 'i')
+		return (MODE_INVITE_ONLY);
+	else if (c == 't')
+		return (MODE_TOPIC_LIMIT);
+	else if (c == 'k')
+		return (MODE_CHANNEL_KEY);
+	else if (c == 'o')
+		return (MODE_OPERATOR_GRANTED);
+	else if (c == 'l')
+		return (MODE_CAPACITY_LIMIT);
+	else {
+		return 0;
+	}
+}
+
+static int checkModeChange(Mode &mode, char c) {
+	if (c == 'i')
+		return (mode.checkType(MODE_INVITE_ONLY));
+	else if (c == 't')
+		return (mode.checkType(MODE_TOPIC_LIMIT));
+	else if (c == 'k')
+		return (mode.checkType(MODE_CHANNEL_KEY));
+	else if (c == 'i')
+		return (mode.checkType(MODE_OPERATOR_GRANTED));
+	else if (c == 'l')
+		return (mode.checkType(MODE_CAPACITY_LIMIT));
+}
+
+void Command::mode(std::vector<std::string> &msgs, User& user, ChannelContainer& cc) { //LSH
+	size_t msgsSize;
+	Channel *channel;
+	std::string response = "";
 	std::cout << "[ MODE ]" << std::endl;
 	//일단 /MODE <channel> [+/-] 이런식으로 테스트, MODE를 바꾸려면 직접 수정.
 	// MODE +k-k+k 와 같이 여러번 들어오는 것도 가능함. 일단은 하나만 들어온다고 가정함.
-	bool flag;
-	if (msgs.at(2)[0] == '+')
-		flag = true;
-	else
-		flag = false;
-	std::string type = msgs[2].substr(1, msgs[2].size() - 1);
-	//std::cout << type << std::endl;
-	if (type == "i")
-		user.changeMode(cc, msgs.at(1), flag, MODE_INVITE_ONLY);
-	else if (type == "t")
-		user.changeMode(cc, msgs.at(1), flag, MODE_TOPIC_LIMIT);
-	else if (type == "k") {
-			if (msgs.size() > 3) {
-				user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY, msgs.at(3).c_str());	
+
+	msgsSize = msgs.size();
+	if (msgsSize < 2) {
+		throw ErrNeedMoreParams(user.getNickName(), msgs[0]);
+	}
+	else if (msgs[1][0] != '#') { // nick은 안받음 채널에대한 mode만 구현
+		throw ErrNoSuchNick(user.getNickName(), msgs[1]);
+	}
+	channel = user.getSpecificChannelJoined(msgs[1], cc);
+	if (channel == nullptr) { // 채널 못찾았을 때
+		throw ErrNoSuchChannel(user.getNickName(), msgs[1]);
+	}
+	if (msgsSize < 3) {
+		response += '+';
+		if (channel->getModeRef().checkType(MODE_INVITE_ONLY))
+			response += 'i';
+		if (channel->getModeRef().checkType(MODE_TOPIC_LIMIT))
+			response += 't';
+		if (channel->getModeRef().checkType(MODE_CHANNEL_KEY))
+			response += 'k';
+		if (channel->getModeRef().checkType(MODE_OPERATOR_GRANTED))
+			response += 'o';
+		if (channel->getModeRef().checkType(MODE_CAPACITY_LIMIT))
+			response += 'l';
+		sendMsg(user, RPL_CHANNELMODEIS(user.getNickName(), msgs[1], response));
+		return ;
+	}
+	else {
+		//if (user.getIsOperator()) 상효가 구현 중, channel의 oper인지 체크하고 예외처리
+		std::string modestring = msgs[2];
+		size_t length = msgs[2].length();
+		Mode &mode = channel->getModeRef();
+		std::string temp = "";
+		char target = 0;
+		int flag = PLUS;
+		for (int i = 0; i < length; i++) {
+			try
+			{
+				target = modestring[i];
+				if (target == '+') {
+					flag = PLUS;					
+				}
+				else if (target == '-') {
+					flag = MINUS;
+				}
+				else if (!checkMode(target)) {
+					throw ErrUnknownMode(user.getNickName(), target);
+				}
+				else {
+					if (checkModeChange(mode, target)){
+						if (flag == MINUS) {
+							temp += '-';
+							temp += target;
+							mode.turnOffType(checkMode(target));
+						}
+					}
+					else {
+						if (flag == PLUS) {
+							temp += '+';
+							temp += target;
+							mode.turnOnType(checkMode(target));
+						}
+					}
+				}
+				std::cout << i << ": " << temp << "\n";
+			}
+			catch(const std::exception& e)
+			{
+				std::cerr << e.what();
+			}
+		}
+		flag = 0;
+		length = temp.length();
+		for (int i = 0; i < length; i++) {
+			if (temp[i] == '+') {
+				if (flag == PLUS) 
+					continue;
+				else {
+					flag = PLUS;
+					response += temp[i];
+				}
+			}
+			else if (temp[i] == '-') {
+				if (flag == MINUS)
+					continue;
+				else {
+					flag = MINUS;
+					response += temp[i];
+				}
 			}
 			else {
-				std::cout << "ERROR" << std::endl;
+				if (i == 0)
+					response.insert(response.begin(), '+');
+				response += temp[i];
 			}
 		}
-		//if (flag && msgs.size() == 4) { // 나중에 확인하기. == 4가 맞는가?
-		//	user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY, msgs.at(3).c_str());
-		//	std::cout << 1;
-		//}
-		//else {
-		//	std::cout << "need passwd" << std::endl;
-		//	std::cout << 2;
-		//}
-	else if (type == "o") {
-		if (msgs.size() > 3)
-			user.changeMode(cc, msgs.at(1), flag, MODE_OPERATOR_GRANTED, msgs.at(3).c_str());
-		else {
-			std::cout << "ERROR" << std::endl;
-		}
+		std::cout << "[MODE RETURN]:" << response << "\n";
 	}
-	else if (type == "l") {
-		if (flag) {
-			if (msgs.size() > 3)
-				user.changeMode(cc, msgs.at(1), flag, MODE_CAPACITY_LIMIT, std::atoi(msgs.at(3).c_str()));
-			else {
-				std::cout << "ERROR" << std::endl;
-			}
-		}
-		else
-			user.changeMode(cc, msgs.at(1), flag, MODE_CAPACITY_LIMIT);
-	}
-	else
-		std::cout << "invalid option." << std::endl;
-	//user.changeMode(cc, user.getSpecificChannelJoined(channel_name, cc),\
-	//	onoff_flag, )
+
+
+
+
+
+
+
+
+
+
+	// bool flag;
+	// if (msgs.at(2)[0] == '+')
+	// 	flag = true;
+	// else
+	// 	flag = false;
+	// std::string type = msgs[2].substr(1, msgs[2].size() - 1);
+	// //std::cout << type << std::endl;
+	// if (type == "i")
+	// 	user.changeMode(cc, msgs.at(1), flag, MODE_INVITE_ONLY);
+	// else if (type == "t")
+	// 	user.changeMode(cc, msgs.at(1), flag, MODE_TOPIC_LIMIT);
+	// else if (type == "k") {
+	// 		if (msgs.size() > 3) {
+	// 			user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY, msgs.at(3).c_str());	
+	// 		}
+	// 		else {
+	// 			std::cout << "ERROR" << std::endl;
+	// 		}
+	// 	}
+	// 	//if (flag && msgs.size() == 4) { // 나중에 확인하기. == 4가 맞는가?
+	// 	//	user.changeMode(cc, msgs.at(1), flag, MODE_CHANNEL_KEY, msgs.at(3).c_str());
+	// 	//	std::cout << 1;
+	// 	//}
+	// 	//else {
+	// 	//	std::cout << "need passwd" << std::endl;
+	// 	//	std::cout << 2;
+	// 	//}
+	// else if (type == "o") {
+	// 	if (msgs.size() > 3)
+	// 		user.changeMode(cc, msgs.at(1), flag, MODE_OPERATOR_GRANTED, msgs.at(3).c_str());
+	// 	else {
+	// 		std::cout << "ERROR" << std::endl;
+	// 	}
+	// }
+	// else if (type == "l") {
+	// 	if (flag) {
+	// 		if (msgs.size() > 3)
+	// 			user.changeMode(cc, msgs.at(1), flag, MODE_CAPACITY_LIMIT, std::atoi(msgs.at(3).c_str()));
+	// 		else {
+	// 			std::cout << "ERROR" << std::endl;
+	// 		}
+	// 	}
+	// 	else
+	// 		user.changeMode(cc, msgs.at(1), flag, MODE_CAPACITY_LIMIT);
+	// }
+	// else
+	// 	std::cout << "invalid option." << std::endl;
+	// //user.changeMode(cc, user.getSpecificChannelJoined(channel_name, cc),\
+	// //	onoff_flag, )
 }
 
 // PRIVMSG test1,,test2 hello 도 보내져야됨
@@ -447,7 +586,7 @@ void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContaine
 
 	msgsSize = msgs.size();
 	if (msgsSize < 3) {
-		throw ErrNeedMoreParams("PRIVMSG"); // 임시 에러
+		throw ErrNeedMoreParams(user.getNickName(), "PRIVMSG"); // 임시 에러
 	}
 	targets = splitComma(msgs[1]);
 	nickName = user.getNickName();
@@ -467,7 +606,7 @@ void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContaine
 				continue;
 			if ((*iter)[0] == '#') { // 채널 일때
 				if (user.checkChannelInList((*iter), cc) == ERR_NOSUCHCHANNEL_NUM) {
-					throw ErrNoSuchChannel((*iter));
+					throw ErrNoSuchChannel(user.getNickName(), (*iter));
 				}
 				channel = user.getSpecificChannelJoined((*iter), cc);
 				if (!channel)
@@ -476,7 +615,7 @@ void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContaine
 			}
 			else { // 클라 일떄
 				if (cc.checkClientInList((*iter)) == ERR_NOSUCHNICK_NUM)
-					throw ErrNoSuchNick((*iter));
+					throw ErrNoSuchNick(user.getNickName(), (*iter));
 				targetUser = cc.getUser((*iter));
 				sendMsg((*targetUser), PRIVMSG_REPLISE(user.getClient(), (*iter), response));
 			}
@@ -529,7 +668,7 @@ void Command::checkLastPassState(User &user) const {
 	}
 	else if (value == NEEDMOREPARMS) {
 		std::cout << "ERROR: NEDDMOREPARAMS\n";
-		throw ErrNeedMoreParams("PASS");
+		throw ErrNeedMoreParams(user.getNickName(), "PASS");
 	}
 	else if (value == PASSMISMATCH) {
 		std::cout << "ERROR: PASSWDMISMATCH\n";

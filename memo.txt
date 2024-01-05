@@ -126,3 +126,40 @@ JOIN
 JOIN ,,
 
 JOIN ,
+
+---------------------MODE COMMAND--------------------------
+MODE - Change the channel’s mode:
+· i: Set/remove Invite-only channel
+· t: Set/remove the restrictions of the TOPIC command to channel operators
+· k: Set/remove the channel key (password)
+비밀번호 인수 필요, "MODE #channel k 123"
+· o: Give/take channel operator privilege
+· l: Set/remove the user limit to channel
+
+--설정되어 있는 mode가 없을때--
+MODE #test1
+:idonghag-ui-MacBookPro-2.local 324 dong #test1 :+
+:idonghag-ui-MacBookPro-2.local 329 dong #test1 :1704270605
+
+--모드에 대해서 msgs[2]에 대해서만 검사함--
+MODE #testchannel ac cdsdvd sd
+:idonghag-ui-MacBookPro-2.local 472 dong a :is not a recognised channel mode.
+:idonghag-ui-MacBookPro-2.local 472 dong c :is not a recognised channel mode.
+
+--
+MODE #testchannel +b=b-b
+:idonghag-ui-MacBookPro-2.local 472 dong = :is not a recognised channel mode.
+:idonghag-ui-MacBookPro-2.local 368 dong #testchannel :End of channel ban list
+
+--여러개 되고, 중첩되는건 하나로 표현하면서 순서는 신경 씀--
+MODE #testchannel +b=b-b-i_i+i-t+t+t
+:idonghag-ui-MacBookPro-2.local 472 dong = :is not a recognised channel mode.
+:idonghag-ui-MacBookPro-2.local 472 dong _ :is not a recognised channel mode.
+:dong!1@localhost MODE #testchannel :-i+i-t+t
+
+--'o' flag--
+MODE #test o
+:idonghag-ui-MacBookPro-2.local 696 dong #test o * :You must specify a parameter for the op mode. Syntax: <nick>.
+
+MODE #test -o dong
+:dong!1@localhost MODE #test -o :dong

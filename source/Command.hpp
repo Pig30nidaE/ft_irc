@@ -9,6 +9,8 @@
 #define	NEEDMOREPARMS 2
 #define	PASSMISMATCH 3
 #define PASSSUCCESS 1
+#define MINUS 1
+#define PLUS 2
 // #define CHANNELISFULL 1
 // #define BADCHANNELKEY 2
 // #define INVITEONLYCHAN 3
@@ -47,19 +49,25 @@ class Command {
 		
 		// ----channel join-----
 		void join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+
 		// ----channel 나감-----
 		void part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+
 		// kick
 		void kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+
 		// ----client PING----
 		void ping(std::vector<std::string> msgs, User &user);
+
 		// ----client INVITE---
 		void invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
+
 		// ----topic------------
 		std::string topic(ChannelContainer& cc, Channel &channel, std::string topic, User& user);
+
 		// ----mode------------- //LSH
 		//void mode(std::string channel, std::string flag, std::string parm);
-		void mode(std::vector<std::string> msgs, User& user, ChannelContainer& cc);
+		void mode(std::vector<std::string> &msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
 		void privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
@@ -125,26 +133,38 @@ class Command {
 				ErrNotonChannel(const std::string & channel) : std::invalid_argument(ERR_NOTONCHANNEL(channel)) {}
 		};
 
+		// MODE
+		class RplChannelModeIs : public std::invalid_argument {
+			public:
+				RplChannelModeIs(const std::string &nickname, const std::string & channel, const std::string &mode) : std::invalid_argument(RPL_CHANNELMODEIS(nickname, channel, mode)) {}
+		};
+
+		class ErrUnknownMode : public std::invalid_argument {
+			public:
+				ErrUnknownMode(const std::string &nickname, const char &flag) : std::invalid_argument(ERR_UNKNOWNMODE(nickname, flag)) {}
+		};
+
 		//PRIVMSG
 		class ErrCannotSendToChan : public std::invalid_argument {
 			public:
 				ErrCannotSendToChan(const std::string & nickname, const std::string & channel) : std::invalid_argument(ERR_CANNOTSENDTOCHAN(nickname, channel)) {}
 		};
 
-		class ErrNoSuchNick : public std::invalid_argument {
-			public:
-				ErrNoSuchNick(const std::string & nickname) : std::invalid_argument(ERR_NOSUCHNICK(nickname)) {}
-		};
 
 		// 공통
 		class ErrNoSuchChannel : public std::invalid_argument {
 			public:
-				ErrNoSuchChannel(const std::string & channel) : std::invalid_argument(ERR_NOSUCHCHANNEL(channel)) {}
+				ErrNoSuchChannel(const std::string &nickname, const std::string & channel) : std::invalid_argument(ERR_NOSUCHCHANNEL(nickname, channel)) {}
+		};
+
+		class ErrNoSuchNick : public std::invalid_argument {
+			public:
+				ErrNoSuchNick(const std::string &nickname, const std::string &target) : std::invalid_argument(ERR_NOSUCHNICK(nickname, target)) {}
 		};
 
 		class ErrNeedMoreParams : public std::invalid_argument {
 			public:
-				ErrNeedMoreParams(const std::string& command) : std::invalid_argument(ERR_NEEDMOREPARAMS(command)) {}
+				ErrNeedMoreParams(const std::string &nickname, const std::string &command) : std::invalid_argument(ERR_NEEDMOREPARAMS(nickname, command)) {}
 		};
 
 		class ErrChanOPrivsNeeded : public std::invalid_argument {
