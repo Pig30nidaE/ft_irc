@@ -2,7 +2,7 @@
 
 
 User::User(void):
-buf(""),userSock(-1),isPass(0),userName(""),nickName(""),isOperator(false),userIndex(-1) {}
+buf(""),userSock(-1),isPass(0),userName(""),nickName(""),hostName(""),client(""),isOperator(false),userIndex(-1) {}
 
 User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
 
@@ -292,6 +292,14 @@ void User::setUserName(std::string const username) {
 	userName = username;
 }
 
+std::string User::getHostName(void) const {
+	return hostName;
+}
+
+void User::setHostName(std::string const hostname) {
+	hostName = hostname;
+}
+
 //std::string User::getNickName(std::string chName) {
 //	typedef std::map<std::string, std::string>::iterator NickIterator;
 //	for (NickIterator nick_iter = nickName.begin();nick_iter != nickName.end();nick_iter++) {
@@ -318,12 +326,20 @@ void User::setNickName(std::string toChangeNick){//, ChannelContainer& channel_c
 	nickName = toChangeNick;
 }
 
-std::string User::getRealkName(void) const {
+std::string User::getRealName(void) const {
 	return realName;
 }
 
 void User::setRealName(std::string realname) {
 	realName = realname;
+}
+
+std::string User::getClient(void) const {
+	return client;
+}
+
+void User::setClient(const std::string &nick, const std::string &user, const std::string &host) {
+	client = nick + '!' + user + '@' + host;
 }
 
 bool User::getIsOperator(void) const {
