@@ -55,7 +55,7 @@ class Channel {
 		std::string 				channelName;
 		std::vector<User*>			userList;
 		std::vector<int>			invitedUserList;
-		//std::vector<int>			bannedUserList;
+		std::vector<int>			channelOpList;
 		std::string					password;
 		int							capacity;
 		Topic						*topic;
@@ -66,10 +66,14 @@ class Channel {
 
 		void	userAdd(User& user);
 		void	userDel(User& user);
+		void	operatorAdd(User& user);
+		bool	isOperator(User& user);
+		bool 	isOnTheChan(User& user);
 
 		std::string					getChannelName(void) const;
 		void						setChannelName(std::string const channelname);
 		std::vector<User*>	 		&getUserList(void);
+		User*						getSpecficUser(std::string nickname);
 		std::vector<int>			&getInvitedUserList(void);
 		std::string					getPassword(void) const;
 		void						setPassword(std::string pwd);
@@ -79,6 +83,7 @@ class Channel {
 		void						setIndex(int idx);
 		int							getCapacity(void);
 		void						setCapacity(int size);
+		std::vector<int>			&getChannelOpList(void);
 
 
 };

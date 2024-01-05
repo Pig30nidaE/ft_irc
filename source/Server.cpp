@@ -74,7 +74,7 @@ void Server::serverStart(void) {
                     {
                         int n;
                         for (std::vector<std::string>::iterator iter = sendBuf.begin(); iter != sendBuf.end(); iter++) {
-                            std::cout << "[SERVER]:" << *iter;
+                            std::cout << "[SERVER]:" << *iter << "\n" << "!!!!!!fd:" << currEvent->ident << "\n";
                             if ((n = write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
                             {
                                 std::cerr << "client write error!" << std::endl;
@@ -303,7 +303,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 }
                 //std::cout << msgs[1] << std::endl;
                 tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
-                if (tmp == nullptr) {
+                if (!tmp) {
                     std::cout << "ERROR" << std::endl;
                     break ;
                 }
@@ -414,7 +414,7 @@ void	Server::broadcastMsg(User &user, Channel *channel, const std::string &msg) 
     int sock; //test
     std::cout << "[BroadCastMsg]\n";
 
-    if (channel == nullptr) {
+    if (!channel) {
         std::cout << "channel is NULL\n";
         return ; // err 던지기
     }
