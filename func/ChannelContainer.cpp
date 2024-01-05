@@ -1,6 +1,6 @@
 #include "ChannelContainer.hpp"
 
-ChannelContainer::ChannelContainer(void):channelIndex(-1) {}
+ChannelContainer::ChannelContainer(void):channelIndex(-1),userJoinChanLimit(5) {}
 
 ChannelContainer::~ChannelContainer() {}
 
@@ -46,6 +46,14 @@ int	ChannelContainer::getCurrentChIdx(void) {
 
 void ChannelContainer::setCurrentChIdx(int idx) {
 	channelIndex = idx;
+}
+
+int ChannelContainer::getUserJoinChanLimit(void) const {
+	return userJoinChanLimit;
+}
+
+void ChannelContainer::setUserJoinChanLimit(const int limit) {
+	userJoinChanLimit = limit;
 }
 
 // 동학

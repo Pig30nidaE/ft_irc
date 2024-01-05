@@ -48,8 +48,8 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 		std::cout << "ERROR: NICK USED\n";
 		throw ErrNickNameInUser(msgs[1]);
 	}
-	if (nickname != "") // 회원가입 할 때는 안보냄
-		sendMsg(user, nickname + " NICK :" + msgs[1] + '\n');
+	if (nickname != "") // 회원가입 할 때는 안보냄, !!!!replise 생각하기!!!!
+		sendMsg(user, nickname + " NICK :" + msgs[1] + "\r\n");
 	user.setNickName(msgs[1]);
 	std::cout << "NICK SUCCESS!!\n";
 	return 1;
@@ -84,11 +84,63 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 		std::cout << "realname:" << realname << "\n";
 		user.setUserName(msgs[1]);
 		user.setRealName(realname);
+		user.setHostName(msgs[2]);
 	}
 	else {
 		throw ErrAlreadyRegistered("USER");
 	}
 }
+
+//void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
+//	if (msgs.size() < 2) {
+//		throw ErrNeedMoreParams(msgs.at(0));
+//	}
+//	std::string chanName = msgs.at(1);
+//	std::string enteredPw = "";
+//	if (msgs.size() > 2)
+//		enteredPw = msgs.at(2);
+//	if (user.getJoinedChannelList(cc).size() == cc.getUserJoinChanLimit()) {
+//		return sendMsg(user, ERR_TOOMANYCHANNELS(msgs.at(1)));
+//	}
+//	try {
+//		int joinStatus = user.joinChannel(msgs.at(1), enteredPw, cc);
+//		if (joinStatus == ERR_BADCHANNELKEY_NUM)
+//			throw ErrBadChannelKey(chanName);
+//		else if (joinStatus == ERR_CHANNELISFULL_NUM)
+//			throw ErrChannelIsFull(chanName);
+//		else if (joinStatus == ERR_INVITEONLYCHAN_NUM)
+//			throw ErrInviteOnlyChan(chanName);
+//		else {// SUCCESS
+//			Channel& joinedChan = *user.getSpecificChannelJoined(chanName, cc);
+//			//if (joinStatus == JOINCHANNEL) {
+//			Topic& joinedChanTopic = joinedChan.getTopicRef();
+//			if (joinedChanTopic.getTopic().size())
+//				sendMsg(user, RPL_TOPIC(chanName, joinedChanTopic.getTopic()));
+//			typedef std::vector<User*>::iterator UserIter;
+//			std::vector<User*> &userList = joinedChan.getUserList();
+//			std::string user_seq = "";
+//			UserIter iter;
+//			for (iter = userList.begin();iter != userList.end();iter++) {
+//				if ((*iter)->getIsOperator())
+//					user_seq += ("@" + (*iter)->getNickName());
+//				else
+//					user_seq += (*iter)->getNickName();
+//			}
+//			sendMsg(user, RPL_NAMREPLY(user.getNickName(), user_seq, chanName));
+//			sendMsg(user, RPL_ENDOFNAMES(user.getNickName(), chanName));
+//			//}
+//			//else { // CreateChan
+
+//			//}
+//		}
+//	}
+//	catch(const std::exception &e) {
+//		sendMsg(user, e.what());
+//	}
+//}
+
+
+
 
 void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	std::vector<std::string> channelnames;
@@ -134,20 +186,25 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 				throw ErrBadChannelKey((*iter));
 			else if (result == ERR_INVITEONLYCHAN_NUM)
 				throw ErrInviteOnlyChan((*iter));
-			else if ((user.getJoinedChannelList(cc)).size() >= 5) { // 유저 최대 입장 제한 5
+			else if ((user.getJoinedChannelList(cc)).size() > cc.getUserJoinChanLimit()) { // 유저 최대 입장 제한 5
 				throw ErrTooManyChannels((*iter)); //최대 가입 가능한 채널 수 넘으면 에러
 			}
 			else {
+				//Channel& joinedChan = 
 				channel = user.getSpecificChannelJoined((*iter), cc);
 				nickName = user.getNickName();
+				Topic& joinedChanTopic = channel->getTopicRef();
+				if (joinedChanTopic.getTopic().size())
+					sendMsg(user, RPL_TOPIC(channel->getChannelName(), joinedChanTopic.getTopic()));
+				// !!namereply operator 다시 봐야할듯!!
 				rplEndofnames = RPL_NAMREPLY(nickName, (*iter));
 				std::vector<User *> userList = channel->getUserList();
 				for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
 					rplEndofnames += ((*iter)->getNickName() + " ");
 				}
-				rplEndofnames += "\n";
-				sendMsg(user, JOIN_REPLISE(nickName,user.getUserName(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
-				broadcastMsg(user, channel, ":" + nickName + " JOIN :" + (*iter) + "\n");
+				rplEndofnames += "\r\n";
+				sendMsg(user, JOIN_REPLISE(user.getClient(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
+				broadcastMsg(user, channel, ":" + nickName + " JOIN :" + (*iter) + "\r\n");
 			}
 		}
 		catch(const std::exception& e)
@@ -205,12 +262,12 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 				throw ErrNotonChannel(*iter); //내가 가입한 채널 중에 없음
 			else {
 				if (msgsSize > 2) {
-					broadcastMsg(user, channel, PART_REASON_REPLISE(nickname, username, channelname, response));
-					sendMsg(user, PART_REASON_REPLISE(nickname, username, channelname, response));
+					broadcastMsg(user, channel, PART_REASON_REPLISE(user.getClient(), channelname, response));
+					sendMsg(user, PART_REASON_REPLISE(user.getClient(), channelname, response));
 				}
 				else {
-					broadcastMsg(user, channel, PART_REPLISE(nickname, username, channelname));
-					sendMsg(user, PART_REPLISE(nickname, username, channelname));
+					broadcastMsg(user, channel, PART_REPLISE(user.getClient(), channelname));
+					sendMsg(user, PART_REPLISE(user.getClient(), channelname));
 				}
 			}
 		}
@@ -226,8 +283,8 @@ void Command::ping(std::vector<std::string> msgs, User &user) {
 	std::cout << "[ PING ]" << std::endl;
 
 	if (msgs.size() < 2)
-		throw ErrNeedMoreParams(user.getNickName(), "PING");
-	sendMsg(user, "PONG " + msgs[1]);
+		throw ErrNeedMoreParams("PING");
+	sendMsg(user, "PONG " + msgs[1] + "\r\n");
 }
 
 void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
@@ -538,13 +595,13 @@ void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContaine
 				channel = user.getSpecificChannelJoined((*iter), cc);
 				if (channel == nullptr)
 					throw ErrCannotSendToChan(nickName, (*iter));
-				broadcastMsg(user, channel, PRIVMSG_REPLISE(nickName, user.getUserName(), (*iter), response));
+				broadcastMsg(user, channel, PRIVMSG_REPLISE(user.getClient(), (*iter), response));
 			}
 			else { // 클라 일떄
 				if (cc.checkClientInList((*iter)) == ERR_NOSUCHNICK_NUM)
 					throw ErrNoSuchNick(user.getNickName(), (*iter));
 				targetUser = cc.getUser((*iter));
-				sendMsg((*targetUser), PRIVMSG_REPLISE(nickName, user.getUserName(), (*iter), response));
+				sendMsg((*targetUser), PRIVMSG_REPLISE(user.getClient(), (*iter), response));
 			}
 		}
 		catch(const std::exception& e)

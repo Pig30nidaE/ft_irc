@@ -48,8 +48,8 @@
 #define RPL_CREATIONTIME 329
 #define RPL_WHOISACCOUNT 330
 #define RPL_NOTOPIC 331
-#define RPL_TOPIC 332
-#define RPL_TOPICWHOTIME 333
+#define RPL_TOPIC_NUM 332
+#define RPL_TOPICWHOTIME_NUM 333
 #define RPL_INVITELIST 336
 #define RPL_ENDOFINVITELIST 337
 #define RPL_WHOISACTUALLY 338
@@ -141,10 +141,16 @@
 #define ERR_NEEDMOREPARAMS(nickname, command) (":irc.local 461 " + nickname + " " + command + " :Not enough parameters\r\n")
 #define ERR_NOSUCHNICK(nickname, target) (":irc.local 401 " + nickname + " " + target + " :No such nick\r\n")
 
+// ------WELCOME-------
+#define RPL_WELCOME(nickname, client) (":irc.local 001 " + nickname + " :Welcome to the TEST IRC Network " + client + "\r\n")
+
+
 // -----------JOIN------------
-#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n")
+#define JOIN_REPLISE(client, channel) (":" + client + " JOIN :" + channel + "\r\n")
+// #define RPL_NAMREPLY(nickname, nickname_list, channel) (":irc.local 353 " + nickname + " @ " + channel + " :" + nickname_list + "\r\n")
 #define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")
 #define RPL_ENDOFNAMES(nickname, channel) (":irc.local 366 " + nickname + " " + channel + " :End of /NAMES list.\r\n")
+#define RPL_TOPIC(channel, topic) (":irc.local 332 " + channel + " : " + topic)
 #define ERR_TOOMANYCHANNELS(channel) (":irc.local 405 " + channel + " :You have joined too many channels\r\n")
 #define ERR_CHANNELISFULL(channel) (":irc.local 471 " + channel + " :Cannot join channel (+l)\r\n")
 #define ERR_BADCHANNELKEY(channel) (":irc.local 475 " + channel + " :Cannot join channel (+k)\r\n")
@@ -152,14 +158,15 @@
 #define ERR_BADCHANMASK(channel) (":irc.local 476 " + channel + " :Bad Channel Mask\r\n")
 
 // ----------PRIVMSG----------
-#define PRIVMSG_REPLISE(nickname, username, target, response) (":" + nickname + "!" + username + "@localhost PRIVMSG " + target + " :" + response + "\r\n")
+#define PRIVMSG_REPLISE(client, target, response) (":" + client + " PRIVMSG " + target + " :" + response + "\r\n")
+#define ERR_NOSUCHNICK(nickname) (":irc.local 401 " + nickname + " :No such nick/channel\r\n")
 #define ERR_NOTEXTTOSEND(nickname) (":irc.local 412 " + nickname + " :No text to send\r\n")
 #define ERR_NORECIPIENT(nickname) (":irc.local 411 " + nickname + " :No recipient given PRIVMSG\r\n")
 #define ERR_CANNOTSENDTOCHAN(nickname, channel) (":irc.local 404 " + nickname + " " + channel + " :Cannot send to channel\r\n")
 
 // ---------PART------------
-#define PART_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost PART :" + channel + "\r\n")
-#define PART_REASON_REPLISE(nickname, username, channel, reason) (":" + nickname + "!" + username + "@localhost PART " + channel + " :" + reason + "\r\n")
+#define PART_REPLISE(client, channel) (":" + client + " PART :" + channel + "\r\n")
+#define PART_REASON_REPLISE(client, channel, reason) (":" + client + " PART " + channel + " :" + reason + "\r\n")
 #define ERR_NOTONCHANNEL(channel) (":irc.local 442 " + channel + " :You're not on that channel\r\n")
 
 // ----------MODE-----------

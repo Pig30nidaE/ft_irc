@@ -11,6 +11,7 @@ class ChannelContainer {
 		std::vector<Channel*> 	channelList;
 		std::vector<User*>		userList;
 		int						channelIndex;
+		int						userJoinChanLimit;
 	public:
 		ChannelContainer(void);
 		~ChannelContainer();
@@ -24,6 +25,8 @@ class ChannelContainer {
 		std::vector<User*>		&getUserList(void);
 		int						getCurrentChIdx(void);
 		void					setCurrentChIdx(int idx);
+		int						getUserJoinChanLimit(void) const;
+		void					setUserJoinChanLimit(const int limit);
 		// donghak
 		int						checkClientInList(const std::string &nickname);
 		User					*getUser(const std::string &nickname);
