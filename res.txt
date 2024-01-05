@@ -1,0 +1,86 @@
+In file included from source/Server.cpp:5:
+source/./Command.hpp:162:124: error: too many arguments provided to function-like macro invocation
+                                ErrNoSuchNick(const std::string &nickname, const std::string &target) : std::invalid_argument(ERR_NOSUCHNICK(nickname, target)) {}
+                                                                                                                                                       ^
+source/../func/../NumericReplies.hpp:164:9: note: macro 'ERR_NOSUCHNICK' defined here
+#define ERR_NOSUCHNICK(nickname) (":irc.local 401 " + nickname + " :No such nick/channel\r\n")
+        ^
+In file included from source/Server.cpp:5:
+source/./Command.hpp:162:99: error: use of undeclared identifier 'ERR_NOSUCHNICK'
+                                ErrNoSuchNick(const std::string &nickname, const std::string &target) : std::invalid_argument(ERR_NOSUCHNICK(nickname, target)) {}
+                                                                                                                              ^
+source/./Command.hpp:172:77: error: use of undeclared identifier 'ERR_CHANOPRIVSNEEDED'
+                                ErrChanOPrivsNeeded(const std::string& channel) : std::invalid_argument(ERR_CHANOPRIVSNEEDED(channel)) {}
+                                                                                                        ^
+3 errors generated.
+In file included from source/Command.cpp:1:
+source/Command.hpp:162:124: error: too many arguments provided to function-like macro invocation
+                                ErrNoSuchNick(const std::string &nickname, const std::string &target) : std::invalid_argument(ERR_NOSUCHNICK(nickname, target)) {}
+                                                                                                                                                       ^
+source/../NumericReplies.hpp:164:9: note: macro 'ERR_NOSUCHNICK' defined here
+#define ERR_NOSUCHNICK(nickname) (":irc.local 401 " + nickname + " :No such nick/channel\r\n")
+        ^
+In file included from source/Command.cpp:1:
+source/Command.hpp:162:99: error: use of undeclared identifier 'ERR_NOSUCHNICK'
+                                ErrNoSuchNick(const std::string &nickname, const std::string &target) : std::invalid_argument(ERR_NOSUCHNICK(nickname, target)) {}
+                                                                                                                              ^
+source/Command.hpp:172:77: error: use of undeclared identifier 'ERR_CHANOPRIVSNEEDED'
+                                ErrChanOPrivsNeeded(const std::string& channel) : std::invalid_argument(ERR_CHANOPRIVSNEEDED(channel)) {}
+                                                                                                        ^
+source/Command.cpp:261:65: error: too many arguments provided to function-like macro invocation
+                        broadcastMsg(user, channel, PART_REPLISE(nickname, username, channelname));
+                                                                                     ^
+source/../func/../NumericReplies.hpp:170:9: note: macro 'PART_REPLISE' defined here
+#define PART_REPLISE(client, channel) (":" + client + " PART :" + channel + "\r\n")
+        ^
+source/Command.cpp:261:32: error: use of undeclared identifier 'PART_REPLISE'
+                        broadcastMsg(user, channel, PART_REPLISE(nickname, username, channelname));
+                                                    ^
+source/Command.cpp:262:51: error: too many arguments provided to function-like macro invocation
+                        sendMsg(user, PART_REPLISE(nickname, username, channelname));
+                                                                       ^
+source/../func/../NumericReplies.hpp:170:9: note: macro 'PART_REPLISE' defined here
+#define PART_REPLISE(client, channel) (":" + client + " PART :" + channel + "\r\n")
+        ^
+source/Command.cpp:262:18: error: use of undeclared identifier 'PART_REPLISE'
+                        sendMsg(user, PART_REPLISE(nickname, username, channelname));
+                                      ^
+source/Command.cpp:289:9: error: no matching conversion for functional-style cast from 'const char [5]' to 'Command::ErrNeedMoreParams'
+                throw ErrNeedMoreParams("PING");
+                      ^~~~~~~~~~~~~~~~~~~~~~~~
+source/Command.hpp:165:9: note: candidate constructor (the implicit copy constructor) not viable: no known conversion from 'const char [5]' to 'const Command::ErrNeedMoreParams' for 1st argument
+                class ErrNeedMoreParams : public std::invalid_argument {
+                      ^
+source/Command.hpp:167:5: note: candidate constructor not viable: requires 2 arguments, but 1 was provided
+                                ErrNeedMoreParams(const std::string &nickname, const std::string &command) : std::invalid_argument(ERR_NEEDMOREPARAMS(nickname, command)) {}
+                                ^
+source/Command.cpp:299:9: error: no matching conversion for functional-style cast from 'std::__1::__vector_base<std::__1::basic_string<char>, std::__1::allocator<std::__1::basic_string<char> > >::value_type' (aka 'std::__1::basic_string<char>') to 'Command::ErrNeedMoreParams'
+                throw ErrNeedMoreParams(msgs.at(0));
+                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source/Command.hpp:165:9: note: candidate constructor (the implicit copy constructor) not viable: no known conversion from 'std::__1::__vector_base<std::__1::basic_string<char>, std::__1::allocator<std::__1::basic_string<char> > >::value_type' (aka 'std::__1::basic_string<char>') to 'const Command::ErrNeedMoreParams' for 1st argument
+                class ErrNeedMoreParams : public std::invalid_argument {
+                      ^
+source/Command.hpp:167:5: note: candidate constructor not viable: requires 2 arguments, but 1 was provided
+                                ErrNeedMoreParams(const std::string &nickname, const std::string &command) : std::invalid_argument(ERR_NEEDMOREPARAMS(nickname, command)) {}
+                                ^
+source/Command.cpp:304:9: error: no matching conversion for functional-style cast from 'std::string' (aka 'basic_string<char, char_traits<char>, allocator<char> >') to 'Command::ErrNoSuchChannel'
+                throw ErrNoSuchChannel(channelName);
+                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source/Command.hpp:155:9: note: candidate constructor (the implicit copy constructor) not viable: no known conversion from 'std::string' (aka 'basic_string<char, char_traits<char>, allocator<char> >') to 'const Command::ErrNoSuchChannel' for 1st argument
+                class ErrNoSuchChannel : public std::invalid_argument {
+                      ^
+source/Command.hpp:157:5: note: candidate constructor not viable: requires 2 arguments, but 1 was provided
+                                ErrNoSuchChannel(const std::string &nickname, const std::string & channel) : std::invalid_argument(ERR_NOSUCHCHANNEL(nickname, channel)) {}
+                                ^
+source/Command.cpp:312:9: error: no matching conversion for functional-style cast from 'std::string' (aka 'basic_string<char, char_traits<char>, allocator<char> >') to 'Command::ErrNoSuchNick'
+                throw ErrNoSuchNick(toKick);
+                      ^~~~~~~~~~~~~~~~~~~~
+source/Command.hpp:160:9: note: candidate constructor (the implicit copy constructor) not viable: no known conversion from 'std::string' (aka 'basic_string<char, char_traits<char>, allocator<char> >') to 'const Command::ErrNoSuchNick' for 1st argument
+                class ErrNoSuchNick : public std::invalid_argument {
+                      ^
+source/Command.hpp:162:5: note: candidate constructor not viable: requires 2 arguments, but 1 was provided
+                                ErrNoSuchNick(const std::string &nickname, const std::string &target) : std::invalid_argument(ERR_NOSUCHNICK(nickname, target)) {}
+                                ^
+11 errors generated.
+make[1]: *** [ircserver] Error 1
+make: *** [re] Error 2

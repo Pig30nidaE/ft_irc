@@ -286,7 +286,7 @@ void Command::ping(std::vector<std::string> msgs, User &user) {
 	std::cout << "[ PING ]" << std::endl;
 
 	if (msgs.size() < 2)
-		throw ErrNeedMoreParams("PING");
+		throw ErrNeedMoreParams(msgs.at(0), msgs.at(1));
 	sendMsg(user, "PONG " + msgs[1] + "\r\n");
 }
 
@@ -296,12 +296,12 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	//int spaceIndex = msg.find(' ');
 	//std::string channelName = msg.substr(0, spaceIndex);
 	if (msgs.size() < 3)
-		throw ErrNeedMoreParams(msgs.at(0));
+		throw ErrNeedMoreParams(msgs.at(0), msgs.at(1));
 	std::string channelName = msgs.at(1);
 	Channel* joinedChannel = user.getSpecificChannelJoined(channelName, cc);
 	
 	if (!joinedChannel)
-		throw ErrNoSuchChannel(channelName);
+		throw ErrNoSuchChannel(user.getNickName(), channelName);
 	if (!(joinedChannel->isOnTheChan(user)))
 		throw ErrNotonChannel(channelName);
 	if (!(joinedChannel->isOperator(user)))
@@ -309,7 +309,7 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	//std::string userName = msg.substr(spaceIndex + 1, msg.length());
 	std::string toKick = msgs.at(2);
 	if (!(joinedChannel->getSpecficUser(toKick)))
-		throw ErrNoSuchNick(toKick);
+		throw ErrNoSuchNick(user.getNickName(), toKick);
 	//std::cout << "username: " << userName << "\n";
 	//std::cout << "channelName: " << channelName << "\n";
 	//std::cout << user.getUserName() << std::endl;
@@ -405,6 +405,9 @@ static int checkModeChange(Mode &mode, char c) {
 		return (mode.checkType(MODE_OPERATOR_GRANTED));
 	else if (c == 'l')
 		return (mode.checkType(MODE_CAPACITY_LIMIT));
+	else {
+		return 0;
+	}
 }
 
 void Command::mode(std::vector<std::string> &msgs, User& user, ChannelContainer& cc) { //LSH
@@ -676,14 +679,14 @@ void Command::checkLastPassState(User &user) const {
 	}
 }
 
-void	Command::sendMsg(User &user, const std::string &msg) const {
+void	Command::sendMsg(User &user, const std::string msg) const {
     if (msg == "")
         return ;
 	user.setSendBuf(msg);
 	// write(user.getUserSock(), msg.c_str(), msg.length() + 1);
 }
 
-void	Command::broadcastMsg(User &user, Channel *channel, const std::string &msg) const {
+void	Command::broadcastMsg(User &user, Channel *channel, const std::string msg) const {
 	std::vector<User *> userList;
     int sock; //test
     std::cout << "[BroadCastMsg]\n";
