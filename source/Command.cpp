@@ -410,6 +410,83 @@ static int checkModeChange(Mode &mode, char c) {
 	}
 }
 
+static std::string modeParsing(std::string modestring, Mode &mode, std::string nickname) {
+	// std::string modestring = msgs[2];
+	size_t length = modestring.length();
+	std::string temp = "";
+	std::string response = "";
+	char target = 0;
+	int flag = PLUS;
+	for (int i = 0; i < length; i++) {
+		try
+		{
+			target = modestring[i];
+			std::cout << i << ": target: " << target << "\n";
+			if (target == '+') {
+				flag = PLUS;					
+			}
+			else if (target == '-') {
+				flag = MINUS;
+			}
+			else if (!checkMode(target)) {
+				throw Command::ErrUnknownMode(nickname, target);
+			}
+			else {
+				std::cout << "go checkModeChange: " << target << ", flag: " << flag << "\n";
+				if (checkModeChange(mode, target)){
+					if (flag == MINUS) {
+						temp += '-';
+						temp += target;
+						mode.turnOffType(checkMode(target));
+						std::cout << "minus temp: " << temp << "\n";
+					}
+				}
+				else {
+					if (flag == PLUS) {
+						temp += '+';
+						temp += target;
+						mode.turnOnType(checkMode(target));
+						std::cout << "plus temp: " << temp << "\n";
+					}
+				}
+			}
+			std::cout << i << ": " << temp << "\n";
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what();
+		}
+	}
+	std::cout << "temp: " << temp << "\n";
+	flag = 0;
+	length = temp.length();
+	for (int i = 0; i < length; i++) {
+		if (temp[i] == '+') {
+			if (flag == PLUS) 
+				continue;
+			else {
+				flag = PLUS;
+				response += temp[i];
+			}
+		}
+		else if (temp[i] == '-') {
+			if (flag == MINUS)
+				continue;
+			else {
+				flag = MINUS;
+				response += temp[i];
+			}
+		}
+		else {
+			if (i == 0)
+				response.insert(response.begin(), '+');
+			response += temp[i];
+		}
+	}
+	std::cout << "[MODE RETURN]:" << response << "\n";
+	return response;
+}
+
 void Command::mode(std::vector<std::string> &msgs, User& user, ChannelContainer& cc) { //LSH
 	size_t msgsSize;
 	Channel *channel;
@@ -445,76 +522,98 @@ void Command::mode(std::vector<std::string> &msgs, User& user, ChannelContainer&
 		return ;
 	}
 	else {
-		//if (user.getIsOperator()) 상효가 구현 중, channel의 oper인지 체크하고 예외처리
-		std::string modestring = msgs[2];
-		size_t length = msgs[2].length();
-		Mode &mode = channel->getModeRef();
-		std::string temp = "";
-		char target = 0;
-		int flag = PLUS;
-		for (int i = 0; i < length; i++) {
-			try
-			{
-				target = modestring[i];
-				if (target == '+') {
-					flag = PLUS;					
-				}
-				else if (target == '-') {
-					flag = MINUS;
-				}
-				else if (!checkMode(target)) {
-					throw ErrUnknownMode(user.getNickName(), target);
-				}
-				else {
-					if (checkModeChange(mode, target)){
-						if (flag == MINUS) {
-							temp += '-';
-							temp += target;
-							mode.turnOffType(checkMode(target));
-						}
-					}
-					else {
-						if (flag == PLUS) {
-							temp += '+';
-							temp += target;
-							mode.turnOnType(checkMode(target));
-						}
-					}
-				}
-				std::cout << i << ": " << temp << "\n";
+		response = modeParsing(msgs[2], channel->getModeRef(), user.getNickName());
+		std::cout << "[MODE] response: " << response << "\n";
+		size_t length = response.length();
+		int type = 0;
+		int flag = 0;
+		int argIndex = 3;
+		for (size_t i = 0; i < length; i++) {
+			if (response[i] == '-') {
+				flag = 0; // off
 			}
-			catch(const std::exception& e)
-			{
-				std::cerr << e.what();
-			}
-		}
-		flag = 0;
-		length = temp.length();
-		for (int i = 0; i < length; i++) {
-			if (temp[i] == '+') {
-				if (flag == PLUS) 
-					continue;
-				else {
-					flag = PLUS;
-					response += temp[i];
-				}
-			}
-			else if (temp[i] == '-') {
-				if (flag == MINUS)
-					continue;
-				else {
-					flag = MINUS;
-					response += temp[i];
-				}
+			else if (response[i] == '+') {
+				flag = 1; // on
 			}
 			else {
-				if (i == 0)
-					response.insert(response.begin(), '+');
-				response += temp[i];
+				if (argIndex <= msgsSize - 1)
+					user.changeMode(cc, channel, flag, checkMode(response[i]), msgs[argIndex]);
+				else 
+					user.changeMode(cc, channel, flag, checkMode(response[i]), "");
 			}
 		}
-		std::cout << "[MODE RETURN]:" << response << "\n";
 	}
+		//if (user.getIsOperator()) 상효가 구현 중, channel의 oper인지 체크하고 예외처리
+		// std::string modestring = msgs[2];
+		// size_t length = msgs[2].length();
+		// Mode &mode = channel->getModeRef();
+		// std::string temp = "";
+		// char target = 0;
+		// int flag = PLUS;
+		// for (int i = 0; i < length; i++) {
+		// 	try
+		// 	{
+		// 		target = modestring[i];
+		// 		if (target == '+') {
+		// 			flag = PLUS;					
+		// 		}
+		// 		else if (target == '-') {
+		// 			flag = MINUS;
+		// 		}
+		// 		else if (!checkMode(target)) {
+		// 			throw ErrUnknownMode(user.getNickName(), target);
+		// 		}
+		// 		else {
+		// 			if (checkModeChange(mode, target)){
+		// 				if (flag == MINUS) {
+		// 					temp += '-';
+		// 					temp += target;
+		// 					mode.turnOffType(checkMode(target));
+		// 				}
+		// 			}
+		// 			else {
+		// 				if (flag == PLUS) {
+		// 					temp += '+';
+		// 					temp += target;
+		// 					mode.turnOnType(checkMode(target));
+		// 				}
+		// 			}
+		// 		}
+		// 		std::cout << i << ": " << temp << "\n";
+		// 	}
+		// 	catch(const std::exception& e)
+		// 	{
+		// 		std::cerr << e.what();
+		// 	}
+		// }
+		// std::cout << "temp: " << temp << "\n";
+		// flag = 0;
+		// length = temp.length();
+		// for (int i = 0; i < length; i++) {
+		// 	if (temp[i] == '+') {
+		// 		if (flag == PLUS) 
+		// 			continue;
+		// 		else {
+		// 			flag = PLUS;
+		// 			response += temp[i];
+		// 		}
+		// 	}
+		// 	else if (temp[i] == '-') {
+		// 		if (flag == MINUS)
+		// 			continue;
+		// 		else {
+		// 			flag = MINUS;
+		// 			response += temp[i];
+		// 		}
+		// 	}
+		// 	else {
+		// 		if (i == 0)
+		// 			response.insert(response.begin(), '+');
+		// 		response += temp[i];
+		// 	}
+		// }
+		// std::cout << "[MODE RETURN]:" << response << "\n";
+	// }
 
 
 

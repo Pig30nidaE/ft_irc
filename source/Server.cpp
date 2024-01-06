@@ -326,7 +326,8 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
 
             default:
-                std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
+                if (user.getUserIsPass() == 5) // 서버에 회원가입 전에는 안 뜸
+                    throw ERR_UNKNOWNCOMMAND(user.getNickName(), msgs[0]);// msgs[0]을 대문자로 변환해야됨
                 break;
         }
     }

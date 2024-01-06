@@ -75,7 +75,12 @@ class Command {
 		// 공통
 		class ErrNotRegistered : public std::invalid_argument {
 			public:
-				ErrNotRegistered(const std::string& client) : std::invalid_argument(client + " :You have not registered\n") {}
+				ErrNotRegistered(const std::string& command) : std::invalid_argument(ERR_NOTREGISTERED(command)) {}
+		};
+
+		class ErrUnknownCommand : public std::invalid_argument {
+			public:
+				ErrUnknownCommand(const std::string& nickname, const std::string &command) : std::invalid_argument(ERR_UNKNOWNCOMMAND(nickname, command)) {}
 		};
 
 		// ---------EXCEPTION--------
@@ -170,6 +175,11 @@ class Command {
 		class ErrChanOPrivsNeeded : public std::invalid_argument {
 			public:
 				ErrChanOPrivsNeeded(const std::string& channel) : std::invalid_argument(ERR_CHANOPRIVSNEEDED(channel)) {}
+		};
+
+		class ErrInvalidModeParam : public std::invalid_argument {
+			public:
+				ErrInvalidModeParam(const std::string &nickname, const std::string& channel, const std::string &mode, const std::string &description) : std::invalid_argument(ERR_INVALIDMODEPARAM(nickname, channel, mode, description)) {}
 		};
 
 	private:
