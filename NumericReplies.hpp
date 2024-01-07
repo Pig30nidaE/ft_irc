@@ -158,7 +158,7 @@
 #define RPL_TOPIC(channel, nickname, topic) (":irc.local 332 " + nickname + " " + channel + " " + topic + "\r\n")
 #define ERR_TOOMANYCHANNELS(channel) (":irc.local 405 " + channel + " :You have joined too many channels\r\n")
 #define ERR_CHANNELISFULL(channel) (":irc.local 471 " + channel + " :Cannot join channel (+l)\r\n")
-#define ERR_BADCHANNELKEY(channel) (":irc.local 475 " + channel + " :Cannot join channel (+k)\r\n")
+#define ERR_BADCHANNELKEY(nickname, channel) (":irc.local 475 " + nickname + " " + channel + " :Cannot join channel (+k)\r\n")
 #define ERR_INVITEONLYCHAN(channel) (":irc.local 473 " + channel + " :Cannot join channel (+i)\r\n")
 #define ERR_BADCHANMASK(channel) (":irc.local 476 " + channel + " :Bad Channel Mask\r\n")
 
