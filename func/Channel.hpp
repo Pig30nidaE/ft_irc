@@ -84,6 +84,7 @@ class Channel {
 		int							getCapacity(void);
 		void						setCapacity(int size);
 		std::vector<int>			&getChannelOpList(void);
+		int							isClientOpList(int sock);
 
 
 };

@@ -18,6 +18,7 @@
 class User;
 class ChannelContainer;
 class Channel;
+class Mode;
 
 class Command {
 	public:
@@ -67,6 +68,8 @@ class Command {
 
 		// ----mode------------- //LSH
 		//void mode(std::string channel, std::string flag, std::string parm);
+
+		std::string modeParsing(User &user, std::string modestring, Mode mode);
 		void mode(std::vector<std::string> &msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
@@ -147,6 +150,11 @@ class Command {
 		class ErrUnknownMode : public std::invalid_argument {
 			public:
 				ErrUnknownMode(const std::string &nickname, const char &flag) : std::invalid_argument(ERR_UNKNOWNMODE(nickname, flag)) {}
+		};
+
+		class ErrKeyMissMatch : public std::invalid_argument {
+			public:
+				ErrKeyMissMatch(const std::string &nickname, const std::string &channel) : std::invalid_argument(ERR_KEYMISSMATCH(nickname, channel)) {}
 		};
 
 		//PRIVMSG

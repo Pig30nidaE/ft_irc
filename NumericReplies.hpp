@@ -179,6 +179,8 @@
 #define ERR_UNKNOWNMODE(nickname, flag) (":irc.local 472 " + nickname + " " + flag + " :is not a recognised channel mode.\r\n")
 // 일단 대충 지음
 #define ERR_INVALIDMODEPARAM(nickname, channel, mode, description) (":irc.local 696 " + nickname + " " + channel + " " + mode + " * :" + description + "\r\n")
+#define ERR_KEYMISSMATCH(nickname, channel) (":irc.local 467 " + nickname + " " + channel + " :Channel key already set\r\n")
+#define RPL_MODEREPLIES(client, channel, result) (":" + client + " MODE " + channel + " " + result + "\r\n")
 
 
 #endif

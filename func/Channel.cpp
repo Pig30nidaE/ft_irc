@@ -120,3 +120,11 @@ void Channel::setCapacity(int size) {
 std::vector<int>& Channel::getChannelOpList(void) {
 	return channelOpList;
 }
+
+int Channel::isClientOpList(int sock) {
+	for (std::vector<int>::iterator iter = this->channelOpList.begin(); iter != this->channelOpList.end(); iter++) {
+		if (*iter == sock)
+			return 1;
+	}
+	return 0;
+}
