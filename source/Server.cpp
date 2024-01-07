@@ -297,22 +297,8 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
 
             case TOPIC:
-                if (msgs.size() < 2) {
-                    std::cout << "need channel name." << std::endl;
-                    break ;
-                }
-                //std::cout << msgs[1] << std::endl;
-                tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
-                if (!tmp) {
-                    std::cout << "ERROR" << std::endl;
-                    break ;
-                }
-                if (msgs.size() > 2)
-                    sendMsg(user, command->topic(*channelContainer, *tmp, msgs[2], user));
-                else
-                    sendMsg(user, command->topic(*channelContainer, *tmp, "", user));
+                command->topic(*channelContainer, msgs, user);
                 break;
-
             case MODE:
                 //command->mode(content, content, content);
                 /* test용 */

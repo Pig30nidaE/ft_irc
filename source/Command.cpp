@@ -91,57 +91,6 @@ void Command::user(std::vector<std::string> msgs, User &user) {
 	}
 }
 
-//void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
-//	if (msgs.size() < 2) {
-//		throw ErrNeedMoreParams(msgs.at(0));
-//	}
-//	std::string chanName = msgs.at(1);
-//	std::string enteredPw = "";
-//	if (msgs.size() > 2)
-//		enteredPw = msgs.at(2);
-//	if (user.getJoinedChannelList(cc).size() == cc.getUserJoinChanLimit()) {
-//		return sendMsg(user, ERR_TOOMANYCHANNELS(msgs.at(1)));
-//	}
-//	try {
-//		int joinStatus = user.joinChannel(msgs.at(1), enteredPw, cc);
-//		if (joinStatus == ERR_BADCHANNELKEY_NUM)
-//			throw ErrBadChannelKey(chanName);
-//		else if (joinStatus == ERR_CHANNELISFULL_NUM)
-//			throw ErrChannelIsFull(chanName);
-//		else if (joinStatus == ERR_INVITEONLYCHAN_NUM)
-//			throw ErrInviteOnlyChan(chanName);
-//		else {// SUCCESS
-//			Channel& joinedChan = *user.getSpecificChannelJoined(chanName, cc);
-//			//if (joinStatus == JOINCHANNEL) {
-//			Topic& joinedChanTopic = joinedChan.getTopicRef();
-//			if (joinedChanTopic.getTopic().size())
-//				sendMsg(user, RPL_TOPIC(chanName, joinedChanTopic.getTopic()));
-//			typedef std::vector<User*>::iterator UserIter;
-//			std::vector<User*> &userList = joinedChan.getUserList();
-//			std::string user_seq = "";
-//			UserIter iter;
-//			for (iter = userList.begin();iter != userList.end();iter++) {
-//				if ((*iter)->getIsOperator())
-//					user_seq += ("@" + (*iter)->getNickName());
-//				else
-//					user_seq += (*iter)->getNickName();
-//			}
-//			sendMsg(user, RPL_NAMREPLY(user.getNickName(), user_seq, chanName));
-//			sendMsg(user, RPL_ENDOFNAMES(user.getNickName(), chanName));
-//			//}
-//			//else { // CreateChan
-
-//			//}
-//		}
-//	}
-//	catch(const std::exception &e) {
-//		sendMsg(user, e.what());
-//	}
-//}
-
-
-
-
 void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	std::vector<std::string> channelnames;
 	std::vector<std::string> keys;
@@ -195,7 +144,7 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 				nickName = user.getNickName();
 				Topic& joinedChanTopic = channel->getTopicRef();
 				if (joinedChanTopic.getTopic().size())
-					sendMsg(user, RPL_TOPIC(channel->getChannelName(), joinedChanTopic.getTopic()));
+					sendMsg(user, RPL_TOPIC(channel->getChannelName(), nickName, joinedChanTopic.getTopic()));
 				// !!namereply operator 다시 봐야할듯!!
 				rplEndofnames = RPL_NAMREPLY(nickName, (*iter));
 				std::vector<User *> userList = channel->getUserList();
@@ -339,43 +288,38 @@ void Command::invite(std::string nick, std::string channel, ChannelContainer &cc
 	}
 }
 
-std::string Command::topic(ChannelContainer&cc, Channel &channel, std::string topic, User& user) {
-	// topic set한 사람 저장하기
-	std::stringstream ss;
-
-	// Channel* joinedChannel = user.getSpecificChannelJoined\
-	// 	(channel.getChannelName(), cc);
-	//if (!channel) {
-	//	std::cerr << "no such channel." << std::endl;
-	//	return "";
-	//}
-	Mode& mode = channel.getModeRef();
-	if (mode.checkType(MODE_TOPIC_LIMIT)) {
-		if (channel.isOperator(user) == false) {
-			std::cerr << "only operator can change topic." << std::endl;
-			return "";
-		}
+void Command::topic(ChannelContainer&cc, std::vector<std::string> msgs, User& user) {
+	std::string nickName = user.getNickName();
+	std::string command = msgs.at(0);
+	if (msgs.size() < 2) {
+		throw ErrNeedMoreParams(nickName, command);
 	}
-	ss << "channel :";
-	if (!topic.size()) {
-		std::string returnTopic = channel.getTopicRef().getTopic();
-		if (!returnTopic.size()) {
-			ss << "No topic is set" << std::endl;
+	std::string chanName = msgs.at(1);
+	Channel* channel = user.getSpecificChannelJoined(chanName, cc);
+	if (!channel) {
+		throw ErrNotonChannel(chanName);
+	}
+	Topic& returnTopic = channel->getTopicRef();
+	if (msgs.size() > 2) {
+		Mode& mode = channel->getModeRef();
+		if (mode.checkType(MODE_TOPIC_LIMIT)) {
+			if (!(channel->isOperator(user))) {
+				throw ErrChanOPrivsNeeded(chanName);
+			}
 		}
-		else {
-			ss << returnTopic << std::endl;
-		}
-			return (ss.str());
+		std::string toSet = msgs.at(2);
+		returnTopic.setTopic(toSet);
 	}
 	else {
-		channel.getTopicRef().setTopic(topic);
-		ss << channel.getTopicRef().getTopic() << std::endl;
-		return ss.str();
+		std::string chanTopic = returnTopic.getTopic();
+		if (chanTopic.size()) {
+			sendMsg(user, RPL_TOPIC(chanName, nickName, chanTopic));
+		}
+		else
+			sendMsg(user, RPL_NOTOPIC(chanName));
+		return ;
 	}
-	// if (!topic.size())
-	// 	user.topicCommand(cc, channel.getChannelName());
-	// else
-	// 	user.topicCommand(cc, channel.getChannelName(), topic);
+	
 }
 
 static int checkMode(char c) {
