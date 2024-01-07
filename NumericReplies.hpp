@@ -156,10 +156,10 @@
 #define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")
 #define RPL_ENDOFNAMES(nickname, channel) (":irc.local 366 " + nickname + " " + channel + " :End of /NAMES list.\r\n")
 #define RPL_TOPIC(channel, nickname, topic) (":irc.local 332 " + nickname + " " + channel + " " + topic + "\r\n")
-#define ERR_TOOMANYCHANNELS(channel) (":irc.local 405 " + channel + " :You have joined too many channels\r\n")
-#define ERR_CHANNELISFULL(channel) (":irc.local 471 " + channel + " :Cannot join channel (+l)\r\n")
+#define ERR_TOOMANYCHANNELS(channel, nickname) (":irc.local 405 " +nickname + " " + channel + " :You have joined too many channels\r\n")
+#define ERR_CHANNELISFULL(channel, nickname) (":irc.local 471 " + nickname + " " + channel + " :Cannot join channel (+l)\r\n")
 #define ERR_BADCHANNELKEY(nickname, channel) (":irc.local 475 " + nickname + " " + channel + " :Cannot join channel (+k)\r\n")
-#define ERR_INVITEONLYCHAN(channel) (":irc.local 473 " + channel + " :Cannot join channel (+i)\r\n")
+#define ERR_INVITEONLYCHAN(channel, nickname) (":irc.local 473 " + nickname + " " + channel + " :Cannot join channel (+i)\r\n")
 #define ERR_BADCHANMASK(channel) (":irc.local 476 " + channel + " :Bad Channel Mask\r\n")
 
 // ----------PRIVMSG----------
@@ -172,7 +172,7 @@
 // ---------PART------------
 #define PART_REPLISE(client, channel) (":" + client + " PART :" + channel + "\r\n")
 #define PART_REASON_REPLISE(client, channel, reason) (":" + client + " PART " + channel + " :" + reason + "\r\n")
-#define ERR_NOTONCHANNEL(channel) (":irc.local 442 " + channel + " :You're not on that channel\r\n")
+#define ERR_NOTONCHANNEL(channel, nickname) (":irc.local 442 " + nickname + " " + channel + " :You're not on that channel\r\n")
 
 // ----------MODE-----------
 #define RPL_CHANNELMODEIS(nickname, channel, mode) (":irc.local 324 " + nickname + " " + channel + " :" + mode + "\r\n")
@@ -184,6 +184,6 @@
 
 
 // ----------TOPIC-----------
-#define RPL_NOTOPIC(channel) (":irc.local 331 " + channel + " :No topic is set\r\n")
+#define RPL_NOTOPIC(channel, nickname) (":irc.local 331 " + nickname + " " + channel + " :No topic is set\r\n")
 
 #endif
