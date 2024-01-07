@@ -26,7 +26,6 @@
 #define DISCONNECT 1
 #define NUMCOMMANDS 11
 
-
 enum {
 	PASS,
 	NICK, 
