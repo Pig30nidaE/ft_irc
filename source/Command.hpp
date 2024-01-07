@@ -64,7 +64,7 @@ class Command {
 		void invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
 
 		// ----topic------------
-		std::string topic(ChannelContainer& cc, Channel &channel, std::string topic, User& user);
+		void topic(ChannelContainer& cc, std::vector<std::string> msgs, User& user);
 
 		// ----mode------------- //LSH
 		//void mode(std::string channel, std::string flag, std::string parm);
@@ -188,6 +188,11 @@ class Command {
 		class ErrInvalidModeParam : public std::invalid_argument {
 			public:
 				ErrInvalidModeParam(const std::string &nickname, const std::string& channel, const std::string &mode, const std::string &description) : std::invalid_argument(ERR_INVALIDMODEPARAM(nickname, channel, mode, description)) {}
+    };
+
+		class ErrNoTopic : public std::invalid_argument {
+			public:
+				ErrNoTopic(const std::string& channel) : std::invalid_argument(channel) {}
 		};
 
 	private:

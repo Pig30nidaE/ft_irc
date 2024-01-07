@@ -47,7 +47,7 @@
 #define RPL_CHANNELMODEIS_NUM 324
 #define RPL_CREATIONTIME 329
 #define RPL_WHOISACCOUNT 330
-#define RPL_NOTOPIC 331
+#define RPL_NOTOPIC_NUM 331
 #define RPL_TOPIC_NUM 332
 #define RPL_TOPICWHOTIME_NUM 333
 #define RPL_INVITELIST 336
@@ -155,7 +155,7 @@
 // #define RPL_NAMREPLY(nickname, nickname_list, channel) (":irc.local 353 " + nickname + " @ " + channel + " :" + nickname_list + "\r\n")
 #define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")
 #define RPL_ENDOFNAMES(nickname, channel) (":irc.local 366 " + nickname + " " + channel + " :End of /NAMES list.\r\n")
-#define RPL_TOPIC(channel, topic) (":irc.local 332 " + channel + " : " + topic)
+#define RPL_TOPIC(channel, nickname, topic) (":irc.local 332 " + nickname + " " + channel + " " + topic + "\r\n")
 #define ERR_TOOMANYCHANNELS(channel) (":irc.local 405 " + channel + " :You have joined too many channels\r\n")
 #define ERR_CHANNELISFULL(channel) (":irc.local 471 " + channel + " :Cannot join channel (+l)\r\n")
 #define ERR_BADCHANNELKEY(channel) (":irc.local 475 " + channel + " :Cannot join channel (+k)\r\n")
@@ -182,5 +182,8 @@
 #define ERR_KEYMISSMATCH(nickname, channel) (":irc.local 467 " + nickname + " " + channel + " :Channel key already set\r\n")
 #define RPL_MODEREPLIES(client, channel, result) (":" + client + " MODE " + channel + " " + result + "\r\n")
 
+
+// ----------TOPIC-----------
+#define RPL_NOTOPIC(channel) (":irc.local 331 " + channel + " :No topic is set\r\n")
 
 #endif

@@ -163,3 +163,9 @@ MODE #test o
 
 MODE #test -o dong
 :dong!1@localhost MODE #test -o :dong
+
+
+
+
+1. /TOPIC [없는채널] -> 아무 reply 없음.
+2. 채널 조인 안한상태에서 토픽할 때 err_reply 수정.
