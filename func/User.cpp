@@ -1,4 +1,5 @@
 #include "User.hpp"
+#include "../source/Command.hpp"
 
 
 User::User(void):
@@ -148,61 +149,66 @@ void User::inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& 
 	//	toInviteUser.joinChannel(toChannel.getChannelName(), "",channel_container, true);
 }
 
-void User::changeMode(ChannelContainer& channel_container, std::string channel, bool onoff_flag, int type, ...) {
-	Channel* joinedChannel = getSpecificChannelJoined(channel, channel_container);
-	if (!joinedChannel) {
-		std::cerr << "no such channel." << std::endl;
-		return ;
+// void User::changeMode(ChannelContainer& channel_container, std::string channel, bool onoff_flag, int type, ...) {
+int User::changeMode(ChannelContainer& channel_container, Channel &joinedChannel, bool onoff_flag, int type, std::string arg) {
+	if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED) || MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY) || MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
+		if (arg == "") {
+			if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED))
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "o", "You must specify a parameter for the op mode. Syntax: <nick>.");
+			else if (MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY))
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "k", "You must specify a parameter for the key mode. Syntax: <key>.");
+			else if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT) && onoff_flag) {
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "l", "You must specify a parameter for the limit mode. Syntax: <limit>.");
+			}
+		}
 	}
-	if (!(this->getSpecificChannelJoined(channel, channel_container)->isOperator(*this))) {
-		std::cerr << "Not permitted." << std::endl;
-		return ;
+	if (!(joinedChannel.isOperator(*this))) {
+		throw Command::ErrChanOPrivsNeeded(joinedChannel.getChannelName());
 	}
-	Mode& channelMode = joinedChannel->getModeRef();
-	//std::cout << "type: " << type << std::endl;
+	Mode& channelMode = joinedChannel.getModeRef();
 	if (onoff_flag) { // MODE ON
 		if (MODE_CHECK_TYPE(type, MODE_INVITE_ONLY))
 			channelMode.turnOnType(MODE_INVITE_ONLY);
 		if (MODE_CHECK_TYPE(type, MODE_TOPIC_LIMIT))
 			channelMode.turnOnType(MODE_TOPIC_LIMIT);
-		if (MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY)) {
+		if (MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY)) { // k
+			if (channelMode.checkType(MODE_CHANNEL_KEY))
+				return 1;
 			channelMode.turnOnType(MODE_CHANNEL_KEY);
-			va_list ap;
-			va_start(ap, type);
-			char *passwd_ap = va_arg(ap, char*);
-			if (!passwd_ap)
-				return ;
-			std::string passwd(passwd_ap);
-			//std::cout << passwd << std::endl;
-			joinedChannel->setPassword(passwd);
+			if (arg == "")
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "k", "You must specify a parameter for the key mode. Syntax: <key>.");
+			std::cout << "ket set: " << arg << "\n";
+			joinedChannel.setPassword(arg);
 		}
-		if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) {
-			va_list ap;
-			va_start(ap, type);
-			char *target_ap = va_arg(ap, char*);
-			if (!target_ap)
-				return ;
-			std::string targetNick(target_ap);
-			//std::string targetNick(va_arg(ap, char *));
-			std::vector<User*> usrList = joinedChannel->getUserList();
+		if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) { // o
+			if (arg == "")
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "o", "You must specify a parameter for the op mode. Syntax: <nick>.");
+			std::vector<User*> usrList = joinedChannel.getUserList();
 			typedef std::vector<User*>::iterator usrIterator;
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
-				if ((*user_iter)->getNickName() == targetNick) {
+				if ((*user_iter)->getNickName() == arg) {
+					if (joinedChannel.isClientOpList((*user_iter)->getUserSock()))
+						return 1;
 					channelMode.turnOnType(MODE_OPERATOR_GRANTED);
-					(*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList().\
+					(*user_iter)->getSpecificChannelJoined(joinedChannel.getChannelName(), channel_container)->getChannelOpList().\
 						push_back((*user_iter)->getUserSock());
-					return ;
+					return 0;
 				}
 			}
-			std::cout << "no such user." << std::endl;
+			throw Command::ErrNoSuchNick(this->getNickName(), arg); // noSuchNick
 		}
-		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
-			va_list ap;
-			va_start(ap, type);
-			int size = va_arg(ap, int);
-			if (!size)
-				return ;
-			joinedChannel->setCapacity(size);
+		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) { // l
+			if (arg == "")
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "l", "You must specify a parameter for the limit mode. Syntax: <limit>.");
+			int size = stringToInt(arg);
+			if (size < 0) // 마니어스이거나 변환 에러가 났을 때
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "l", "Invalid limit mode parameter. Syntax: <limit>.");
+			if (joinedChannel.getCapacity() == size) {
+				return 1;
+			}
+			if (size == 0)
+				size = 1;
+			joinedChannel.setCapacity(size);
 		}
 	}
 	else { // MODE OFF
@@ -211,55 +217,162 @@ void User::changeMode(ChannelContainer& channel_container, std::string channel, 
 		if (MODE_CHECK_TYPE(type, MODE_TOPIC_LIMIT))
 			channelMode.turnOffType(MODE_TOPIC_LIMIT);
 		if (MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY)) {
-			va_list ap;
-			va_start(ap, type);
-			char* passwd_ap = va_arg(ap, char*);
-			if (!passwd_ap)
-				return ;
-			std::string passwd(passwd_ap);
-			if (passwd == joinedChannel->getPassword()) {
-				joinedChannel->setPassword("");
+			if (!channelMode.checkType(MODE_CHANNEL_KEY))
+				return 1;
+			if (arg == "")
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "k", "You must specify a parameter for the key mode. Syntax: <key>.");
+			std::cout << "request key: " << arg << "\n";
+			if (arg == joinedChannel.getPassword()) {
+				joinedChannel.setPassword("");
 				channelMode.turnOffType(MODE_CHANNEL_KEY);
 			}
 			else {
-				std::cerr << "password incorrect." << std::endl;
+				throw Command::ErrKeyMissMatch(this->getNickName(), joinedChannel.getChannelName());
 			}
 		}
 		if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) {
-			va_list ap;
-			va_start(ap, type);
-			std::string targetNick(va_arg(ap, char *));
-			std::vector<User*> usrList = joinedChannel->getUserList();
+			if (arg == "")
+				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "o", "You must specify a parameter for the op mode. Syntax: <nick>.");
+			std::vector<User*> usrList = joinedChannel.getUserList();
 			typedef std::vector<User*>::iterator usrIterator;
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
-				if ((*user_iter)->getNickName() == targetNick) {
+				if ((*user_iter)->getNickName() == arg) {
+					if (!joinedChannel.isClientOpList((*user_iter)->getUserSock()))
+						return 1;
 					channelMode.turnOffType(MODE_OPERATOR_GRANTED);
-					std::vector<int>& OpList = (*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList();
+					std::vector<int>& OpList = (*user_iter)->getSpecificChannelJoined(joinedChannel.getChannelName(), channel_container)->getChannelOpList();
 					typedef std::vector<int>::iterator OpIter;
 					for (OpIter iter = OpList.begin();iter != OpList.end();iter++) {
 						if (*iter == (*user_iter)->getUserSock()) {
 							OpList.erase(iter);
-							return ;
+							return 0;
 						}
 					}
 					//(*user_iter)->setIsOperator(false);
 					//(*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList().erase(user_iter);
-					return ;
+					return 0;
 				}
 			}
-			std::cout << "no such user." << std::endl;
+			throw Command::ErrNoSuchNick(this->getNickName(), arg); // noSuchNick
 		}
-		//if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
-		//	va_list ap;
-		//	va_start(ap, type);
-		//	int size = va_arg(ap, int);
-		//	if (!size)
-		//		return ;
-		//	joinedChannel->setCapacity(size);
-		//}
-		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT))
-			joinedChannel->setCapacity(0);
+		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
+			if (joinedChannel.getCapacity() == 0)
+				return 1;
+			joinedChannel.setCapacity(0);
+		}
 	}
+	// Channel* joinedChannel = getSpecificChannelJoined(channel, channel_container);
+	// if (!joinedChannel) {
+	// 	std::cerr << "no such channel." << std::endl;
+	// 	return ;
+	// }
+	// if (!(joinedChannel.isOperator(*this))) {
+	// 	std::cerr << "Not permitted." << std::endl;
+	// 	return ;
+	// }
+	// Mode& channelMode = joinedChannel->getModeRef();
+	// //std::cout << "type: " << type << std::endl;
+	// if (onoff_flag) { // MODE ON
+	// 	if (MODE_CHECK_TYPE(type, MODE_INVITE_ONLY))
+	// 		channelMode.turnOnType(MODE_INVITE_ONLY);
+	// 	if (MODE_CHECK_TYPE(type, MODE_TOPIC_LIMIT))
+	// 		channelMode.turnOnType(MODE_TOPIC_LIMIT);
+	// 	if (MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY)) {
+	// 		channelMode.turnOnType(MODE_CHANNEL_KEY);
+	// 		va_list ap;
+	// 		va_start(ap, type);
+	// 		char *passwd_ap = va_arg(ap, char*);
+	// 		if (!passwd_ap)
+	// 			return ;
+	// 		std::string passwd(passwd_ap);
+	// 		//std::cout << passwd << std::endl;
+	// 		joinedChannel->setPassword(passwd);
+	// 	}
+	// 	if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) {
+	// 		va_list ap;
+	// 		va_start(ap, type);
+	// 		char *target_ap = va_arg(ap, char*);
+	// 		if (!target_ap)
+	// 			return ;
+	// 		std::string targetNick(target_ap);
+	// 		//std::string targetNick(va_arg(ap, char *));
+	// 		std::vector<User*> usrList = joinedChannel->getUserList();
+	// 		typedef std::vector<User*>::iterator usrIterator;
+	// 		for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
+	// 			if ((*user_iter)->getNickName() == targetNick) {
+	// 				channelMode.turnOnType(MODE_OPERATOR_GRANTED);
+	// 				(*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList().\
+	// 					push_back((*user_iter)->getUserSock());
+	// 				return ;
+	// 			}
+	// 		}
+	// 		std::cout << "no such user." << std::endl;
+	// 	}
+	// 	if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
+	// 		va_list ap;
+	// 		va_start(ap, type);
+	// 		int size = va_arg(ap, int);
+	// 		if (!size)
+	// 			return ;
+	// 		joinedChannel->setCapacity(size);
+	// 	}
+	// }
+	// else { // MODE OFF
+	// 	if (MODE_CHECK_TYPE(type, MODE_INVITE_ONLY))
+	// 		channelMode.turnOffType(MODE_INVITE_ONLY);
+	// 	if (MODE_CHECK_TYPE(type, MODE_TOPIC_LIMIT))
+	// 		channelMode.turnOffType(MODE_TOPIC_LIMIT);
+	// 	if (MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY)) {
+	// 		va_list ap;
+	// 		va_start(ap, type);
+	// 		char* passwd_ap = va_arg(ap, char*);
+	// 		if (!passwd_ap)
+	// 			return ;
+	// 		std::string passwd(passwd_ap);
+	// 		if (passwd == joinedChannel->getPassword()) {
+	// 			joinedChannel->setPassword("");
+	// 			channelMode.turnOffType(MODE_CHANNEL_KEY);
+	// 		}
+	// 		else {
+	// 			std::cerr << "password incorrect." << std::endl;
+	// 		}
+	// 	}
+	// 	if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) {
+	// 		va_list ap;
+	// 		va_start(ap, type);
+	// 		std::string targetNick(va_arg(ap, char *));
+	// 		std::vector<User*> usrList = joinedChannel->getUserList();
+	// 		typedef std::vector<User*>::iterator usrIterator;
+	// 		for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
+	// 			if ((*user_iter)->getNickName() == targetNick) {
+	// 				channelMode.turnOffType(MODE_OPERATOR_GRANTED);
+	// 				std::vector<int>& OpList = (*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList();
+	// 				typedef std::vector<int>::iterator OpIter;
+	// 				for (OpIter iter = OpList.begin();iter != OpList.end();iter++) {
+	// 					if (*iter == (*user_iter)->getUserSock()) {
+	// 						OpList.erase(iter);
+	// 						return ;
+	// 					}
+	// 				}
+	// 				//(*user_iter)->setIsOperator(false);
+	// 				//(*user_iter)->getSpecificChannelJoined(channel, channel_container)->getChannelOpList().erase(user_iter);
+	// 				return ;
+	// 			}
+	// 		}
+	// 		std::cout << "no such user." << std::endl;
+	// 	}
+	// 	//if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
+	// 	//	va_list ap;
+	// 	//	va_start(ap, type);
+	// 	//	int size = va_arg(ap, int);
+	// 	//	if (!size)
+	// 	//		return ;
+	// 	//	joinedChannel->setCapacity(size);
+	// 	//}
+	// 	if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT))
+	// 		joinedChannel->setCapacity(0);
+	// }
+	return 0;
 }
 
 // void User::topicCommand(ChannelContainer& channel_container, std::string channel, ...) {
@@ -448,4 +561,14 @@ std::vector<std::string> User::getSendBuf(void) const {
 
 void User::initSendBuf(void) {
 	sendBuf.clear();
+}
+
+int User::stringToInt(std::string str) {
+	int num;
+	std::istringstream iss(str);
+
+	if (!(iss >> num)) {
+		return -1;
+	}
+    return num;
 }

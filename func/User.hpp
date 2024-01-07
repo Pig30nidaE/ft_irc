@@ -42,7 +42,7 @@ class User {
 		int		exitChannel(std::string toExitChannel, ChannelContainer& channel_container);
 		void	kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container);
 		void	inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container);
-		void	changeMode(ChannelContainer& channel_container, std::string channel, bool onoff_flag, int type, ...);
+		int		changeMode(ChannelContainer& channel_container, Channel &channel, bool onoff_flag, int type, std::string arg);
 		void	topicCommand(ChannelContainer& channel_container, std::string channel, ...);
 		// -----donghak----=
 		int		checkChannelInList(const std::string &channelName, ChannelContainer& cc);
@@ -75,6 +75,7 @@ class User {
 		int 								getUserSock(void) const;
 		void 								setUserIsPass(int flag);
 		int 								getUserIsPass(void) const;
+		int									stringToInt(std::string str);
 		class NoJoinedChannelException : public std::exception {
 			public:
 				const char* what(void) const throw() {

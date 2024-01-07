@@ -88,7 +88,7 @@
 // #define ERR_NORECIPIENT 411
 // #define ERR_NOTEXTTOSEND 412
 #define ERR_INPUTTOOLONG 417
-#define ERR_UNKNOWNCOMMAND 421
+#define ERR_UNKNOWNCOMMAND_NUM 421
 #define ERR_NOMOTD 422
 #define ERR_NONICKNAMEGIVEN 431
 #define ERR_ERRONEUSNICKNAME 432
@@ -97,8 +97,8 @@
 #define ERR_USERNOTINCHANNEL 441
 #define ERR_NOTONCHANNEL_NUM 442
 #define ERR_USERONCHANNEL 443
-#define ERR_NOTREGISTERED 451
-// #define ERR_NEEDMOREPARAMS 461
+#define ERR_NOTREGISTERED_NUM 451
+#define ERR_NEEDMOREPARAMS_NUM 461
 #define ERR_ALREADYREGISTERED 462
 #define ERR_PASSWDMISMATCH 464
 #define ERR_YOUREBANNEDCREEP 465
@@ -119,7 +119,7 @@
 #define RPL_STARTTLS 670
 #define RPL_WHOISSECURE 671
 #define ERR_STARTTLS 691
-#define ERR_INVALIDMODEPARAM 696
+#define ERR_INVALIDMODEPARAM_NUM 696
 #define RPL_HELPSTART 704
 #define RPL_HELPTXT 705
 #define RPL_ENDOFHELP 706
@@ -141,6 +141,8 @@
 #define ERR_NEEDMOREPARAMS(nickname, command) (":irc.local 461 " + nickname + " " + command + " :Not enough parameters\r\n")
 #define ERR_NOSUCHNICK(nickname, target) (":irc.local 401 " + nickname + " " + target + " :No such nick\r\n")
 #define ERR_CHANOPRIVSNEEDED(channel) (":irc.local 482 " + channel + " :You're not channel operator\r\n")
+#define ERR_UNKNOWNCOMMAND(nickname, command) (":irc.local 421 " + nickname + " " + command + " :Unknown command\r\n")
+#define ERR_NOTREGISTERED(command) (":irc.local 451 * " + command + " :You have not registered.\r\n")
 
 // ------WELCOME-------
 #define RPL_WELCOME(nickname, client) (":irc.local 001 " + nickname + " :Welcome to the TEST IRC Network " + client + "\r\n")
@@ -174,7 +176,12 @@
 
 // ----------MODE-----------
 #define RPL_CHANNELMODEIS(nickname, channel, mode) (":irc.local 324 " + nickname + " " + channel + " :" + mode + "\r\n")
-#define ERR_UNKNOWNMODE(nickname, flag) (":irc.local 472 " + nickname + " " + flag + " :is not a  recognised channel mode.\r\n")
+#define ERR_UNKNOWNMODE(nickname, flag) (":irc.local 472 " + nickname + " " + flag + " :is not a recognised channel mode.\r\n")
+// 일단 대충 지음
+#define ERR_INVALIDMODEPARAM(nickname, channel, mode, description) (":irc.local 696 " + nickname + " " + channel + " " + mode + " * :" + description + "\r\n")
+#define ERR_KEYMISSMATCH(nickname, channel) (":irc.local 467 " + nickname + " " + channel + " :Channel key already set\r\n")
+#define RPL_MODEREPLIES(client, channel, result) (":" + client + " MODE " + channel + " " + result + "\r\n")
+
 
 // ----------TOPIC-----------
 #define RPL_NOTOPIC(channel) (":irc.local 331 " + channel + " :No topic is set\r\n")

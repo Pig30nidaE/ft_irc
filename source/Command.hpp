@@ -18,6 +18,7 @@
 class User;
 class ChannelContainer;
 class Channel;
+class Mode;
 
 class Command {
 	public:
@@ -67,6 +68,8 @@ class Command {
 
 		// ----mode------------- //LSH
 		//void mode(std::string channel, std::string flag, std::string parm);
+
+		std::string modeParsing(User &user, std::string modestring, Mode mode);
 		void mode(std::vector<std::string> &msgs, User& user, ChannelContainer& cc);
 		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
 
@@ -75,7 +78,12 @@ class Command {
 		// 공통
 		class ErrNotRegistered : public std::invalid_argument {
 			public:
-				ErrNotRegistered(const std::string& client) : std::invalid_argument(client + " :You have not registered\n") {}
+				ErrNotRegistered(const std::string& command) : std::invalid_argument(ERR_NOTREGISTERED(command)) {}
+		};
+
+		class ErrUnknownCommand : public std::invalid_argument {
+			public:
+				ErrUnknownCommand(const std::string& nickname, const std::string &command) : std::invalid_argument(ERR_UNKNOWNCOMMAND(nickname, command)) {}
 		};
 
 		// ---------EXCEPTION--------
@@ -144,6 +152,11 @@ class Command {
 				ErrUnknownMode(const std::string &nickname, const char &flag) : std::invalid_argument(ERR_UNKNOWNMODE(nickname, flag)) {}
 		};
 
+		class ErrKeyMissMatch : public std::invalid_argument {
+			public:
+				ErrKeyMissMatch(const std::string &nickname, const std::string &channel) : std::invalid_argument(ERR_KEYMISSMATCH(nickname, channel)) {}
+		};
+
 		//PRIVMSG
 		class ErrCannotSendToChan : public std::invalid_argument {
 			public:
@@ -171,6 +184,11 @@ class Command {
 			public:
 				ErrChanOPrivsNeeded(const std::string& channel) : std::invalid_argument(ERR_CHANOPRIVSNEEDED(channel)) {}
 		};
+
+		class ErrInvalidModeParam : public std::invalid_argument {
+			public:
+				ErrInvalidModeParam(const std::string &nickname, const std::string& channel, const std::string &mode, const std::string &description) : std::invalid_argument(ERR_INVALIDMODEPARAM(nickname, channel, mode, description)) {}
+    };
 
 		class ErrNoTopic : public std::invalid_argument {
 			public:

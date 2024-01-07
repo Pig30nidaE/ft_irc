@@ -300,10 +300,6 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 command->topic(*channelContainer, msgs, user);
                 break;
             case MODE:
-                //command->mode(content, content, content);
-                /* test용 */
-                //testCmd.push_back("test");
-                //testCmd.push_back("+");
                 command->mode(msgs, user, *channelContainer);
                 break;
 
@@ -312,7 +308,9 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 break;
 
             default:
-                std::cout << "[ COMMAND ERROR!!!!!!!!!!!!!! ]\n";
+                if (user.getUserIsPass() == 5) { // 회원가입 전 에러 안 던짐
+                    throw Command::ErrUnknownCommand(user.getNickName(), msgs[0]);// msgs[0]을 대문자로 변환해야됨
+                } 
                 break;
         }
     }
