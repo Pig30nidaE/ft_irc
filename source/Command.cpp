@@ -132,7 +132,7 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 			if (result == ERR_CHANNELISFULL_NUM)
 				throw ErrChannelIsFull((*iter));
 			else if (result == ERR_BADCHANNELKEY_NUM)
-				throw ErrBadChannelKey((*iter));
+				throw ErrBadChannelKey(user.getNickName(), (*iter));
 			else if (result == ERR_INVITEONLYCHAN_NUM)
 				throw ErrInviteOnlyChan((*iter));
 			else if ((user.getJoinedChannelList(cc)).size() > cc.getUserJoinChanLimit()) { // 유저 최대 입장 제한 5

@@ -122,7 +122,7 @@ class Command {
 
 		class ErrBadChannelKey : public std::invalid_argument {
 			public:
-				ErrBadChannelKey(const std::string &channelName) : std::invalid_argument(ERR_BADCHANNELKEY(channelName)) {}
+				ErrBadChannelKey(const std::string &nickname, const std::string &channelName) : std::invalid_argument(ERR_BADCHANNELKEY(nickname, channelName)) {}
 		};
 
 		class ErrInviteOnlyChan : public std::invalid_argument {
