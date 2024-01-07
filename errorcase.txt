@@ -1,0 +1,7 @@
+1./MODE #test +++--k+o laskdlasd asldkasldk alaskdlaskda
+result: mode/#test [-+] by lsh
+
+2. RFC-> 맞게 input 받기
+3. user 소멸자 (quit command)
+5. broadcast 필요한 거 다 바꾸기
+4. leak

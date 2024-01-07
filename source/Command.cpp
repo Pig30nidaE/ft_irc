@@ -130,13 +130,13 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 				key = "";
 			result = user.joinChannel((*iter), key, cc);
 			if (result == ERR_CHANNELISFULL_NUM)
-				throw ErrChannelIsFull((*iter));
+				throw ErrChannelIsFull(*iter, nickName);
 			else if (result == ERR_BADCHANNELKEY_NUM)
 				throw ErrBadChannelKey(user.getNickName(), (*iter));
 			else if (result == ERR_INVITEONLYCHAN_NUM)
-				throw ErrInviteOnlyChan((*iter));
+				throw ErrInviteOnlyChan(*iter, nickName);
 			else if ((user.getJoinedChannelList(cc)).size() > cc.getUserJoinChanLimit()) { // 유저 최대 입장 제한 5
-				throw ErrTooManyChannels((*iter)); //최대 가입 가능한 채널 수 넘으면 에러
+				throw ErrTooManyChannels(*iter, nickName); //최대 가입 가능한 채널 수 넘으면 에러
 			}
 			else {
 				//Channel& joinedChan = 
@@ -204,14 +204,14 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 				throw ErrNoSuchChannel(user.getNickName(), *iter);
 			}
 			else if (!(channel = user.getSpecificChannelJoined((*iter), cc))) {
-				throw ErrNotonChannel(*iter);
+				throw ErrNotonChannel(*iter, nickname);
 			}
 			channelname = channel->getChannelName();
 			broadcastMsg(user, channel, PART_REPLISE(user.getClient(), channelname));
 			sendMsg(user, PART_REPLISE(user.getClient(), channelname));
 
 			if (user.exitChannel(*iter, cc) == ERR_NOTONCHANNEL_NUM) //인원이 0되면 채널 지워줌
-				throw ErrNotonChannel(*iter); //내가 가입한 채널 중에 없음
+				throw ErrNotonChannel(*iter, nickname); //내가 가입한 채널 중에 없음
 			else {
 				if (msgsSize > 2) {
 					broadcastMsg(user, channel, PART_REASON_REPLISE(user.getClient(), channelname, response));
@@ -252,7 +252,7 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	if (!joinedChannel)
 		throw ErrNoSuchChannel(user.getNickName(), channelName);
 	if (!(joinedChannel->isOnTheChan(user)))
-		throw ErrNotonChannel(channelName);
+		throw ErrNotonChannel(channelName, user.getNickName());
 	if (!(joinedChannel->isOperator(user)))
 		throw ErrChanOPrivsNeeded(channelName);
 	//std::string userName = msg.substr(spaceIndex + 1, msg.length());
@@ -297,7 +297,7 @@ void Command::topic(ChannelContainer&cc, std::vector<std::string> msgs, User& us
 	std::string chanName = msgs.at(1);
 	Channel* channel = user.getSpecificChannelJoined(chanName, cc);
 	if (!channel) {
-		throw ErrNotonChannel(chanName);
+		throw ErrNotonChannel(chanName, nickName);
 	}
 	Topic& returnTopic = channel->getTopicRef();
 	if (msgs.size() > 2) {
@@ -309,6 +309,8 @@ void Command::topic(ChannelContainer&cc, std::vector<std::string> msgs, User& us
 		}
 		std::string toSet = msgs.at(2);
 		returnTopic.setTopic(toSet);
+		sendMsg(user, RPL_TOPIC(chanName, nickName, toSet));
+		broadcastMsg(user, channel, RPL_TOPIC(chanName, nickName, toSet));
 	}
 	else {
 		std::string chanTopic = returnTopic.getTopic();
@@ -316,7 +318,7 @@ void Command::topic(ChannelContainer&cc, std::vector<std::string> msgs, User& us
 			sendMsg(user, RPL_TOPIC(chanName, nickName, chanTopic));
 		}
 		else
-			sendMsg(user, RPL_NOTOPIC(chanName));
+			sendMsg(user, RPL_NOTOPIC(chanName, nickName));
 		return ;
 	}
 	

@@ -225,7 +225,7 @@ void Server::setServerPass(std::string serverPass) { // test용
 }
 
 int Server::executeCommand(std::vector<std::string> msgs, User &user) {
-	std::string arr[NUMCOMMANDS] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE", "PRIVMSG"};
+	std::string arr[NUMCOMMANDS] = {"PASS", "NICK", "USER", "JOIN", "PART", "PING", "KICK", "INVITE", "TOPIC", "MODE", "QUIT", "PRIVMSG"};
     std::string result;
     Channel     *tmp;
 	int         flag = -1;
@@ -302,7 +302,9 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
             case MODE:
                 command->mode(msgs, user, *channelContainer);
                 break;
-
+            case QUIT:
+                std::cout << "QWEHQWHEQHWE" << std::endl;
+                break;
             case PRIVMSG:
                 command->privmsg(msgs, user, *channelContainer);
                 break;

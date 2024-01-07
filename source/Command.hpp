@@ -112,12 +112,12 @@ class Command {
 		// JOIN ERROR
 		class ErrTooManyChannels : public std::invalid_argument {
 			public:
-				ErrTooManyChannels(const std::string &channelName) : std::invalid_argument(ERR_TOOMANYCHANNELS(channelName)) {}
+				ErrTooManyChannels(const std::string &channelName, const std::string &nickName) : std::invalid_argument(ERR_TOOMANYCHANNELS(channelName, nickName)) {}
 		};
 
 		class ErrChannelIsFull : public std::invalid_argument {
 			public:
-				ErrChannelIsFull(const std::string &channelName) : std::invalid_argument(ERR_CHANNELISFULL(channelName)) {}
+				ErrChannelIsFull(const std::string &channelName, const std::string nickName) : std::invalid_argument(ERR_CHANNELISFULL(channelName, nickName)) {}
 		};
 
 		class ErrBadChannelKey : public std::invalid_argument {
@@ -127,7 +127,7 @@ class Command {
 
 		class ErrInviteOnlyChan : public std::invalid_argument {
 			public:
-				ErrInviteOnlyChan(const std::string &channelName) : std::invalid_argument(ERR_INVITEONLYCHAN(channelName)) {}
+				ErrInviteOnlyChan(const std::string &channelName, const std::string &nickName) : std::invalid_argument(ERR_INVITEONLYCHAN(channelName, nickName)) {}
 		};
 
 		class ErrBadChanMask :public std::invalid_argument {
@@ -138,7 +138,7 @@ class Command {
 		// PART
 		class ErrNotonChannel : public std::invalid_argument {
 			public:
-				ErrNotonChannel(const std::string & channel) : std::invalid_argument(ERR_NOTONCHANNEL(channel)) {}
+				ErrNotonChannel(const std::string & channel, const std::string nickName) : std::invalid_argument(ERR_NOTONCHANNEL(channel, nickName)) {}
 		};
 
 		// MODE

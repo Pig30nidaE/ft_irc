@@ -24,7 +24,7 @@
 #define	PASSMISMATCH 3
 #define PASSSUCCESS 1
 #define DISCONNECT 1
-#define NUMCOMMANDS 11
+#define NUMCOMMANDS 12
 
 enum {
 	PASS,
@@ -37,6 +37,7 @@ enum {
 	INVITE,
 	TOPIC,
 	MODE,
+	QUIT,
 	PRIVMSG,
 };
 
