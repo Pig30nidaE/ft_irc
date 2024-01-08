@@ -78,7 +78,7 @@ void Server::serverStart(void) {
                             if ((n = write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
                             {
                                 std::cerr << "client write error!" << std::endl;
-                                disconnectClient(clients[currEvent->ident]);  
+                                disconnectClient(*(clients[currEvent->ident]));  
                             }
                         }
                         user->initSendBuf();
@@ -130,7 +130,7 @@ void Server::recvMsg(uintptr_t fd) {
     if (n <= 0)
     {
         std::cerr << "client read error!" << std::endl;
-        disconnectClient(clients[fd]);
+        disconnectClient(*(clients[fd]));
     }
     else
     {
@@ -151,7 +151,7 @@ void Server::errorEventHandler(uintptr_t fd) {
     else
     {
         std::cerr << "client socket error" << std::endl;
-        disconnectClient(clients[fd]);
+        disconnectClient(*(clients[fd]));
     }
 }
 
@@ -178,26 +178,44 @@ Server::Server(const Server &other)
     *this = other;
 }
 
-void Server::disconnectClient(User *user)
+void Server::disconnectClient(User &user)
 {
     int fd;
     std::vector<User *> &userList = channelContainer->getUserList();
+    std::vector<Channel *> &joinedChannelList = user.getJoinedChannelList(*channelContainer);
+    fd = user.getUserSock();
 
-    fd = user->getUserSock();
-    std::cout << "client disconnected: " << fd << std::endl;
-    // channelContainer의 userList에서 해당 요소 삭제
-    std::vector<User*>::iterator iter = userList.begin();
-    while (iter != userList.end()) {
-        if (*iter == user) {
-            iter = userList.erase(iter); // erase 함수는 삭제된 요소의 다음 반복자를 반환
-        } else {
-            ++iter;
+    // 가입된 각 채널의 유저리스트에서 유저 삭제
+    for (std::vector<Channel *>::iterator iter = joinedChannelList.begin(); iter != joinedChannelList.end(); iter++){
+        std::vector<User *> &channelUserList = (*iter)->getUserList();
+        for (std::vector<User *>::iterator uIter = channelUserList.begin(); uIter != channelUserList.end();) {
+            if ((*uIter)->getUserSock() == fd) {
+                uIter = channelUserList.erase(uIter);
+            }
+            else {
+                ++uIter;
+            }
         }
     }
-    // -end-
+    // 채널컨테이너의 유저리스트에서 유저 삭제
+    for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end();) {
+        if ((*iter)->getUserSock() == user.getUserSock()) {
+            iter = userList.erase(iter); // erase function returns the next iterator of the deleted element
+        } else {
+            ++iter; // move to the next element
+        }
+    }
+    // server의 clients에서 user 제거 및 delete
+    for (std::map<uintptr_t, User *>::iterator iter = clients.begin(); iter != clients.end();) {
+        if (iter->second->getUserSock() == fd) {
+            delete iter->second;
+            iter = clients.erase(iter); // erase 함수의 반환값을 사용하여 반복자를 갱신
+            break; // Stop iterating since it found and deleted the specific element
+        } else {
+            ++iter; // move to the next element
+        }
+    }
     close(fd);
-    delete clients[fd]; // User delete
-    clients.erase(fd);
 }
 
 
@@ -320,7 +338,8 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
         std::cout << "-- [CATCH]: " << flag << " --\n";
         if (user.getUserIsPass() == 2 || user.getUserIsPass() == 3) { // 수정 요함
             std::cout << "disconnect User: " << flag << "\n";
-            disconnectClient(&user);
+            disconnectClient(user);
+            return DISCONNECT;
         }
         std::cerr << "[Catch]: " <<  e.what();
         sendMsg(user, e.what());
@@ -343,7 +362,7 @@ void Server::parser(std::string msg, User &user) {
     int         crlf = 0;
     std::string temp;
 
-    if (msg == "") {
+if (msg == "") {
         std::cout << "[parser] msg == \"\"\n";
         return ;
     }
@@ -357,7 +376,7 @@ void Server::parser(std::string msg, User &user) {
             temp = user.getBuf();
             temp += msg;
             splitSpace(temp, user);
-            user.setBuf("");
+            user.setBuf(""); // + "PASS 23\nNICK dong\n"이렇게 들어오면?
         }
     }
     else if ((crlf = msg.find("\r\n", crlf)) != std::string::npos) {

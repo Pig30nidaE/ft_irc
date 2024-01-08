@@ -73,7 +73,7 @@ class Server {
 
 		void errorEventHandler(uintptr_t fd);
 		
-		void disconnectClient(User *user);
+		void disconnectClient(User &user);
 
 		void broadcastMsg(User &user, Channel *channel, const std::string &msg) const;
 		void sendMsg(User &user, const std::string &msg) const;
