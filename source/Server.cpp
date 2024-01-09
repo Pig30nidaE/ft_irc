@@ -129,7 +129,7 @@ void Server::recvMsg(uintptr_t fd) {
     n = recv(static_cast<int>(fd), buf, MAX_MSG, 0);
     if (n <= 0)
     {
-        std::cerr << "client read error!" << std::endl;
+        sendMsg(*(clients[fd]), "read Error\r\n");
         disconnectClient(clients[fd]);
     }
     else
@@ -138,9 +138,10 @@ void Server::recvMsg(uintptr_t fd) {
         sBuf.clear();
         sBuf = buf;
         std::cout << "--------------------------\nrecv: " << sBuf << "--------------------------\n";
-        parser(sBuf, *clients[fd]);
-		// std::cout << "recvMsg test: " << test << std::endl;
-		// test.clear();
+        if (isValidString(sBuf))
+            parser(sBuf, *clients[fd]);
+        else
+            sendMsg(*(clients[fd]), "invalid msg\r\n");
     }
 }
 
@@ -343,10 +344,8 @@ void Server::parser(std::string msg, User &user) {
     int         crlf = 0;
     std::string temp;
 
-    if (msg == "") {
-        std::cout << "[parser] msg == \"\"\n";
+    if (msg == "")
         return ;
-    }
     if ((cr = msg.find('\r')) == std::string::npos) {
         if ((lf = msg.find('\n', lf)) == std::string::npos) {
             temp = user.getBuf();
@@ -434,4 +433,25 @@ int stringToInt(const std::string& str) {
     }
 
     return result;
+}
+
+int Server::isValidChar(char ch) {
+       if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') ||
+        ch == '-' || ch == '[' || ch == ']' || ch == '\\' || ch == '`' || ch == '^' ||
+        ch == '{' || ch == '}' || ch == '#' || ch == '$' || ch == ' ' || ch == '\b' ||
+        ch == '\0' || ch == '\r' || ch == '\n' || ch == ',' || ch == '&' || ch == '@' || ch == '!'){
+        return true;
+    } else {
+        return false;
+    } 
+}
+
+int Server::isValidString(std::string str) {
+    size_t length = str.length();
+    for (size_t i = 0; i < length; i++) {
+        if (!isValidChar(str[i])) {
+            return false;
+        }
+    }
+    return true;
 }
