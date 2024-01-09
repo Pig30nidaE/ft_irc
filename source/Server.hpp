@@ -80,6 +80,10 @@ class Server {
 
 		// --------utils-------
 		int stringToInt(const std::string& str);
+		int isValidChar(char ch);
+		int isValidString(std::string str);
+
+
 		void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
 		void exitWithPerror(const std::string& msg);
 		Server &operator=(const Server &other);
