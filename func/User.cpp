@@ -177,7 +177,6 @@ int User::changeMode(ChannelContainer& channel_container, Channel &joinedChannel
 			channelMode.turnOnType(MODE_CHANNEL_KEY);
 			if (arg == "")
 				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "k", "You must specify a parameter for the key mode. Syntax: <key>.");
-			std::cout << "ket set: " << arg << "\n";
 			joinedChannel.setPassword(arg);
 		}
 		if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) { // o
