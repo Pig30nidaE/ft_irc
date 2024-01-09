@@ -476,23 +476,16 @@ void Command::mode(std::vector<std::string> &msgs, User& user, ChannelContainer&
 			{
 				if (response[i] == '-') {
 					flag = 0; // off
-					if (i != 0 && result[i - 1] == '+')
-						result.insert(i-1, 1, '-');
-					else
-						result += response [i];
+					result += response [i];
 				}
 				else if (response[i] == '+') {
 					flag = 1; // on
-					if (i != 0 && result[i - 1] == '-')
-						result.insert(i-1, 1, '+');
-					else
-						result += response [i];
+					result += response [i];
 				}
 				else {
 					if (response[i] == 'k' || (response[i] == 'l' && flag == 1) || response[i] == 'o')
 						argIndex++;
 					if (argIndex <= msgsSize - 1 && (response[i] == 'k' || response[i] == 'l' || response[i] == 'o')) {
-						std::cout << argIndex << ": " << msgs[argIndex] << "\n";
 						if (!user.changeMode(cc, *channel, flag, checkMode(response[i]), msgs[argIndex])) {
 							result += response[i];
 							args += msgs[argIndex] + " ";
@@ -510,10 +503,20 @@ void Command::mode(std::vector<std::string> &msgs, User& user, ChannelContainer&
 				sendMsg(user, e.what());
 			}
 		}
-		if ((result.length() < 2) && (result[0] == '-' || result[0] == '+'))
-		{
-			result = "";
+		length = result.length();
+		flag = 0;
+		for (int i = 0; i < length; i++) {
+			if (result[i] != '+' && result[i] != '-')
+				flag = 1;
+			else if (i != 0 && result[i - 1] == '+') {
+				result.erase(result.begin() + (i - 1), result.begin() + i); 
+			}
+			else if (i != 0 && result[i - 1] == '-') {
+				result.erase(result.begin() + (i - 1), result.begin() + i); 
+			}
 		}
+		if (flag == 0)
+			result = "";
 		if (!result.empty()) {
 			result = result + " " + args;
 			sendMsg(user, RPL_MODEREPLIES(user.getClient(), channel->getChannelName(), result));
