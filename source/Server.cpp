@@ -138,10 +138,10 @@ void Server::recvMsg(uintptr_t fd) {
         sBuf.clear();
         sBuf = buf;
         std::cout << "--------------------------\nrecv: " << sBuf << "--------------------------\n";
-        if (isValidString(sBuf))
+        // if (isValidString(sBuf))
             parser(sBuf, *clients[fd]);
-        else
-            sendMsg(*(clients[fd]), "invalid msg\r\n");
+        // else
+            // sendMsg(*(clients[fd]), "invalid msg\r\n");
     }
 }
 
@@ -435,23 +435,23 @@ int stringToInt(const std::string& str) {
     return result;
 }
 
-int Server::isValidChar(char ch) {
-       if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') ||
-        ch == '-' || ch == '[' || ch == ']' || ch == '\\' || ch == '`' || ch == '^' ||
-        ch == '{' || ch == '}' || ch == '#' || ch == '$' || ch == ' ' || ch == '\b' ||
-        ch == '\0' || ch == '\r' || ch == '\n' || ch == ',' || ch == '&' || ch == '@' || ch == '!'){
-        return true;
-    } else {
-        return false;
-    } 
-}
+// int Server::isValidChar(char ch) {
+//        if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') ||
+//         ch == '-' || ch == '[' || ch == ']' || ch == '\\' || ch == '`' || ch == '^' ||
+//         ch == '{' || ch == '}' || ch == '#' || ch == '$' || ch == ' ' || ch == '\b' ||
+//         ch == '\0' || ch == '\r' || ch == '\n' || ch == ',' || ch == '&' || ch == '@' || ch == '!'){
+//         return true;
+//     } else {
+//         return false;
+//     } 
+// }
 
-int Server::isValidString(std::string str) {
-    size_t length = str.length();
-    for (size_t i = 0; i < length; i++) {
-        if (!isValidChar(str[i])) {
-            return false;
-        }
-    }
-    return true;
-}
+// int Server::isValidString(std::string str) {
+//     size_t length = str.length();
+//     for (size_t i = 0; i < length; i++) {
+//         if (!isValidChar(str[i])) {
+//             return false;
+//         }
+//     }
+//     return true;
+// }
