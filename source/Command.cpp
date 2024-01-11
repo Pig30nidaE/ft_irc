@@ -265,13 +265,18 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		throw ErrNoSuchNick(user.getNickName(), toKick);
 	//std::cout << "username: " << userName << "\n";
 	//std::cout << "channelName: " << channelName << "\n";
-	//std::cout << user.getUserName() << std::endl;
-	user.kickUser(toKick, *user.getSpecificChannelJoined(channelName, cc), cc);
-	//sendMsg(user, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick));
-	if (msgs.size() > 3)
-		broadcastMsg(user, joinedChannel, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, msgs.at(3)));
-	else
+	std::string reason = msgs.at(3).substr(1, msgs.at(3).length() - 1);
+	if (reason.length() > 1) {
+		broadcastMsg(user, joinedChannel, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, reason));
+		sendMsg(user, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, reason));
+	}
+	else {
 		broadcastMsg(user, joinedChannel, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, ""));
+		sendMsg(user, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, ""));
+	}
+	//broadcastMsg(user, joinedChannel, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, ": test"));
+	//std::cout << KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, ": test") << std::endl;
+	user.kickUser(toKick, *user.getSpecificChannelJoined(channelName, cc), cc);
 }
 
 void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
