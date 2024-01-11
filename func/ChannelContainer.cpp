@@ -2,7 +2,16 @@
 
 ChannelContainer::ChannelContainer(void):channelIndex(-1),userJoinChanLimit(5) {}
 
-ChannelContainer::~ChannelContainer() {}
+ChannelContainer::~ChannelContainer() {
+	//typedef std::vector<Channel*>::iterator chan_iter;
+	//for (chan_iter chiter = channelList.begin();chiter != channelList.end();chiter++) {
+	//	delete *chiter;
+	//}
+	//typedef std::vector<User*>::iterator user_iter;
+	//for (user_iter usriter = userList.begin();usriter != userList.end();usriter++) {
+	//	delete *usriter;
+	//}
+}
 
 void ChannelContainer::createChannel(Channel& toCreateChannel) {
 	setCurrentChIdx(getCurrentChIdx() + 1);
@@ -19,6 +28,7 @@ void ChannelContainer::deleteChannel(Channel& toDeleteChannel) {
 	}
 	int to_del_idx = (*to_del_cha)->getIndex() - getChannelList().at(0)->getIndex();
 	getChannelList().erase(getChannelList().begin() + to_del_idx);
+	delete &toDeleteChannel;
 }
 
 bool ChannelContainer::checkNickName(std::string toFind) {

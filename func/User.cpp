@@ -7,7 +7,13 @@ buf(""),userSock(-1),isPass(0),userName(""),nickName(""),hostName(""),client("")
 	std::cout << "[USER] constructer user: " << userSock << "\n";
 }
 
-User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
+User::~User() {
+	std::cout << "[USER] destroyed user: " << userSock << "\n";
+	typedef std::vector<Channel*>::iterator ChIt;
+	//for (ChIt ch_iter = joinedChannelList.begin();ch_iter != joinedChannelList.end();ch_iter++) {
+	//	delete *ch_iter;
+	//}
+}
 
 
 void User::userInfoErase(User& user) {
@@ -67,6 +73,7 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 	//setIsOperator(true);
 	channel_contaier.createChannel(*toJoin);
 	getJoinedChannelList(channel_contaier).push_back(toJoin);
+	//delete toJoin;
 	setUserIndex(0);
 	return NEWCHANNEL;
 }
@@ -88,8 +95,10 @@ int User::exitChannel(std::string toExitChannel, ChannelContainer& channel_conta
 			exitCh->getInvitedUserList().erase(sock_iter);
         JoinedChannels.erase(iter);
     }
-	if (exitCh->getUserList().empty())
+	if (exitCh->getUserList().empty()) {
 		channel_container.deleteChannel(*exitCh);
+		//delete exitCh;
+	}
 	else {
 		std::vector<int>& OpList = exitCh->getChannelOpList();
 		if (OpList.empty()) {

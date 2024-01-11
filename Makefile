@@ -1,6 +1,6 @@
 CC			= c++
 
-CFLAGS		= -g #-Wall -Wextra -Werror
+CFLAGS		= -g#-Wall -Wextra -Werror
 
 SOURCE	=	./source/
 
