@@ -3,7 +3,9 @@
 
 
 User::User(void):
-buf(""),userSock(-1),isPass(0),userName(""),nickName(""),hostName(""),client(""),userIndex(-1) {}
+buf(""),userSock(-1),isPass(0),userName(""),nickName(""),hostName(""),client(""),userIndex(-1) {
+	std::cout << "[USER] constructer user: " << userSock << "\n";
+}
 
 User::~User() {std::cout << "[USER] destroyed user: " << userSock << "\n";}
 

@@ -207,8 +207,8 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 				throw ErrNotonChannel(*iter, nickname);
 			}
 			channelname = channel->getChannelName();
-			broadcastMsg(user, channel, PART_REPLISE(user.getClient(), channelname));
-			sendMsg(user, PART_REPLISE(user.getClient(), channelname));
+			// broadcastMsg(user, channel, PART_REPLISE(user.getClient(), channelname));
+			// sendMsg(user, PART_REPLISE(user.getClient(), channelname));
 
 			if (user.exitChannel(*iter, cc) == ERR_NOTONCHANNEL_NUM) //인원이 0되면 채널 지워줌
 				throw ErrNotonChannel(*iter, nickname); //내가 가입한 채널 중에 없음

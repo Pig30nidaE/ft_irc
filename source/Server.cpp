@@ -65,10 +65,10 @@ void Server::serverStart(void) {
             else if (currEvent->filter == EVFILT_WRITE)
             {
                 /* send data to client */
-                std::map<uintptr_t, User*>::iterator it = clients.find(currEvent->ident);
+                std::map<uintptr_t, User>::iterator it = clients.find(currEvent->ident);
                 if (it != clients.end())
                 {
-                    User *user = it->second;
+                    User *user = &(it->second);
                     std::vector<std::string> sendBuf = user->getSendBuf();
                     if (sendBuf.size() > 0)
                     {
@@ -78,7 +78,7 @@ void Server::serverStart(void) {
                             if ((n = write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
                             {
                                 std::cerr << "client write error!" << std::endl;
-                                disconnectClient(clients[currEvent->ident]);  
+                                disconnectClient(currEvent->ident);  
                             }
                         }
                         user->initSendBuf();
@@ -102,7 +102,6 @@ void Server::readEventHandler(uintptr_t fd) {
 
 void Server::newUser(int serverSock) {
     int clientSocket;
-    User *user;
     struct sockaddr_in clientAddr; // test
     socklen_t clientLen; // test
 
@@ -113,10 +112,9 @@ void Server::newUser(int serverSock) {
     changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
     changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
     
-    user = new User();
-    user->setUserSock(clientSocket);
-    clients[clientSocket] = user;
-    getChannelContainer().getUserList().push_back(user); // channel_container의 user_list에도 추가해야해서 넣음. //LSH
+    clients[clientSocket];
+    clients[clientSocket].setUserSock(clientSocket);
+    getChannelContainer().getUserList().push_back(&(clients[clientSocket])); // channel_container의 user_list에도 추가해야해서 넣음. //LSH
 }
 
 void Server::recvMsg(uintptr_t fd) {
@@ -129,8 +127,8 @@ void Server::recvMsg(uintptr_t fd) {
     n = recv(static_cast<int>(fd), buf, MAX_MSG, 0);
     if (n <= 0)
     {
-        sendMsg(*(clients[fd]), "read Error\r\n");
-        disconnectClient(clients[fd]);
+        sendMsg(clients[fd], "read Error\r\n");
+        disconnectClient(fd);
     }
     else
     {
@@ -139,7 +137,7 @@ void Server::recvMsg(uintptr_t fd) {
         sBuf = buf;
         std::cout << "--------------------------\nrecv: " << sBuf << "--------------------------\n";
         // if (isValidString(sBuf))
-            parser(sBuf, *clients[fd]);
+            parser(sBuf, clients[fd]);
         // else
             // sendMsg(*(clients[fd]), "invalid msg\r\n");
     }
@@ -152,12 +150,12 @@ void Server::errorEventHandler(uintptr_t fd) {
     else
     {
         std::cerr << "client socket error" << std::endl;
-        disconnectClient(clients[fd]);
+        disconnectClient(fd);
     }
 }
 
 Server::~Server() {
-    for (std::map<uintptr_t, User*>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
+    for (std::map<uintptr_t, User>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
         if (close(iter->first) == -1)
             std::cout << "client socket close ERROR\n";
     }
@@ -179,27 +177,38 @@ Server::Server(const Server &other)
     *this = other;
 }
 
-void Server::disconnectClient(User *user)
+void Server::disconnectClient(int sock)
 {
     int fd;
+    User &user = clients[sock];
     std::vector<User *> &userList = channelContainer->getUserList();
+    std::vector<Channel *> &joinedChannelList = user.getJoinedChannelList(*channelContainer);
+    fd = sock;
 
-    fd = user->getUserSock();
-    std::cout << "client disconnected: " << fd << std::endl;
-    // channelContainer의 userList에서 해당 요소 삭제
-    std::vector<User*>::iterator iter = userList.begin();
-    while (iter != userList.end()) {
-        if (*iter == user) {
-            iter = userList.erase(iter); // erase 함수는 삭제된 요소의 다음 반복자를 반환
+    // 가입된 각 채널의 유저리스트에서 유저 삭제
+    for (std::vector<Channel *>::iterator iter = joinedChannelList.begin(); iter != joinedChannelList.end(); iter++){
+        (*iter)->userDel(user);
+    }
+    // 채널컨테이너의 유저리스트에서 유저 삭제
+    for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end();) {
+        if ((*iter)->getUserSock() == fd) {
+            iter = userList.erase(iter); // erase function returns the next iterator of the deleted element
         } else {
-            ++iter;
+            ++iter; // move to the next element
         }
     }
-    // -end-
+    // server의 clients에서 user 제거 및 delete
+    for (std::map<uintptr_t, User>::iterator iter = clients.begin(); iter != clients.end();) {
+        if ((iter->second).getUserSock() == fd) {
+            iter = clients.erase(iter); // erase 함수의 반환값을 사용하여 반복자를 갱신
+            break; // Stop iterating since it found and deleted the specific element
+        } else {
+            ++iter; // move to the next element
+        }
+    }
     close(fd);
-    delete clients[fd]; // User delete
-    clients.erase(fd);
 }
+
 
 
 void Server::changeEvents(uintptr_t ident, int16_t filter,
@@ -321,7 +330,8 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
         std::cout << "-- [CATCH]: " << flag << " --\n";
         if (user.getUserIsPass() == 2 || user.getUserIsPass() == 3) { // 수정 요함
             std::cout << "disconnect User: " << flag << "\n";
-            disconnectClient(&user);
+            disconnectClient(user.getUserSock());
+            return DISCONNECT;
         }
         std::cerr << "[Catch]: " <<  e.what();
         sendMsg(user, e.what());
