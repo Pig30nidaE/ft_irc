@@ -152,8 +152,12 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 					rplEndofnames += ((*iter)->getNickName() + " ");
 				}
 				rplEndofnames += "\r\n";
-				sendMsg(user, JOIN_REPLISE(user.getClient(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
-				broadcastMsg(user, channel, ":" + nickName + " JOIN :" + (*iter) + "\r\n");
+				/* 원본
+				//sendMsg(user, JOIN_REPLISE(user.getClient(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
+				//broadcastMsg(user, channel, ":" + nickName + " JOIN :" + (*iter) + "\r\n");
+				*/
+				broadcastMsg(user, channel, JOIN_REPLISE(user.getClient(), (*iter)));
+				sendMsg(user, rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
 			}
 		}
 		catch(const std::exception& e)
@@ -261,9 +265,18 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		throw ErrNoSuchNick(user.getNickName(), toKick);
 	//std::cout << "username: " << userName << "\n";
 	//std::cout << "channelName: " << channelName << "\n";
-	//std::cout << user.getUserName() << std::endl;
+	std::string reason = msgs.at(3).substr(1, msgs.at(3).length() - 1);
+	if (reason.length() > 1) {
+		broadcastMsg(user, joinedChannel, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, reason));
+		sendMsg(user, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, reason));
+	}
+	else {
+		broadcastMsg(user, joinedChannel, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, ""));
+		sendMsg(user, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, ""));
+	}
+	//broadcastMsg(user, joinedChannel, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, ": test"));
+	//std::cout << KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, ": test") << std::endl;
 	user.kickUser(toKick, *user.getSpecificChannelJoined(channelName, cc), cc);
-	sendMsg(user, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick));
 }
 
 void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
