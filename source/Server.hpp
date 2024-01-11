@@ -73,7 +73,7 @@ class Server {
 
 		void errorEventHandler(uintptr_t fd);
 		
-		void disconnectClient(User *user);
+		void disconnectClient(int sock);
 
 		void broadcastMsg(User &user, Channel *channel, const std::string &msg) const;
 		void sendMsg(User &user, const std::string &msg) const;
@@ -94,7 +94,7 @@ class Server {
 		int kq;
 		std::vector<struct kevent> changeList;
 		struct kevent eventList[8];
-		std::map<uintptr_t, User*> clients; // User 목록
+		std::map<uintptr_t, User> clients; // User 목록
 		ChannelContainer *channelContainer;
 		Command *command;
 		std::string serverPass;
