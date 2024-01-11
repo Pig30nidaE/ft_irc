@@ -48,6 +48,8 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 		std::cout << "ERROR: NICK USED\n";
 		throw ErrNickNameInUser(msgs[1]);
 	}
+	else if (msgs[1][0] == '#')// # 검사하기
+		throw ErrErroneusNickName(msgs[1]);
 	if (nickname != "") // 회원가입 할 때는 안보냄, !!!!replise 생각하기!!!!
 		sendMsg(user, nickname + " NICK :" + msgs[1] + "\r\n");
 	user.setNickName(msgs[1]);

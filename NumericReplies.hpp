@@ -91,16 +91,16 @@
 #define ERR_UNKNOWNCOMMAND_NUM 421
 #define ERR_NOMOTD 422
 #define ERR_NONICKNAMEGIVEN 431
-#define ERR_ERRONEUSNICKNAME 432
-#define ERR_NICKNAMEINUSE 433
+#define ERR_ERRONEUSNICKNAME_NUM 432
+#define ERR_NICKNAMEINUSE_NUM 433
 #define ERR_NICKCOLLISION 436
 #define ERR_USERNOTINCHANNEL 441
 #define ERR_NOTONCHANNEL_NUM 442
 #define ERR_USERONCHANNEL 443
 #define ERR_NOTREGISTERED_NUM 451
 #define ERR_NEEDMOREPARAMS_NUM 461
-#define ERR_ALREADYREGISTERED 462
-#define ERR_PASSWDMISMATCH 464
+#define ERR_ALREADYREGISTERED_NUM 462
+#define ERR_PASSWDMISMATCH_NUM 464
 #define ERR_YOUREBANNEDCREEP 465
 #define ERR_CHANNELISFULL_NUM 471
 #define ERR_UNKNOWNMODE_NUM 472
@@ -143,10 +143,16 @@
 #define ERR_CHANOPRIVSNEEDED(channel) (":irc.local 482 " + channel + " :You're not channel operator\r\n")
 #define ERR_UNKNOWNCOMMAND(nickname, command) (":irc.local 421 " + nickname + " " + command + " :Unknown command\r\n")
 #define ERR_NOTREGISTERED(command) (":irc.local 451 * " + command + " :You have not registered.\r\n")
+#define ERR_ALREADYREGISTERED(nickname) (":irc.local 462 " + nickname + " :You may not reregister\r\n")
+
+
 
 // ------WELCOME-------
 #define RPL_WELCOME(nickname, client) (":irc.local 001 " + nickname + " :Welcome to the TEST IRC Network " + client + "\r\n")
 
+// ---------NICK---------
+#define ERR_ERRONEUSNICKNAME(nickname) (":irc.local 432 * " + nickname + " :Erroneous Nickname\r\n")
+#define ERR_NICKNAMEINUSE(nickname) (":irc.local 433 * " + nickname + " :Nickname is already in use.\r\n")
 
 // -----------JOIN------------
 //#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n")

@@ -91,20 +91,25 @@ class Command {
 		class ErrPasswdMisMatch : public std::exception {
 			public:
 				const char* what(void) const throw() {
-					return " PASS :Password incorrect\n";
+					return "irc.local 464 * :Password incorrect\r\n";
 				};
 		};
 
 		// -----PASS and USER-------
 		class ErrAlreadyRegistered : public std::invalid_argument { 
 			public:
-				ErrAlreadyRegistered(const std::string &command) : std::invalid_argument(command + ":You may not reregister\n") {}
+				ErrAlreadyRegistered(const std::string &nickname) : std::invalid_argument(ERR_ALREADYREGISTERED(nickname)) {}
 		};
 
 		// NICK ERROR
 		class ErrNickNameInUser : public std::invalid_argument {
 			public:
-				ErrNickNameInUser(const std::string& nickname) : std::invalid_argument(nickname + " :Nickname is already is user\n") {}
+				ErrNickNameInUser(const std::string& nickname) : std::invalid_argument(ERR_NICKNAMEINUSE(nickname)) {}
+		};
+
+		class ErrErroneusNickName : public std::invalid_argument {
+			public:
+				ErrErroneusNickName(const std::string& nickname) : std::invalid_argument(ERR_ERRONEUSNICKNAME(nickname)) {}
 		};
 
 		// USER ERROR
