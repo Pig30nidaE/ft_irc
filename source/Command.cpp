@@ -250,6 +250,7 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	//std::string channelName = msg.substr(0, spaceIndex);
 	if (msgs.size() < 3)
 		throw ErrNeedMoreParams(msgs.at(0), msgs.at(1));
+	std::string reason = "";
 	std::string channelName = msgs.at(1);
 	Channel* joinedChannel = user.getSpecificChannelJoined(channelName, cc);
 	
@@ -265,8 +266,8 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		throw ErrNoSuchNick(user.getNickName(), toKick);
 	//std::cout << "username: " << userName << "\n";
 	//std::cout << "channelName: " << channelName << "\n";
-	std::string reason = msgs.at(3).substr(1, msgs.at(3).length() - 1);
-	if (reason.length() > 1) {
+	if (msgs.size() > 3) {
+		reason = msgs.at(3).substr(1, msgs.at(3).length() - 1);
 		broadcastMsg(user, joinedChannel, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, reason));
 		sendMsg(user, KICK_REPLY(user.getNickName(), user.getUserName(), channelName, toKick, reason));
 	}
