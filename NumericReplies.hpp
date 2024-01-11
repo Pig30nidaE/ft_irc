@@ -177,7 +177,7 @@
 #define ERR_CANNOTSENDTOCHAN(nickname, channel) (":irc.local 404 " + nickname + " " + channel + " :Cannot send to channel\r\n")
 
 // ---------PART------------
-#define PART_REPLISE(client, channel) (":" + client + " PART :" + channel + "\r\n")
+#define PART_REPLISE(client, channel) (":" + client + " PART " + channel + "\r\n")
 #define PART_REASON_REPLISE(client, channel, reason) (":" + client + " PART " + channel + " :" + reason + "\r\n")
 #define ERR_NOTONCHANNEL(channel, nickname) (":irc.local 442 " + nickname + " " + channel + " :You're not on that channel\r\n")
 

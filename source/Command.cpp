@@ -154,12 +154,12 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 					rplEndofnames += ((*iter)->getNickName() + " ");
 				}
 				rplEndofnames += "\r\n";
+				sendMsg(user, JOIN_REPLISE(user.getClient(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
+				broadcastMsg(user, channel, ":" + nickName + " JOIN :" + (*iter) + "\r\n");
 				/* 원본
-				//sendMsg(user, JOIN_REPLISE(user.getClient(), (*iter)) + rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
-				//broadcastMsg(user, channel, ":" + nickName + " JOIN :" + (*iter) + "\r\n");
 				*/
-				broadcastMsg(user, channel, JOIN_REPLISE(user.getClient(), (*iter)));
-				sendMsg(user, rplEndofnames + RPL_ENDOFNAMES(nickName, (*iter)));
+				//broadcastMsg(user, channel, JOIN_REPLISE(user.getClient(), (*iter)));
+				//sendMsg(user, rplEndofnames + JOIN_REPLISE(user.getClient(), (*iter)) + RPL_ENDOFNAMES(nickName, (*iter)));
 			}
 		}
 		catch(const std::exception& e)
@@ -213,21 +213,21 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 				throw ErrNotonChannel(*iter, nickname);
 			}
 			channelname = channel->getChannelName();
-			// broadcastMsg(user, channel, PART_REPLISE(user.getClient(), channelname));
-			// sendMsg(user, PART_REPLISE(user.getClient(), channelname));
-
-			if (user.exitChannel(*iter, cc) == ERR_NOTONCHANNEL_NUM) //인원이 0되면 채널 지워줌
-				throw ErrNotonChannel(*iter, nickname); //내가 가입한 채널 중에 없음
-			else {
-				if (msgsSize > 2) {
-					broadcastMsg(user, channel, PART_REASON_REPLISE(user.getClient(), channelname, response));
-					sendMsg(user, PART_REASON_REPLISE(user.getClient(), channelname, response));
-				}
-				else {
-					broadcastMsg(user, channel, PART_REPLISE(user.getClient(), channelname));
-					sendMsg(user, PART_REPLISE(user.getClient(), channelname));
-				}
-			}
+			broadcastMsg(user, channel, PART_REPLISE(user.getClient(), channelname));
+			sendMsg(user, PART_REPLISE(user.getClient(), channelname));
+			user.exitChannel(*iter, cc);
+			//if (user.exitChannel(*iter, cc) == ERR_NOTONCHANNEL_NUM) //인원이 0되면 채널 지워줌
+			//	throw ErrNotonChannel(*iter, nickname); //내가 가입한 채널 중에 없음
+			//else {
+			//	if (msgsSize > 2) {
+			//		broadcastMsg(user, channel, PART_REASON_REPLISE(user.getClient(), channelname, response));
+			//		sendMsg(user, PART_REASON_REPLISE(user.getClient(), channelname, response));
+			//	}
+			//	else {
+			//		broadcastMsg(user, channel, PART_REPLISE(user.getClient(), channelname));
+			//		sendMsg(user, PART_REPLISE(user.getClient(), channelname));
+			//	}
+			//}
 		}
 		catch(const std::exception& e)
 		{
