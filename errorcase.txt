@@ -5,3 +5,7 @@
 4. leak
 	1. PART하고 JOIN 하면 leak 일어남
 	2. ctl + c 로 disconnect하는건 괜찮은데 PASS 틀려서 disconnect하면 leak 일어남
+
+5. KICK 
+	나 포함 모두에게
+	":dong!1@localhost KICK #test1 hi :dong"
