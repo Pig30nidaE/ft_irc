@@ -1,8 +1,7 @@
-#include "Channel.hpp"
-
+#include "../include/Channel.hpp"
 
 Channel::Channel(std::string name):
-channelName(name),capacity(0), index(0), password("") {
+index(0), channelName(name), password(""), capacity(0) {
 	mode = new Mode(ALL_MODES_OFF);
 	topic = new Topic("");
 }
@@ -79,7 +78,6 @@ User* Channel::getSpecficUser(std::string nickname) {
 	return NULL;
 }
 
-
 std::vector<int>& Channel::getInvitedUserList(void) {
 	return invitedUserList;
 } 
@@ -91,7 +89,6 @@ std::string Channel::getPassword(void) const {
 void Channel::setPassword(std::string pwd) {
 	password = pwd;
 }
-
 
 Topic& Channel::getTopicRef(void) {
 	return *topic;

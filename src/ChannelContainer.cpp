@@ -1,17 +1,8 @@
-#include "ChannelContainer.hpp"
+#include "../include/ChannelContainer.hpp"
 
 ChannelContainer::ChannelContainer(void):channelIndex(-1),userJoinChanLimit(5) {}
 
-ChannelContainer::~ChannelContainer() {
-	//typedef std::vector<Channel*>::iterator chan_iter;
-	//for (chan_iter chiter = channelList.begin();chiter != channelList.end();chiter++) {
-	//	delete *chiter;
-	//}
-	//typedef std::vector<User*>::iterator user_iter;
-	//for (user_iter usriter = userList.begin();usriter != userList.end();usriter++) {
-	//	delete *usriter;
-	//}
-}
+ChannelContainer::~ChannelContainer() {}
 
 void ChannelContainer::createChannel(Channel& toCreateChannel) {
 	setCurrentChIdx(getCurrentChIdx() + 1);
@@ -66,7 +57,6 @@ void ChannelContainer::setUserJoinChanLimit(const int limit) {
 	userJoinChanLimit = limit;
 }
 
-// 동학
 int ChannelContainer::checkClientInList(const std::string &nickname) {
 	for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end(); iter++) {
 		if ((*iter)->getNickName() == nickname) {

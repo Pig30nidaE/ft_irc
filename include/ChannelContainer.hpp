@@ -2,10 +2,12 @@
 #define CHANNELCONTAINER_HPP
 
 #include <vector>
+
 #include "Channel.hpp"
 
 class Channel;
 class User;
+
 class ChannelContainer {
 	private:
 		std::vector<Channel*> 	channelList;
@@ -16,10 +18,9 @@ class ChannelContainer {
 		ChannelContainer(void);
 		~ChannelContainer();
 
-		void	createChannel(Channel& toCreateChannel);
-		void	deleteChannel(Channel& toDeleteChannel);
-		//bool	checkUserName(std::string toFind);
-		bool	checkNickName(std::string toFind);
+		void					createChannel(Channel& toCreateChannel);
+		void					deleteChannel(Channel& toDeleteChannel);
+		bool					checkNickName(std::string toFind);
 
 		std::vector<Channel*> 	&getChannelList(void);
 		std::vector<User*>		&getUserList(void);
@@ -27,7 +28,6 @@ class ChannelContainer {
 		void					setCurrentChIdx(int idx);
 		int						getUserJoinChanLimit(void) const;
 		void					setUserJoinChanLimit(const int limit);
-		// donghak
 		int						checkClientInList(const std::string &nickname);
 		User					*getUser(const std::string &nickname);
 };

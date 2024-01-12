@@ -6,9 +6,10 @@
 #include <iostream>
 #include <iterator>
 #include <cstdarg>
+
 #include "Channel.hpp"
 #include "ChannelContainer.hpp"
-#include "../NumericReplies.hpp"
+#include "NumericReplies.hpp"
 
 class Channel;
 class ChannelContainer;
@@ -25,27 +26,21 @@ class User {
 		std::string							realName;
 		std::string							hostName;
 		std::string							client;
-		
-		// std::time_t 			connectionTime;
-		//bool					isChannelJoined;
 		std::vector<Channel*>				joinedChannelList;
 	public:
 		User(void);
 		~User();
 
-		//void	userRegister(ChannelContainer &channel_container, std::string enteredUserName, std::string enteredNickName);
-		//void	nickRegister(Channel& channel, ChannelContainer& channel_contianer);
 		void	userInfoErase(User& user); // do I need?
+		int		checkChannelInList(const std::string &channelName, ChannelContainer& cc);
+
 		void	changeUserName(std::string toChange);
-		//void	changeNickName(std::string toChange);
 		int		joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_container);
 		int		exitChannel(std::string toExitChannel, ChannelContainer& channel_container);
 		void	kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container);
-		void	inviteUser(User& toInviteUser, Channel& toChannel, ChannelContainer& channel_container);
-		int		changeMode(ChannelContainer& channel_container, Channel &channel, bool onoff_flag, int type, std::string arg);
+		void	inviteUser(User& toInviteUser, Channel& toChannel);
+		int		changeMode(Channel &channel, bool onoff_flag, int type, std::string arg);
 		void	topicCommand(ChannelContainer& channel_container, std::string channel, ...);
-		// -----donghak----=
-		int		checkChannelInList(const std::string &channelName, ChannelContainer& cc);
 
 		std::string							getBuf(void) const;
 		void								setBuf(const std::string &buf);
@@ -54,7 +49,6 @@ class User {
 		void								initSendBuf(void);
 		std::string 						getUserName(void) const;
 		void								setUserName(std::string const username);
-		//std::string						 	getNickName(std::string chName);
 		std::string							getNickName(void) const;
 		void								setNickName(std::string nickname);
 		std::string							getHostName(void) const;
@@ -63,12 +57,8 @@ class User {
 		void								setRealName(std::string realname);
 		void								setClient(const std::string &nick, const std::string &user, const std::string &host);
 		std::string							getClient(void) const;
-		//bool								getIsChannelJoined(void) const;
-		//void								setIsChannelJoined(bool flag);
-		//int								getJoinedChannelIndex(void) const;
-		//void								setJoinedChannelIndex(int const joined_channel_index);
-		std::vector<Channel*>				&getJoinedChannelList(ChannelContainer& channel_container);
-		Channel								*getSpecificChannelJoined(std::string toGet, ChannelContainer& channel_container);
+		std::vector<Channel*>				&getJoinedChannelList(void);
+		Channel								*getSpecificChannelJoined(std::string toGet);
 		int									getUserIndex(void) const;
 		void								setUserIndex(int const user_index);
 		void 								setUserSock(int sock);
@@ -76,12 +66,6 @@ class User {
 		void 								setUserIsPass(int flag);
 		int 								getUserIsPass(void) const;
 		int									stringToInt(std::string str);
-		class NoJoinedChannelException : public std::exception {
-			public:
-				const char* what(void) const throw() {
-					return "no joined channel.";
-				};
-		};
 };
 
 #endif
