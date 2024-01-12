@@ -154,6 +154,7 @@
 // ---------NICK---------
 #define ERR_ERRONEUSNICKNAME(nickname) (":irc.local 432 * " + nickname + " :Erroneous Nickname\r\n")
 #define ERR_NICKNAMEINUSE(nickname) (":irc.local 433 * " + nickname + " :Nickname is already in use.\r\n")
+#define NICK_REPLISE(client, nickname) (":" + client + " NICK :" + nickname + "\r\n")
 
 // -----------JOIN------------
 //#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n")
