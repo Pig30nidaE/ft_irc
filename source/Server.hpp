@@ -15,6 +15,7 @@
 #include <vector>
 #include <unistd.h>
 #include <map>
+#include <set>
 #include "../NumericReplies.hpp"
 
 #define MAXVISITE 10000

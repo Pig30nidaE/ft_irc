@@ -50,8 +50,30 @@ int Command::nick(std::vector<std::string> msgs, ChannelContainer cc, User &user
 	}
 	else if (msgs[1][0] == '#')// # 검사하기
 		throw ErrErroneusNickName(msgs[1]);
-	if (nickname != "") // 회원가입 할 때는 안보냄, !!!!replise 생각하기!!!!
-		sendMsg(user, nickname + " NICK :" + msgs[1] + "\r\n");
+	if (nickname != "") { // 회원가입 할 때는 안보냄, !!!!replise 생각하기!!!!
+		std::vector<Channel*> joinedChannelList;
+		std::vector<User*> userList;
+		std::set<int> sentUsers;
+		int sentsock;
+		int sock;
+		sock = user.getUserSock();
+		joinedChannelList = user.getJoinedChannelList(cc);
+		for (std::vector<Channel*>::iterator iter = joinedChannelList.begin(); iter != joinedChannelList.end(); iter++) {
+			userList = (*iter)->getUserList();
+			for (std::vector<User*>::iterator uIter = userList.begin(); uIter != userList.end(); uIter++) {
+				sentsock = (**uIter).getUserSock(); // test
+				if (sentsock != sock) {
+					if (sentUsers.find(sentsock) == sentUsers.end()) {
+						std::cout << "[NICK] [BROAD] send to " << sentsock << "\n";// test
+						sentUsers.insert(sentsock);
+						sendMsg(**uIter, NICK_REPLISE(user.getClient(), msgs[1]));
+					}
+				}
+			}
+		}
+		sendMsg(user, NICK_REPLISE(user.getClient(), msgs[1]));
+		user.setClient(msgs[1], user.getUserName(), user.getHostName());
+	}
 	user.setNickName(msgs[1]);
 	std::cout << "NICK SUCCESS!!\n";
 	return 1;
@@ -535,6 +557,7 @@ void Command::mode(std::vector<std::string> &msgs, User& user, ChannelContainer&
 			result = "";
 		if (!result.empty()) {
 			result = result + " " + args;
+			broadcastMsg(user, channel, result);
 			sendMsg(user, RPL_MODEREPLIES(user.getClient(), channel->getChannelName(), result));
 		}
 	}
