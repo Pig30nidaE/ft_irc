@@ -58,6 +58,9 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 						return ERR_INVITEONLYCHAN_NUM; // InviteOnlyChan
 					}
 				}
+				if ((*channel_iter)->isOnTheChan(*this)) {
+					return ERR_ALREADYONCHAN;
+				}
 				setUserIndex(channel_contaier.getChannelList().size());
 				(*channel_iter)->userAdd(*this);
 				getJoinedChannelList(channel_contaier).push_back(*channel_iter);
