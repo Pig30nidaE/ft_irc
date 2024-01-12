@@ -81,7 +81,7 @@ void Server::serverStart(void) {
                                 disconnectClient(currEvent->ident);  
                             }
                         }
-                        user->initSendBuf();
+                        user->sendBufClear();
                     }
                 }
             }

@@ -572,7 +572,7 @@ std::vector<std::string> User::getSendBuf(void) const {
 	return sendBuf;
 }
 
-void User::initSendBuf(void) {
+void User::sendBufClear(void) {
 	sendBuf.clear();
 }
 
