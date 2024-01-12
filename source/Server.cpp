@@ -260,12 +260,14 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
             command->checkLastPassState(user);
         }
         // 레지스터 전 다른 명령어 사용에 대한 예외처리
-        if (userPass != 5 && !(flag >= -1 && flag <= 2)) {
-            throw Command::ErrNotRegistered(arr[flag]);
-        }
-        // PASS 확인 이전에 다른 명령어에 예외처리
-        else if (userPass == 0 && (flag != PASS && flag != -1)) {
-            throw Command::ErrNotRegistered(arr[flag]);
+        if (flag != QUIT) { // quit는 그냥 패스
+            if (userPass != 5 && !((flag >= -1 && flag <= 2))) {
+                throw Command::ErrNotRegistered(arr[flag]);
+            }
+            // PASS 확인 이전에 다른 명령어에 예외처리
+            else if (userPass == 0 && (flag != PASS && flag != -1)) {
+                throw Command::ErrNotRegistered(arr[flag]);
+            }
         }
         switch (flag)
         {
@@ -287,25 +289,19 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                     // tmp = user.getSpecificChannelJoined(msgs[1], *channelContainer);
                     // broadcastMsg(user, tmp, ":" + user.getNickName() + "!root@127.0.0.1 JOIN :#test\n");
                 break;
-			
             case PART:
                 command->part(msgs, *channelContainer, user);
                 break;
-			
             case PING:
                 command->ping(msgs, user);
                 break;
-
             case KICK:
                 command->kick(msgs, *channelContainer, user);
-                
                 break;
-       
             case INVITE: //LSH
                 command->invite(msgs[1].c_str(), msgs[2].c_str(), *channelContainer, user);
                 // 추후 수정
                 break;
-
             case TOPIC:
                 command->topic(*channelContainer, msgs, user);
                 break;
@@ -313,7 +309,9 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 command->mode(msgs, user, *channelContainer);
                 break;
             case QUIT:
-                std::cout << "QWEHQWHEQHWE" << std::endl;
+                command->quit(msgs, user, *channelContainer);
+                disconnectClient(user.getUserSock());
+                return DISCONNECT;
                 break;
             case PRIVMSG:
                 command->privmsg(msgs, user, *channelContainer);

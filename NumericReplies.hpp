@@ -193,4 +193,9 @@
 // ----------TOPIC-----------
 #define RPL_NOTOPIC(channel, nickname) (":irc.local 331 " + nickname + " " + channel + " :No topic is set\r\n")
 
+
+//---------QUIT-----------
+#define QUIT_REPLISE_BROAD(client, reason) (":" + client + " QUIT :" + reason + "\r\n")
+#define QUIT_REPLISE_SEND(username, hostname, reason) ("ERROR :Closing link: (" + username + "@" + hostname + ") [" + reason + "]\r\n")
+
 #endif

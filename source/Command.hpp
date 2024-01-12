@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
+#include <set>
 #include "../NumericReplies.hpp"
 
 #define	NEEDMOREPARMS 2
@@ -75,7 +76,7 @@ class Command {
 
 		void privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
 
-		void quit(std::vector<std::string> msgs, User &user);
+		void quit(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
 
 		// 공통
 		class ErrNotRegistered : public std::invalid_argument {

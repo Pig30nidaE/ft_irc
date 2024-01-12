@@ -1,18 +1,6 @@
 1. quit 구현x
 2. part시 명령어를 하나 더 보내야 인식함.
-2. 
+3. JOIN시 본인이 이미 있는데 들어갈 수 있는지?
 
 
 
-3. QUIT 명령어
-<< "QUIT :leaving"
->> "ERROR :Closing link: (1@localhost) [Client exited]"
->> "dong!donghak@localhost QUIT :leaving"
-
-<< "QUIT"
->> "ERROR :Closing link: (1@localhost) [Client exited]"
->> ":hi!1@localhost QUIT :Client exited" 브로드캐스트
-
-<< "QUIT :good"
->> "ERROR :Closing link: (1@localhost) [good]"
->> ":hello!1@localhost QUIT :good" 브로드캐스트
