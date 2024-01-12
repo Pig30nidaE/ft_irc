@@ -340,7 +340,7 @@ void Command::topic(ChannelContainer&cc, std::vector<std::string> msgs, User& us
 	
 }
 
-static int checkMode(char c) {
+int Command::checkMode(char c) {
 	if (c == 'i')
 		return (MODE_INVITE_ONLY);
 	else if (c == 't')
@@ -356,7 +356,7 @@ static int checkMode(char c) {
 	}
 }
 
-static int checkModeChange(Mode &mode, char c) {
+int Command::checkModeChange(Mode &mode, char c) {
 	if (c == 'i')
 		return (mode.checkType(MODE_INVITE_ONLY));
 	else if (c == 't')
@@ -591,6 +591,46 @@ void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContaine
 			sendMsg(user, e.what());
 		}
 	}
+}
+
+void Command::quit(std::vector<std::string> msgs, User &user, ChannelContainer &cc) {
+	size_t msgsSize = 0;
+	std::string reason = "Client exited";
+	std::vector<Channel*> joinedChannel;
+	std::vector<User*> userList;
+	std::set<int> sentUsers;
+	int sock;
+	int sentsock;
+	std::cout << "[QUIT]\n";
+
+	if (msgs.size() >= 2) { // reason 수정
+		reason = "";
+		for (std::vector<std::string>::iterator iter = (msgs.begin() + 1); iter != msgs.end(); iter++) {
+			reason += *iter;
+			if(iter + 1 != msgs.end())
+				reason += ' ';
+		}
+		if (reason.length() > 1 && reason[0] == ':') {
+			reason = &(reason[1]);
+		}
+	}
+	sock = user.getUserSock();
+	joinedChannel = user.getJoinedChannelList(cc);
+	for (std::vector<Channel*>::iterator iter = joinedChannel.begin(); iter != joinedChannel.end(); iter++) {
+		userList = (*iter)->getUserList();
+		for (std::vector<User*>::iterator uIter = userList.begin(); uIter != userList.end(); uIter++) {
+			sentsock = (**uIter).getUserSock(); // test
+			if (sentsock != sock) {
+				if (sentUsers.find(sentsock) == sentUsers.end()) {
+					std::cout << "[QUIT] [BROAD] send to " << sentsock << "\n";// test
+					sentUsers.insert(sentsock);
+					sendMsg(**uIter, QUIT_REPLISE_BROAD(user.getClient(), reason));
+				}
+			}
+		}
+	}
+	reason = QUIT_REPLISE_SEND(user.getUserName(), user.getHostName(), reason);
+	write(user.getUserSock(), reason.c_str(), reason.length() + 1);
 }
 
 Command::Command(void) {}
