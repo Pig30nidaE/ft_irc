@@ -51,7 +51,7 @@ class User {
 		void								setBuf(const std::string &buf);
 		std::vector<std::string>			getSendBuf(void) const;
 		void								setSendBuf(const std::string &buf);
-		void								initSendBuf(void);
+		void								sendBufClear(void);
 		std::string 						getUserName(void) const;
 		void								setUserName(std::string const username);
 		//std::string						 	getNickName(std::string chName);
