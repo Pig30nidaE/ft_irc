@@ -67,13 +67,15 @@ class Command {
 		void topic(ChannelContainer& cc, std::vector<std::string> msgs, User& user);
 
 		// ----mode------------- //LSH
-		//void mode(std::string channel, std::string flag, std::string parm);
-
+		int checkMode(char c);
+		int checkModeChange(Mode &mode, char c);
 		std::string modeParsing(User &user, std::string modestring, Mode mode);
 		void mode(std::vector<std::string> &msgs, User& user, ChannelContainer& cc);
-		//만약 이 함수 쓰려면 parameter를 user.changeMode와 같이 넘겨야할듯?
+
 
 		void privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
+
+		void quit(std::vector<std::string> msgs, User &user);
 
 		// 공통
 		class ErrNotRegistered : public std::invalid_argument {

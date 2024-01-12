@@ -340,7 +340,7 @@ void Command::topic(ChannelContainer&cc, std::vector<std::string> msgs, User& us
 	
 }
 
-static int checkMode(char c) {
+int Command::checkMode(char c) {
 	if (c == 'i')
 		return (MODE_INVITE_ONLY);
 	else if (c == 't')
@@ -356,7 +356,7 @@ static int checkMode(char c) {
 	}
 }
 
-static int checkModeChange(Mode &mode, char c) {
+int Command::checkModeChange(Mode &mode, char c) {
 	if (c == 'i')
 		return (mode.checkType(MODE_INVITE_ONLY));
 	else if (c == 't')
@@ -591,6 +591,10 @@ void Command::privmsg(std::vector<std::string> msgs, User &user, ChannelContaine
 			sendMsg(user, e.what());
 		}
 	}
+}
+
+void Command::quit(std::vector<std::string> msgs, User &user) {
+	
 }
 
 Command::Command(void) {}
