@@ -140,6 +140,8 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 			else if ((user.getJoinedChannelList(cc)).size() > cc.getUserJoinChanLimit()) { // 유저 최대 입장 제한 5
 				throw ErrTooManyChannels(*iter, nickName); //최대 가입 가능한 채널 수 넘으면 에러
 			}
+			else if (result == ERR_ALREADYONCHAN)
+				return ;
 			else {
 				//Channel& joinedChan = 
 				channel = user.getSpecificChannelJoined((*iter), cc);
