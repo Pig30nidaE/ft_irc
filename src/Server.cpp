@@ -157,6 +157,9 @@ void Server::disconnectClient(int sock)
     std::vector<User *> &userList = channelContainer->getUserList();
     fd = sock;
 
+    std::vector<std::string> quit_msg;
+    quit_msg.push_back("QUIT");
+    command->quit(quit_msg, user);
     while (user.getJoinedChannelList().size())
         user.exitChannel(user.getJoinedChannelList().at(0)->getChannelName(), *channelContainer);
     for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end();) {

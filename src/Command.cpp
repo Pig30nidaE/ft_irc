@@ -118,7 +118,8 @@ void Command::join(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		throw ErrNeedMoreParams(user.getNickName(), "JOIN");
 	}
 	channelnames = splitComma(msgs[1]);
-	keys = splitComma(msgs[2]);
+	if (msgsSize >= 3)
+		keys = splitComma(msgs[2]);
 	keySize = keys.size();
 	for (std::vector<std::string>::iterator iter = channelnames.begin(); iter != channelnames.end(); iter++) {
 		try

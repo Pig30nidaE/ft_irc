@@ -8,7 +8,7 @@ SRCS = $(SOURCE)main.cpp \
 	$(SOURCE)User.cpp
 OBJS = ${SRCS:.cpp=.o}
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror
+CXXFLAGS = -Wall -Wextra -Werror -g
 STDFLAGS = -std=c++98
 RM = rm -rf
 

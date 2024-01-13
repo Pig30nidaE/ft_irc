@@ -54,6 +54,10 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 	Channel *toJoin = new Channel(toJoinChannel);
 	toJoin->userAdd(*this);
 	toJoin->operatorAdd(*this);
+	if (enterPwd.length()) {
+		toJoin->getModeRef().turnOnType(MODE_CHANNEL_KEY);
+		toJoin->setPassword(enterPwd);
+	}
 	channel_contaier.createChannel(*toJoin);
 	getJoinedChannelList().push_back(toJoin);
 	return NEWCHANNEL;
@@ -121,13 +125,9 @@ int User::changeMode(Channel &joinedChannel, bool onoff_flag, int type, std::str
 			if (channelMode.checkType(MODE_CHANNEL_KEY))
 				return 1;
 			channelMode.turnOnType(MODE_CHANNEL_KEY);
-			if (arg == "")
-				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "k", "You must specify a parameter for the key mode. Syntax: <key>.");
 			joinedChannel.setPassword(arg);
 		}
 		if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) {
-			if (arg == "")
-				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "o", "You must specify a parameter for the op mode. Syntax: <nick>.");
 			std::vector<User*> usrList = joinedChannel.getUserList();
 			typedef std::vector<User*>::iterator usrIterator;
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
@@ -143,8 +143,6 @@ int User::changeMode(Channel &joinedChannel, bool onoff_flag, int type, std::str
 			throw Command::ErrNoSuchNick(this->getNickName(), arg);
 		}
 		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
-			if (arg == "")
-				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "l", "You must specify a parameter for the limit mode. Syntax: <limit>.");
 			int size = stringToInt(arg);
 			if (size < 0)
 				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "l", "Invalid limit mode parameter. Syntax: <limit>.");
@@ -164,8 +162,6 @@ int User::changeMode(Channel &joinedChannel, bool onoff_flag, int type, std::str
 		if (MODE_CHECK_TYPE(type, MODE_CHANNEL_KEY)) {
 			if (!channelMode.checkType(MODE_CHANNEL_KEY))
 				return 1;
-			if (arg == "")
-				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "k", "You must specify a parameter for the key mode. Syntax: <key>.");
 			if (arg == joinedChannel.getPassword()) {
 				joinedChannel.setPassword("");
 				channelMode.turnOffType(MODE_CHANNEL_KEY);
@@ -175,8 +171,6 @@ int User::changeMode(Channel &joinedChannel, bool onoff_flag, int type, std::str
 			}
 		}
 		if (MODE_CHECK_TYPE(type, MODE_OPERATOR_GRANTED)) {
-			if (arg == "")
-				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "o", "You must specify a parameter for the op mode. Syntax: <nick>.");
 			std::vector<User*> usrList = joinedChannel.getUserList();
 			typedef std::vector<User*>::iterator usrIterator;
 			for (usrIterator user_iter = usrList.begin();user_iter != usrList.end();user_iter++) {
