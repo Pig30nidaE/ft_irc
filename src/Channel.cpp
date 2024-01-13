@@ -29,7 +29,6 @@ void Channel::userDel(User& user) {
 			return ;
 		}
 	}
-	std::cerr << "no such user." << std::endl;
 }
 
 void Channel::operatorAdd(User& user) {

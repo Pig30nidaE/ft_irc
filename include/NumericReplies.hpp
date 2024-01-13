@@ -53,7 +53,7 @@
 #define RPL_INVITELIST 336
 #define RPL_ENDOFINVITELIST 337
 #define RPL_WHOISACTUALLY 338
-#define RPL_INVITING 341
+#define RPL_INVITING_NUM 341
 #define RPL_INVEXLIST 346
 #define RPL_ENDOFINVEXLIST 347
 #define RPL_EXCEPTLIST 348
@@ -90,7 +90,7 @@
 #define ERR_NICKCOLLISION 436
 #define ERR_USERNOTINCHANNEL 441
 #define ERR_NOTONCHANNEL_NUM 442
-#define ERR_USERONCHANNEL 443
+#define ERR_USERONCHANNEL_NUM 443
 #define ERR_NOTREGISTERED_NUM 451
 #define ERR_NEEDMOREPARAMS_NUM 461
 #define ERR_ALREADYREGISTERED_NUM 462
@@ -165,5 +165,8 @@
 #define RPL_NOTOPIC(channel, nickname) (":irc.local 331 " + nickname + " " + channel + " :No topic is set\r\n")
 #define QUIT_REPLISE_BROAD(client, reason) (":" + client + " QUIT :" + reason + "\r\n")
 #define QUIT_REPLISE_SEND(username, hostname, reason) ("ERROR :Closing link: (" + username + "@" + hostname + ") [" + reason + "]\r\n")
+#define ERR_USERONCHANNEL(nickname, channel) (":irc.local 443 " + nickname + " " + channel + " :is already on channel\r\n")
+#define RPL_INVITING(nickname, toInvite, channel) (":irc.local 341 " + nickname + " " + toInvite + " :" + channel + "\r\n")
+#define RPL_INVITEYOU(client, nickname, channel) (":" + client + " INVITE " + nickname + " :" + channel + "\r\n")
 
 #endif

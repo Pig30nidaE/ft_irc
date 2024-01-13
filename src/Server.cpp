@@ -256,7 +256,7 @@ int Server::executeCommand(std::vector<std::string> msgs, User &user) {
                 command->kick(msgs, *channelContainer, user);
                 break;
             case INVITE:
-                command->invite(msgs[1].c_str(), msgs[2].c_str(), *channelContainer, user);
+                command->invite(msgs, *channelContainer, user);
                 break;
             case TOPIC:
                 command->topic(msgs, user);
