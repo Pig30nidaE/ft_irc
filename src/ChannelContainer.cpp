@@ -9,13 +9,6 @@ void ChannelContainer::createChannel(Channel& toCreateChannel) {
 }
 
 void ChannelContainer::deleteChannel(Channel& toDeleteChannel) {
-	//std::vector<Channel*>::iterator to_del_cha = find(getChannelList().begin(), getChannelList().end(),\
-	//	 &toDeleteChannel);
-	//if (to_del_cha == getChannelList().end()) {
-	//	return ;
-	//}
-	//int to_del_idx = (*to_del_cha)->getIndex() - getChannelList().at(0)->getIndex();
-	//getChannelList().erase(getChannelList().begin() + to_del_idx);
 	typedef std::vector<Channel*>::iterator ChIter;
 	for (ChIter iter = channelList.begin();iter != channelList.end();iter++) {
 		if ((*iter)->getChannelName() == toDeleteChannel.getChannelName()) {

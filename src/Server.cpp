@@ -93,7 +93,7 @@ void Server::newUser(int serverSock) {
     
     clients[clientSocket];
     clients[clientSocket].setUserSock(clientSocket);
-    getChannelContainer().getUserList().push_back(&(clients[clientSocket])); // channel_container의 user_list에도 추가해야해서 넣음. //LSH
+    getChannelContainer().getUserList().push_back(&(clients[clientSocket]));
 }
 
 void Server::recvMsg(uintptr_t fd) {

@@ -162,7 +162,7 @@ int User::changeMode(Channel &joinedChannel, bool onoff_flag, int type, std::str
 			}
 			throw Command::ErrNoSuchNick(this->getNickName(), arg);
 		}
-		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) { // l
+		if (MODE_CHECK_TYPE(type, MODE_CAPACITY_LIMIT)) {
 			if (arg == "")
 				throw Command::ErrInvalidModeParam(this->getNickName(), joinedChannel.getChannelName(), "l", "You must specify a parameter for the limit mode. Syntax: <limit>.");
 			int size = stringToInt(arg);
