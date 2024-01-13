@@ -51,7 +51,7 @@ class Server {
 		int 						kq;
 		std::vector<struct kevent> 	changeList;
 		struct kevent 				eventList[8];
-		std::map<uintptr_t, User> 	clients;
+		std::map<int, User> 	clients;
 		ChannelContainer 			*channelContainer;
 		Command 					*command;
 		std::string 				serverPass;
@@ -59,11 +59,11 @@ class Server {
 		int executeCommand(std::vector<std::string> msgs, User &user);
 		int splitSpace(const std::string &msg, User &user);
 
-		void readEventHandler(uintptr_t fd);
+		void readEventHandler(int fd);
 		void newUser(int serverSock);
-		void recvMsg(uintptr_t fd);
+		void recvMsg(int fd);
 
-		void errorEventHandler(uintptr_t fd);
+		void errorEventHandler(int fd);
 		
 		void disconnectClient(int sock);
 
@@ -74,7 +74,7 @@ class Server {
 		int  isValidChar(char ch);
 		int  isValidString(std::string str);
 
-		void changeEvents(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
+		void changeEvents(int ident, int filter, unsigned int flags, unsigned long fflags, long data, void *udata);
 		void exitWithPerror(const std::string& msg);
 
 		Server &operator=(const Server &other);

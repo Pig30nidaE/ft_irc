@@ -32,7 +32,7 @@ void Server::serverStart(void) {
     int newEvents;
     struct kevent* currEvent;
     
-    changeEvents(static_cast<uintptr_t>(serverSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    changeEvents(serverSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
     while (1)
     {
         newEvents = kevent(kq, &changeList[0], changeList.size(), eventList, 8, NULL);
@@ -48,7 +48,7 @@ void Server::serverStart(void) {
                 readEventHandler(currEvent->ident);
             else if (currEvent->filter == EVFILT_WRITE)
             {
-                std::map<uintptr_t, User>::iterator it = clients.find(currEvent->ident);
+                std::map<int, User>::iterator it = clients.find(currEvent->ident);
                 if (it != clients.end())
                 {
                     User *user = &(it->second);
@@ -71,9 +71,9 @@ void Server::serverStart(void) {
     return ;
 }
 
-void Server::readEventHandler(uintptr_t fd) {
-    if (fd == static_cast<uintptr_t> (serverSocket)) {
-        newUser(static_cast<int>(fd));
+void Server::readEventHandler(int fd) {
+    if (fd == serverSocket) {
+        newUser(fd);
     }
     else if (clients.find(fd) != clients.end()) {
         recvMsg(fd);
@@ -88,15 +88,15 @@ void Server::newUser(int serverSock) {
     if ((clientSocket = accept(serverSock,(struct sockaddr*)&clientAddr, &clientLen)) == -1)
         exitWithPerror("accept() error\n" + std::string(strerror(errno)));
     fcntl(clientSocket, F_SETFL, O_NONBLOCK);
-    changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-    changeEvents(static_cast<uintptr_t>(clientSocket), EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    changeEvents(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    changeEvents(clientSocket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
     
     clients[clientSocket];
     clients[clientSocket].setUserSock(clientSocket);
     getChannelContainer().getUserList().push_back(&(clients[clientSocket]));
 }
 
-void Server::recvMsg(uintptr_t fd) {
+void Server::recvMsg(int fd) {
     char buf[MAX_MSG];
     std::string sBuf;
     ssize_t n;
@@ -118,8 +118,8 @@ void Server::recvMsg(uintptr_t fd) {
     }
 }
 
-void Server::errorEventHandler(uintptr_t fd) {
-    if (fd == static_cast<uintptr_t>(serverSocket))
+void Server::errorEventHandler(int fd) {
+    if (fd == serverSocket)
         exitWithPerror("server socket error");
     else
     {
@@ -129,7 +129,7 @@ void Server::errorEventHandler(uintptr_t fd) {
 }
 
 Server::~Server() {
-    for (std::map<uintptr_t, User>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
+    for (std::map<int, User>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
         if (close(iter->first) == -1)
             std::cout << "client socket close ERROR\n";
     }
@@ -168,7 +168,7 @@ void Server::disconnectClient(int sock)
             ++iter;
         }
     }
-    for (std::map<uintptr_t, User>::iterator iter = clients.begin(); iter != clients.end();) {
+    for (std::map<int, User>::iterator iter = clients.begin(); iter != clients.end();) {
         if ((iter->second).getUserSock() == fd) {
             iter = clients.erase(iter);
             break;
@@ -179,8 +179,8 @@ void Server::disconnectClient(int sock)
     close(fd);
 }
 
-void Server::changeEvents(uintptr_t ident, int16_t filter,
-        uint16_t flags, uint32_t fflags, intptr_t data, void *udata)
+void Server::changeEvents(int ident, int filter,
+        unsigned int flags, unsigned long fflags, long data, void *udata)
 {
     struct kevent temp_event;
 
