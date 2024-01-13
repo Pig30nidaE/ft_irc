@@ -13,12 +13,6 @@
 #include <vector>
 #include <unistd.h>
 #include <map>
-<<<<<<< HEAD:source/Server.hpp
-#include <set>
-#include "../NumericReplies.hpp"
-=======
->>>>>>> 4a7697c7b9c9063d735dff1afec001e876a29770:include/Server.hpp
-
 #include "NumericReplies.hpp"
 
 #define MAXVISITE 		10000

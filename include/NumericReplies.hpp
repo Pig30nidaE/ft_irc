@@ -139,13 +139,7 @@
 #define RPL_WELCOME(nickname, client) (":irc.local 001 " + nickname + " :Welcome to the TEST IRC Network " + client + "\r\n")
 #define ERR_ERRONEUSNICKNAME(nickname) (":irc.local 432 * " + nickname + " :Erroneous Nickname\r\n")
 #define ERR_NICKNAMEINUSE(nickname) (":irc.local 433 * " + nickname + " :Nickname is already in use.\r\n")
-<<<<<<< HEAD:NumericReplies.hpp
 #define NICK_REPLISE(client, nickname) (":" + client + " NICK :" + nickname + "\r\n")
-
-// -----------JOIN------------
-//#define JOIN_REPLISE(nickname, username, channel) (":" + nickname + "!" + username + "@localhost JOIN :" + channel + "\r\n")
-=======
->>>>>>> 4a7697c7b9c9063d735dff1afec001e876a29770:include/NumericReplies.hpp
 #define JOIN_REPLISE(client, channel) (":" + client + " JOIN :" + channel + "\r\n")
 #define KICK_REPLY(nickname, username, channel, toKick, reason) (":" + nickname + "!" + username + "@localhost KICK " + channel + " " + toKick + " :" + reason + "\r\n")
 #define RPL_NAMREPLY(nickname, channel) (":irc.local 353 " + nickname + " = " + channel + " :@")

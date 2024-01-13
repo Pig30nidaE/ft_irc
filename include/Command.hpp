@@ -43,7 +43,7 @@ class Command {
 		std::string 	 modeParsing(User &user, std::string modestring, Mode mode);
 
 		void			 pass(std::vector<std::string> msgs, User &user);
-		int		 		 nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
+		void			 nick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		void			 user(std::vector<std::string> msgs, User &user);
 		void			 join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		void			 part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
