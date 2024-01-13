@@ -659,7 +659,6 @@ void Command::checkLastPassState(User &user) const {
 void	Command::sendMsg(User &user, const std::string msg) const {
     if (msg == "")
         return ;
-	std::cout << msg << "\n"; //todel
 	user.setSendBuf(msg);
 }
 

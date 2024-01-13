@@ -1,7 +1,7 @@
 #include "../include/Channel.hpp"
 
 Channel::Channel(std::string name):
-index(0), channelName(name), password(""), capacity(0) {
+channelName(name), password(""), capacity(0) {
 	mode = new Mode(ALL_MODES_OFF);
 	topic = new Topic("");
 }
@@ -95,14 +95,6 @@ Topic& Channel::getTopicRef(void) {
 
 Mode& Channel::getModeRef(void) {
 	return *mode;
-}
-
-int Channel::getIndex(void) {
-	return index;
-}
-
-void Channel::setIndex(int idx) {
-	index = idx;
 }
 
 int	Channel::getCapacity(void) {
