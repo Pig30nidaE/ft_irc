@@ -1,36 +1,38 @@
-CC			= c++
+NAME = ircserver
+SOURCE = src/
+SRCS = $(SOURCE)main.cpp \
+	$(SOURCE)Channel.cpp \
+	$(SOURCE)ChannelContainer.cpp \
+	$(SOURCE)Command.cpp \
+	$(SOURCE)Server.cpp \
+	$(SOURCE)User.cpp
+OBJS = ${SRCS:.cpp=.o}
+CXX = c++
+CXXFLAGS = -Wall -Wextra -Werror
+STDFLAGS = -std=c++98
+RM = rm -rf
 
-CFLAGS		= -g#-Wall -Wextra -Werror
+%.o: %.cpp
+	@$(CXX) $(STDFLAGS) $(CXXFLAGS) -c $^ -o $@
 
-SOURCE	=	./source/
+all: $(NAME)
 
-FUNC	=	./func/
+$(NAME): $(OBJS)
+	@echo "making..."
+	@$(CXX) $(CXXFLAGS) $(STDFLAGS) $(SRCS) -o $(NAME)
 
-IRC		= ircserver
+clean:
+	@${RM} ${OBJS}
+	@echo "clean finished"
 
-NAME		= $(IRC)
+fclean:
+	@make clean
+	@${RM} ${NAME}
+	@echo "fclean finished."
 
-SRCS        =	$(SOURCE)Server.cpp\
-				$(SOURCE)Command.cpp\
-				$(FUNC)User.cpp\
-				$(FUNC)ChannelContainer.cpp\
-				$(FUNC)Channel.cpp\
+re:	
+	@echo "\033[0;33mremake...\033[0m"
+	@make fclean
+	@make all
 
-
-OBJS		= $(SRCS:.c=.o)
-
-all			: $(NAME)
-
-$(NAME)		: $(OBJS)
-			$(CC) ./main.cpp $(CFLAGS) $^ -o $(NAME)
-
-clean		:
-
-fclean		: clean
-			rm -f $(IRC)
-
-re			:  
-			make fclean
-			make all
-
-.PHONY		: clean, re, fclean, all, mini
+.PHONY: clean fclean re all

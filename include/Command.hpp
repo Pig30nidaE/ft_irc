@@ -5,16 +5,14 @@
 #include <sstream>
 #include <unistd.h>
 #include <set>
-#include "../NumericReplies.hpp"
+
+#include "NumericReplies.hpp"
 
 #define	NEEDMOREPARMS 2
 #define	PASSMISMATCH 3
 #define PASSSUCCESS 1
 #define MINUS 1
 #define PLUS 2
-// #define CHANNELISFULL 1
-// #define BADCHANNELKEY 2
-// #define INVITEONLYCHAN 3
 
 class User;
 class ChannelContainer;
@@ -22,63 +20,41 @@ class Channel;
 class Mode;
 
 class Command {
+	private:
+		std::string 			 serverPass;
+
+		int						 checkLogin(User user);
+		std::vector<std::string> splitComma(std::string msg);
 	public:
 		Command(void);
 		~Command();
 		Command(Command &other);
 		Command operator=(Command &other);
+		Command(std::string serverPass);
 
+		void			 setServerPass(std::string serverPass);
 
+		void		 	 sendMsg(User &user, const std::string msg) const;
+		void			 broadcastMsg(User &user, Channel *channel, const std::string msg) const;
 
-		//--------teset용---------
-		Command(std::string serverPass); // test용
-		void setServerPass(std::string serverPass); // test용
+		void			 checkLastPassState(User &user) const;
+		int 			 checkMode(char c);
+		int 			 checkModeChange(Mode &mode, char c);
+		std::string 	 modeParsing(User &user, std::string modestring, Mode mode);
 
+		void			 pass(std::vector<std::string> msgs, User &user);
+		void			 nick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+		void			 user(std::vector<std::string> msgs, User &user);
+		void			 join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+		void			 part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+		void			 kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
+		void			 ping(std::vector<std::string> msgs, User &user);
+		void			 invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
+		void			 topic(std::vector<std::string> msgs, User& user);
+		void		 	 mode(std::vector<std::string> &msgs, User& user);
+		void 			 privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
+		void 			 quit(std::vector<std::string> msgs, User &user);
 
-		void sendMsg(User &user, const std::string msg) const;
-		void broadcastMsg(User &user, Channel *channel, const std::string msg) const;
-
-		//----server 입장-----
-		// PASS
-		void pass(std::vector<std::string> msgs, User &user);
-		void checkLastPassState(User &user) const;
-
-		// NICK
-		int nick(std::vector<std::string> msgs, ChannelContainer cc, User &user);
-
-		// USER
-		void user(std::vector<std::string> msgs, User &user);
-		
-		// ----channel join-----
-		void join(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
-
-		// ----channel 나감-----
-		void part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
-
-		// kick
-		void kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
-
-		// ----client PING----
-		void ping(std::vector<std::string> msgs, User &user);
-
-		// ----client INVITE---
-		void invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
-
-		// ----topic------------
-		void topic(ChannelContainer& cc, std::vector<std::string> msgs, User& user);
-
-		// ----mode------------- //LSH
-		int checkMode(char c);
-		int checkModeChange(Mode &mode, char c);
-		std::string modeParsing(User &user, std::string modestring, Mode mode);
-		void mode(std::vector<std::string> &msgs, User& user, ChannelContainer& cc);
-
-
-		void privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
-
-		void quit(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
-
-		// 공통
 		class ErrNotRegistered : public std::invalid_argument {
 			public:
 				ErrNotRegistered(const std::string& command) : std::invalid_argument(ERR_NOTREGISTERED(command)) {}
@@ -89,8 +65,6 @@ class Command {
 				ErrUnknownCommand(const std::string& nickname, const std::string &command) : std::invalid_argument(ERR_UNKNOWNCOMMAND(nickname, command)) {}
 		};
 
-		// ---------EXCEPTION--------
-		// ----PASS----
 		class ErrPasswdMisMatch : public std::exception {
 			public:
 				const char* what(void) const throw() {
@@ -98,13 +72,11 @@ class Command {
 				};
 		};
 
-		// -----PASS and USER-------
 		class ErrAlreadyRegistered : public std::invalid_argument { 
 			public:
 				ErrAlreadyRegistered(const std::string &nickname) : std::invalid_argument(ERR_ALREADYREGISTERED(nickname)) {}
 		};
 
-		// NICK ERROR
 		class ErrNickNameInUser : public std::invalid_argument {
 			public:
 				ErrNickNameInUser(const std::string& nickname) : std::invalid_argument(ERR_NICKNAMEINUSE(nickname)) {}
@@ -115,9 +87,6 @@ class Command {
 				ErrErroneusNickName(const std::string& nickname) : std::invalid_argument(ERR_ERRONEUSNICKNAME(nickname)) {}
 		};
 
-		// USER ERROR
-
-		// JOIN ERROR
 		class ErrTooManyChannels : public std::invalid_argument {
 			public:
 				ErrTooManyChannels(const std::string &channelName, const std::string &nickName) : std::invalid_argument(ERR_TOOMANYCHANNELS(channelName, nickName)) {}
@@ -143,13 +112,11 @@ class Command {
 				ErrBadChanMask(const std::string &channelName) : std::invalid_argument(ERR_BADCHANMASK(channelName)) {}
 		};
 
-		// PART
 		class ErrNotonChannel : public std::invalid_argument {
 			public:
 				ErrNotonChannel(const std::string & channel, const std::string nickName) : std::invalid_argument(ERR_NOTONCHANNEL(channel, nickName)) {}
 		};
 
-		// MODE
 		class RplChannelModeIs : public std::invalid_argument {
 			public:
 				RplChannelModeIs(const std::string &nickname, const std::string & channel, const std::string &mode) : std::invalid_argument(RPL_CHANNELMODEIS(nickname, channel, mode)) {}
@@ -165,14 +132,11 @@ class Command {
 				ErrKeyMissMatch(const std::string &nickname, const std::string &channel) : std::invalid_argument(ERR_KEYMISSMATCH(nickname, channel)) {}
 		};
 
-		//PRIVMSG
 		class ErrCannotSendToChan : public std::invalid_argument {
 			public:
 				ErrCannotSendToChan(const std::string & nickname, const std::string & channel) : std::invalid_argument(ERR_CANNOTSENDTOCHAN(nickname, channel)) {}
 		};
 
-
-		// 공통
 		class ErrNoSuchChannel : public std::invalid_argument {
 			public:
 				ErrNoSuchChannel(const std::string &nickname, const std::string &channel) : std::invalid_argument(ERR_NOSUCHCHANNEL(nickname, channel)) {}
@@ -196,18 +160,12 @@ class Command {
 		class ErrInvalidModeParam : public std::invalid_argument {
 			public:
 				ErrInvalidModeParam(const std::string &nickname, const std::string& channel, const std::string &mode, const std::string &description) : std::invalid_argument(ERR_INVALIDMODEPARAM(nickname, channel, mode, description)) {}
-    };
+   		};
 
 		class ErrNoTopic : public std::invalid_argument {
 			public:
 				ErrNoTopic(const std::string& channel) : std::invalid_argument(channel) {}
 		};
-
-	private:
-		std::string serverPass; // server password 검사를 위해 생성자를 통해 받아오자
-		int	checkLogin(User user);
-		std::vector<std::string> splitComma(std::string msg);
-
 };
 
 #endif
