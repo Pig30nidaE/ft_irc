@@ -56,7 +56,7 @@ void Server::serverStart(void) {
                     if (sendBuf.size() > 0)
                     {
                         for (std::vector<std::string>::iterator iter = sendBuf.begin(); iter != sendBuf.end(); iter++) {
-                            if ((write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
+                            if ((send(currEvent->ident, (*iter).c_str(), (*iter).size(), 0) == -1))
                             {
                                 std::cerr << "client write error!" << std::endl;
                                 disconnectClient(currEvent->ident);  

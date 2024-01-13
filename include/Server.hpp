@@ -7,12 +7,14 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 
+#include <cstring>
 #include <string.h>
 #include <sstream>
 #include <iostream>
 #include <vector>
 #include <unistd.h>
 #include <map>
+
 #include "NumericReplies.hpp"
 
 #define MAXVISITE 		10000

@@ -2,6 +2,8 @@
 #define COMMAND_HPP
 
 #include <string>
+#include <cstring>
+#include <sys/socket.h>
 #include <sstream>
 #include <unistd.h>
 #include <set>

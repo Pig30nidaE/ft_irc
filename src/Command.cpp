@@ -607,7 +607,7 @@ void Command::quit(std::vector<std::string> msgs, User &user) {
 		}
 	}
 	reason = QUIT_REPLISE_SEND(user.getUserName(), user.getHostName(), reason);
-	write(user.getUserSock(), reason.c_str(), reason.length() + 1);
+	send(user.getUserSock(), reason.c_str(), reason.length() + 1, 0);
 }
 
 Command::Command(void) {}
