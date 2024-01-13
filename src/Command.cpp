@@ -462,22 +462,24 @@ void Command::mode(std::vector<std::string> &msgs, User& user) {
 				sendMsg(user, e.what());
 			}
 		}
-		length = result.length();
 		flag = 0;
-		for (unsigned long i = 0; i < length; i++) {
+		for (unsigned long i = 0; i < result.length(); i++) {
 			if (result[i] != '+' && result[i] != '-')
 				flag = 1;
 			else if (i != 0 && result[i - 1] == '+') {
 				result.erase(result.begin() + (i - 1), result.begin() + i); 
+				i--;
 			}
 			else if (i != 0 && result[i - 1] == '-') {
 				result.erase(result.begin() + (i - 1), result.begin() + i); 
+				i--;
 			}
 		}
 		if (flag == 0)
 			result = "";
 		if (!result.empty()) {
 			result = result + " " + args;
+			broadcastMsg(user, channel, RPL_MODEREPLIES(user.getClient(), channel->getChannelName(), result));
 			sendMsg(user, RPL_MODEREPLIES(user.getClient(), channel->getChannelName(), result));
 		}
 	}
