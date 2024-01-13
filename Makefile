@@ -1,4 +1,4 @@
-NAME = ircserver
+NAME = ircserv
 SOURCE = src/
 SRCS = $(SOURCE)main.cpp \
 	$(SOURCE)Channel.cpp \
@@ -8,7 +8,7 @@ SRCS = $(SOURCE)main.cpp \
 	$(SOURCE)User.cpp
 OBJS = ${SRCS:.cpp=.o}
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -g
+CXXFLAGS = -Wall -Wextra -Werror
 STDFLAGS = -std=c++98
 RM = rm -rf
 

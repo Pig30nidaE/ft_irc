@@ -16,7 +16,8 @@ Server::Server(std::string port, std::string pass) : channelContainer(new Channe
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddr.sin_port = htons(std::atoi(port.c_str()));
 
-    setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (struct sockaddr *)&serverAddr, sizeof(serverAddr)))
+        exitWithPerror("setsockopt() error\n" + std::string(strerror(errno)));
     if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
         exitWithPerror("bind() error\n" + std::string(strerror(errno)));
     if (listen(serverSocket, MAXVISITE) == -1)
@@ -54,9 +55,8 @@ void Server::serverStart(void) {
                     std::vector<std::string> sendBuf = user->getSendBuf();
                     if (sendBuf.size() > 0)
                     {
-                        int n;
                         for (std::vector<std::string>::iterator iter = sendBuf.begin(); iter != sendBuf.end(); iter++) {
-                            if ((n = write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
+                            if ((write(currEvent->ident, (*iter).c_str(), (*iter).size()) == -1))
                             {
                                 std::cerr << "client write error!" << std::endl;
                                 disconnectClient(currEvent->ident);  
