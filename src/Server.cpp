@@ -155,12 +155,10 @@ void Server::disconnectClient(int sock)
     int fd;
     User &user = clients[sock];
     std::vector<User *> &userList = channelContainer->getUserList();
-    std::vector<Channel *> &joinedChannelList = user.getJoinedChannelList();
     fd = sock;
 
-    for (std::vector<Channel *>::iterator iter = joinedChannelList.begin(); iter != joinedChannelList.end(); iter++){
-        (*iter)->userDel(user);
-    }
+    while (user.getJoinedChannelList().size())
+        user.exitChannel(user.getJoinedChannelList().at(0)->getChannelName(), *channelContainer);
     for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end();) {
         if ((*iter)->getUserSock() == fd) {
             iter = userList.erase(iter);
