@@ -89,30 +89,10 @@ int User::exitChannel(std::string toExitChannel, ChannelContainer& channel_conta
 
 
 void User::kickUser(std::string toKickUser, Channel& fromChannel, ChannelContainer& channel_container) {
-	if (toKickUser == getNickName()) {
-		std::cerr << "Can't kick yourself." << std::endl;
-		return ;
-	}
 	fromChannel.getSpecficUser(toKickUser)->exitChannel(fromChannel.getChannelName(), channel_container);
 }
 
 void User::inviteUser(User& toInviteUser, Channel& toChannel) {
-	if (!toChannel.isOperator(*this)) {
-		std::cerr << "Not permitted." << std::endl;
-		return ;
-	}
-	if (toInviteUser.getNickName() == (*this).getNickName()) {
-		std::cerr << "Can't invite yourself." << std::endl;
-		return ;
-	}
-	typedef std::vector<int>::iterator InvitedIterator;
-	std::vector <int> invUsrLst = toChannel.getInvitedUserList();
-	for (InvitedIterator inv_iter = invUsrLst.begin();inv_iter != invUsrLst.end();inv_iter++) {
-		if (*inv_iter == toInviteUser.getUserSock()) {
-			std::cerr << "Already invited." << std::endl;
-			return ;
-		}
-	}
 	toChannel.getInvitedUserList().push_back(toInviteUser.getUserSock());
 }
 
