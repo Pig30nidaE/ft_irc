@@ -211,7 +211,6 @@ void Command::part(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		}
 		catch(const std::exception& e) {
 			sendMsg(user, e.what());
-			std::cerr << e.what() << '\n';
 		}
 	}
 }
@@ -251,22 +250,38 @@ void Command::kick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 	user.kickUser(toKick, *user.getSpecificChannelJoined(channelName), cc);
 }
 
-void Command::invite(std::string nick, std::string channel, ChannelContainer &cc, User &user) {
+void Command::invite(std::vector<std::string> msgs, ChannelContainer &cc, User &user) {
 	typedef std::vector<User*>::iterator UserIter;
 	std::vector<User*> usrList = cc.getUserList();
 	UserIter toFind;
+
+	if (msgs.size() < 3) {
+		throw ErrNeedMoreParams(user.getNickName(), "INVITE");
+	}
+	std::string nickname = msgs.at(1);
+	std::string channel = msgs.at(2);
 	for (toFind = usrList.begin();toFind != usrList.end();toFind++) {
-		if ((*toFind)->getNickName() == nick) {
+		if ((*toFind)->getNickName() == nickname) {
 			break ;
 		}
 	}
 	if (toFind == usrList.end()) {
-		std::cerr << "no such user." << std::endl;
-		return ;
+		throw ErrNoSuchNick(user.getNickName(), nickname);
 	}
+	Channel* chan = cc.getSpecificChannelByName(channel);
+	if (!chan)
+		throw ErrNoSuchChannel(user.getNickName(), channel);
+	if (!(chan->isOnTheChan(user)))
+		throw ErrNotonChannel(channel, user.getNickName());
+	if (!(chan->isOperator(user)))
+		throw ErrChanOPrivsNeeded(channel);
 	else {
 		User* toInvite = *toFind;
+		if (chan->isOnTheChan(*toInvite))
+			throw ErrUserOnChannel(user.getNickName(), channel);
 		user.inviteUser(*toInvite, *user.getSpecificChannelJoined(channel));
+		sendMsg(user, RPL_INVITING(user.getNickName(), toInvite->getNickName(), channel));
+		sendMsg(*toInvite, RPL_INVITEYOU(user.getClient(), nickname, channel));
 	}
 }
 
@@ -644,6 +659,7 @@ void Command::checkLastPassState(User &user) const {
 void	Command::sendMsg(User &user, const std::string msg) const {
     if (msg == "")
         return ;
+	std::cout << msg << "\n"; //todel
 	user.setSendBuf(msg);
 }
 

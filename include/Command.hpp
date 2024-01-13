@@ -49,7 +49,7 @@ class Command {
 		void			 part(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		void			 kick(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		void			 ping(std::vector<std::string> msgs, User &user);
-		void			 invite(std::string nick, std::string channel, ChannelContainer &cc, User &user);
+		void			 invite(std::vector<std::string> msgs, ChannelContainer &cc, User &user);
 		void			 topic(std::vector<std::string> msgs, User& user);
 		void		 	 mode(std::vector<std::string> &msgs, User& user);
 		void 			 privmsg(std::vector<std::string> msgs, User &user, ChannelContainer &cc);
@@ -165,6 +165,11 @@ class Command {
 		class ErrNoTopic : public std::invalid_argument {
 			public:
 				ErrNoTopic(const std::string& channel) : std::invalid_argument(channel) {}
+		};
+
+		class ErrUserOnChannel : public std::invalid_argument {
+			public:
+				ErrUserOnChannel(const std::string& nickname, const std::string& channel) : std::invalid_argument(ERR_USERONCHANNEL(nickname, channel)) {}
 		};
 };
 

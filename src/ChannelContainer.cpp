@@ -14,7 +14,6 @@ void ChannelContainer::deleteChannel(Channel& toDeleteChannel) {
 	std::vector<Channel*>::iterator to_del_cha = find(getChannelList().begin(), getChannelList().end(),\
 		 &toDeleteChannel);
 	if (to_del_cha == getChannelList().end()) {
-		std::cerr << "no such channel." << std::endl;
 		return ;
 	}
 	int to_del_idx = (*to_del_cha)->getIndex() - getChannelList().at(0)->getIndex();
@@ -31,6 +30,17 @@ bool ChannelContainer::checkNickName(std::string toFind) {
 		}
 	}
 	return false;
+}
+
+Channel* ChannelContainer::getSpecificChannelByName(std::string channel) {
+	std::vector<Channel*>::iterator ch_iter = getChannelList().begin();
+
+	for (ch_iter = getChannelList().begin();\
+		ch_iter != getChannelList().end();ch_iter++) {
+			if ((*ch_iter)->getChannelName() == channel)
+				return *ch_iter;
+		}
+	return NULL;
 }
 
 std::vector<Channel*> &ChannelContainer::getChannelList(void) {

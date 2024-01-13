@@ -22,6 +22,7 @@ class ChannelContainer {
 		void					deleteChannel(Channel& toDeleteChannel);
 		bool					checkNickName(std::string toFind);
 
+		Channel					*getSpecificChannelByName(std::string channel);
 		std::vector<Channel*> 	&getChannelList(void);
 		std::vector<User*>		&getUserList(void);
 		int						getCurrentChIdx(void);
