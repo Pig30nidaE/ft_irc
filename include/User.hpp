@@ -20,7 +20,6 @@ class User {
 		std::vector<std::string>			sendBuf;
 		int									userSock;
 		int									isPass;
-		int									userIndex;
 		std::string							userName;
 		std::string						 	nickName;
 		std::string							realName;
@@ -59,8 +58,6 @@ class User {
 		std::string							getClient(void) const;
 		std::vector<Channel*>				&getJoinedChannelList(void);
 		Channel								*getSpecificChannelJoined(std::string toGet);
-		int									getUserIndex(void) const;
-		void								setUserIndex(int const user_index);
 		void 								setUserSock(int sock);
 		int 								getUserSock(void) const;
 		void 								setUserIsPass(int flag);

@@ -3,15 +3,9 @@
 
 
 User::User(void):
-buf(""),userSock(-1),isPass(0),userIndex(-1),userName(""),nickName(""),hostName(""), client("") {}
+buf(""),userSock(-1),isPass(0),userName(""),nickName(""),hostName(""), client("") {}
 
 User::~User() {}
-
-
-void User::userInfoErase(User& user) {
-	user.setUserName("");
-	user.setUserIndex(-1);
-}
 
 int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelContainer& channel_contaier) {
 	int	index = 0;
@@ -50,7 +44,6 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 				if ((*channel_iter)->isOnTheChan(*this)) {
 					return ERR_ALREADYONCHAN;
 				}
-				setUserIndex(channel_contaier.getChannelList().size());
 				(*channel_iter)->userAdd(*this);
 				getJoinedChannelList().push_back(*channel_iter);
 				return JOINCHANNEL;
@@ -63,7 +56,6 @@ int User::joinChannel(std::string toJoinChannel, std::string enterPwd, ChannelCo
 	toJoin->operatorAdd(*this);
 	channel_contaier.createChannel(*toJoin);
 	getJoinedChannelList().push_back(toJoin);
-	setUserIndex(0);
 	return NEWCHANNEL;
 }
 
@@ -301,14 +293,6 @@ int	User::checkChannelInList(const std::string &channelName, ChannelContainer& c
 		}
 	}
 	return ERR_NOSUCHCHANNEL_NUM;
-}
-
-int	User::getUserIndex(void) const {
-	return userIndex;
-}
-
-void User::setUserIndex(int const index) {
-	userIndex = index;
 }
 
 void User::setUserSock(int sock) {

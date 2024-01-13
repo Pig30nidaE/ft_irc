@@ -1,23 +1,28 @@
 #include "../include/ChannelContainer.hpp"
 
-ChannelContainer::ChannelContainer(void):channelIndex(-1),userJoinChanLimit(5) {}
+ChannelContainer::ChannelContainer(void):userJoinChanLimit(5) {}
 
 ChannelContainer::~ChannelContainer() {}
 
 void ChannelContainer::createChannel(Channel& toCreateChannel) {
-	setCurrentChIdx(getCurrentChIdx() + 1);
-	toCreateChannel.setIndex(getCurrentChIdx());
 	channelList.push_back(&toCreateChannel);
 }
 
 void ChannelContainer::deleteChannel(Channel& toDeleteChannel) {
-	std::vector<Channel*>::iterator to_del_cha = find(getChannelList().begin(), getChannelList().end(),\
-		 &toDeleteChannel);
-	if (to_del_cha == getChannelList().end()) {
-		return ;
+	//std::vector<Channel*>::iterator to_del_cha = find(getChannelList().begin(), getChannelList().end(),\
+	//	 &toDeleteChannel);
+	//if (to_del_cha == getChannelList().end()) {
+	//	return ;
+	//}
+	//int to_del_idx = (*to_del_cha)->getIndex() - getChannelList().at(0)->getIndex();
+	//getChannelList().erase(getChannelList().begin() + to_del_idx);
+	typedef std::vector<Channel*>::iterator ChIter;
+	for (ChIter iter = channelList.begin();iter != channelList.end();iter++) {
+		if ((*iter)->getChannelName() == toDeleteChannel.getChannelName()) {
+			channelList.erase(iter);
+			break ;
+		}
 	}
-	int to_del_idx = (*to_del_cha)->getIndex() - getChannelList().at(0)->getIndex();
-	getChannelList().erase(getChannelList().begin() + to_del_idx);
 	delete &toDeleteChannel;
 }
 
@@ -49,14 +54,6 @@ std::vector<Channel*> &ChannelContainer::getChannelList(void) {
 
 std::vector<User*> &ChannelContainer::getUserList(void) {
 	return userList;
-}
-
-int	ChannelContainer::getCurrentChIdx(void) {
-	return channelIndex;
-}
-
-void ChannelContainer::setCurrentChIdx(int idx) {
-	channelIndex = idx;
 }
 
 int ChannelContainer::getUserJoinChanLimit(void) const {

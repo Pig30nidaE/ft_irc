@@ -54,7 +54,6 @@ class Mode {
 
 class Channel {
 	private:
-		int							index;
 		std::string 				channelName;
 		std::vector<User*>			userList;
 		std::vector<int>			invitedUserList;
@@ -83,8 +82,6 @@ class Channel {
 		void						setPassword(std::string pwd);
 		Topic						&getTopicRef(void);
 		Mode						&getModeRef(void);
-		int							getIndex(void);
-		void						setIndex(int idx);
 		int							getCapacity(void);
 		void						setCapacity(int size);
 		std::vector<int>			&getChannelOpList(void);
