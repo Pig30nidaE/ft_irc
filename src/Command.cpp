@@ -52,7 +52,7 @@ void Command::nick(std::vector<std::string> msgs, ChannelContainer &cc, User &us
 		for (std::vector<Channel*>::iterator iter = joinedChannelList.begin(); iter != joinedChannelList.end(); iter++) {
 			userList = (*iter)->getUserList();
 			for (std::vector<User*>::iterator uIter = userList.begin(); uIter != userList.end(); uIter++) {
-				sentsock = (**uIter).getUserSock(); // test
+				sentsock = (**uIter).getUserSock();
 				if (sentsock != sock) {
 					if (sentUsers.find(sentsock) == sentUsers.end()) {
 						sentUsers.insert(sentsock);

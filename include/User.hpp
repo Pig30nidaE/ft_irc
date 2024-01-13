@@ -30,7 +30,6 @@ class User {
 		User(void);
 		~User();
 
-		void	userInfoErase(User& user); // do I need?
 		int		checkChannelInList(const std::string &channelName, ChannelContainer& cc);
 
 		void	changeUserName(std::string toChange);
