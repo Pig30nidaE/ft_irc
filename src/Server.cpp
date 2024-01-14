@@ -103,10 +103,26 @@ void Server::recvMsg(int fd) {
 
 
     memset(buf, 0, MAX_MSG);
-    n = recv(static_cast<int>(fd), buf, MAX_MSG, 0);
+    n = recv(fd, buf, MAX_MSG, 0);
     if (n <= 0)
     {
-        sendMsg(clients[fd], "read Error\r\n");
+        std::vector<Channel*> joinedChannelList;
+		std::vector<User*> userList;
+		std::set<int> sentUsers;
+		int sentsock;
+		joinedChannelList = clients[fd].getJoinedChannelList();
+		for (std::vector<Channel*>::iterator iter = joinedChannelList.begin(); iter != joinedChannelList.end(); iter++) {
+			userList = (*iter)->getUserList();
+			for (std::vector<User*>::iterator uIter = userList.begin(); uIter != userList.end(); uIter++) {
+				sentsock = (**uIter).getUserSock();
+				if (sentsock != fd) {
+					if (sentUsers.find(sentsock) == sentUsers.end()) {
+						sentUsers.insert(sentsock);
+						sendMsg(**uIter, QUIT_REPLISE_BROAD(clients[fd].getClient(), "Connection closed"));
+					}
+				}
+			}
+		}
         disconnectClient(fd);
     }
     else
@@ -129,14 +145,16 @@ void Server::errorEventHandler(int fd) {
 }
 
 Server::~Server() {
+    delete channelContainer;
+    delete command;
     for (std::map<int, User>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
         if (close(iter->first) == -1)
-            std::cout << "client socket close ERROR\n";
+            exitWithPerror("client socket close ERROR\n");
     }
     if (close(kq) == -1)
-        std::cout << "Kqueue close ERROR\n";
+        exitWithPerror("kqueue socket close ERROR\n");
     if (close(serverSocket) == -1)
-        std::cout << "Kqueue close ERROR\n";
+        exitWithPerror("server socket close ERROR\n");
 }
 
 Server &Server::operator=(const Server &other)
@@ -152,32 +170,28 @@ Server::Server(const Server &other)
 
 void Server::disconnectClient(int sock)
 {
-    int fd;
     User &user = clients[sock];
     std::vector<User *> &userList = channelContainer->getUserList();
-    fd = sock;
 
-    std::vector<std::string> quit_msg;
-    quit_msg.push_back("QUIT");
-    command->quit(quit_msg, user);
     while (user.getJoinedChannelList().size())
         user.exitChannel(user.getJoinedChannelList().at(0)->getChannelName(), *channelContainer);
     for (std::vector<User *>::iterator iter = userList.begin(); iter != userList.end();) {
-        if ((*iter)->getUserSock() == fd) {
+        if ((*iter)->getUserSock() == sock) {
             iter = userList.erase(iter);
         } else {
             ++iter;
         }
     }
     for (std::map<int, User>::iterator iter = clients.begin(); iter != clients.end();) {
-        if ((iter->second).getUserSock() == fd) {
+        if ((iter->second).getUserSock() == sock) {
             iter = clients.erase(iter);
             break;
         } else {
             ++iter;
         }
     }
-    close(fd);
+    if (close(sock) == -1)
+        exitWithPerror("client socket close ERROR\n");
 }
 
 void Server::changeEvents(int ident, int filter,
