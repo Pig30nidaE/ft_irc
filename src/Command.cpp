@@ -305,7 +305,16 @@ void Command::topic(std::vector<std::string> msgs, User& user) {
 				throw ErrChanOPrivsNeeded(chanName);
 			}
 		}
-		std::string toSet = msgs.at(2);
+		std::string toSet;
+		if (msgs[2][0] == ':')
+			toSet = &(msgs[2][1]);
+		else 
+			toSet = msgs[2];
+		if (msgs.size() > 3) {
+			for (size_t i = 3; i < msgs.size(); i++) {
+				toSet += (" " + msgs[i]);
+			}
+		}
 		returnTopic.setTopic(toSet);
 		sendMsg(user, RPL_TOPIC(chanName, nickName, toSet));
 		broadcastMsg(user, channel, RPL_TOPIC(chanName, nickName, toSet));

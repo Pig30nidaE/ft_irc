@@ -26,7 +26,15 @@ void Channel::userDel(User& user) {
 	for (UserIter iter = usrList.begin();iter != usrList.end();iter++) {
 		if ((*iter)->getNickName() == user.getNickName()) {
 			usrList.erase(iter);
-			return ;
+			break ;
+		}
+	}
+	std::vector<int> &opList = getChannelOpList();
+	typedef std::vector<int>::iterator OpIter;
+	for (OpIter iter = opList.begin();iter != opList.end();iter++) {
+		if (*iter == user.getUserSock()) {
+			opList.erase(iter);
+			break ;
 		}
 	}
 }
